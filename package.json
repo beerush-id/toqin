@@ -1,0 +1,23 @@
+{
+  "name": "@beerush/toqin",
+  "version": "0.0.1",
+  "description": "Design Token Manager",
+  "main": "dist/csj/index.js",
+  "module": "dist/esm/index.js",
+  "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "tsc",
+    "test": "cd test && node index.test.js"
+  },
+  "dependencies": {
+    "@types/fs-extra": "^11.0.1",
+    "chokidar": "^3.5.3",
+    "fs-extra": "^11.1.1"
+  }
+}
