@@ -27,9 +27,9 @@ export type DesignToken = {
 }
 
 export type CompilerOptions = {
-  writeFile?: boolean;
   outDir?: string;
   watch?: boolean;
+  writeFile?: boolean;
 }
 
 export type Result = {

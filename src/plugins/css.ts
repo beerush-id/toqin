@@ -11,42 +11,63 @@ export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d
 
 export type CssPluginConfig = {
   mode?: 'css' | 'scss';
-  extension?: 'css' | 'scss';
   prefix?: string;
+  outDir?: string;
+  indexName?: string;
+  indexOnly?: boolean;
+  extension?: 'css' | 'scss';
   addOverride?: boolean;
 }
 
-export function css(configs: CssPluginConfig = {}): Compiler {
+export function css(config: CssPluginConfig = {}): Compiler {
   return (design) => {
-    const results: Result[] = [];
+    let results: Result[] = [];
 
     for (const group of design.tokens) {
       const content = compileVariables(
         group.name,
         group.tokens,
         group.type,
-        configs,
+        config,
         design.variablePrefix
       );
 
       results.push({
         name: group.name,
-        fileName: `${ group.name }.${ configs.extension ?? 'css' }`,
-        content: resolveInheritances(design.tokens, content, design.variablePrefix || configs?.prefix),
+        fileName: `${ config?.outDir ?? 'tokens' }/${ group.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
+        content: resolveInheritances(design.tokens, content, design.variablePrefix ?? config?.prefix),
       });
     }
 
-    results.push({
-      name: 'global',
-      fileName: `index.${ configs.extension ?? 'css' }`,
-      content: design.tokens.map(g => `@import "${ g.name }";`).join('\r\n')
-    });
+    if (config?.mode === 'css') {
+      if (config?.indexOnly) {
+        results = [
+          {
+            name: 'index',
+            fileName: `${ config?.indexName ?? 'tokens' }.css`,
+            content: results.map(item => item.content).join('\r\n')
+          }
+        ];
+      } else {
+        results.push({
+          name: 'index',
+          fileName: `${ config?.indexName ?? 'tokens' }.css`,
+          content: results.map(item => item.content).join('\r\n')
+        });
+      }
+    } else {
+      results.push({
+        name: 'index',
+        fileName: `${ config?.outDir ?? 'tokens' }/index.${ config?.extension ?? config?.mode ?? 'css' }`,
+        content: design.tokens.map(g => `@import "${ g.name }";`).join('\r\n') + '\r\n'
+      });
+    }
 
     return results;
   };
 }
 
-function compileVariables(
+export function compileVariables(
   name: string,
   tokens: Token[],
   kind: TokenTypes,
@@ -54,72 +75,72 @@ function compileVariables(
   prefix?: string
 ) {
   const { prefix: pfx, mode, addOverride } = configs;
-  const variablePrefix = prefix || pfx;
+  const variablePrefix = prefix ?? pfx;
 
-  if (mode === 'css') {
-    const contents: string[] = [];
-    const variables: string[] = parseVariables(tokens, kind, name);
+  const contents: string[] = [];
+  const variables: string[] = parseVariables(tokens, kind, name);
 
-    const globalVariables: string[] = variables
-      .filter(item => !item.includes('-@light:') && !item.includes('-@dark:'));
-    const lightVariables: string[] = variables
-      .filter(item => item.includes('-@light:'))
-      .map(item => item.replace('-@light:', ':'));
-    const darkVariables: string[] = variables
-      .filter(item => item.includes('-@dark:'))
-      .map(item => item.replace('-@dark:', ':'));
+  const globalVariables: string[] = variables
+    .filter(item => !item.includes('-@light:') && !item.includes('-@dark:'));
+  const lightVariables: string[] = variables
+    .filter(item => item.includes('-@light:'))
+    .map(item => item.replace('-@light:', ':'));
+  const darkVariables: string[] = variables
+    .filter(item => item.includes('-@dark:'))
+    .map(item => item.replace('-@dark:', ':'));
 
-    if (globalVariables.length) {
-      const globalContents = globalVariables.map(item => `  --${ variablePrefix
-                                                                 ? `${ variablePrefix }-`
-                                                                 : '' }${ item };`);
+  if (globalVariables.length) {
+    const globalContents = globalVariables
+      .map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
 
-      contents.push(':root {');
-      contents.push(...globalContents);
-      contents.push('}\r\n');
-    }
+    contents.push(mode === 'css' ? ':root {' : `@mixin ${ name } {`);
+    contents.push(...globalContents);
+    contents.push('}\r\n');
+  }
 
-    if (lightVariables.length) {
-      const lightContents = lightVariables.map(item => `  --${ variablePrefix
-                                                               ? `${ variablePrefix }-`
-                                                               : '' }${ item };`);
+  if (lightVariables.length) {
+    const lightContents = lightVariables
+      .map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
 
-      contents.push(':root {');
+    contents.push(mode === 'css' ? ':root {' : `@mixin ${ name }-light {`);
+    contents.push(...lightContents);
+    contents.push('}\r\n');
+
+    if (mode === 'css' && addOverride) {
+      contents.push('.prefer-light {');
+      contents.push('  color-scheme: only light;');
       contents.push(...lightContents);
       contents.push('}\r\n');
-
-      if (addOverride) {
-        contents.push('.prefer-light {');
-        contents.push('  color-scheme: only light;');
-        contents.push(...lightContents);
-        contents.push('}\r\n');
-      }
     }
+  }
 
-    if (darkVariables.length) {
-      const darkContents = darkVariables.map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
+  if (darkVariables.length) {
+    const darkContents = darkVariables.map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
 
+    if (mode === 'css') {
       contents.push('@media (prefers-color-scheme: dark) {');
       contents.push('  :root {');
       contents.push(...darkContents.map(item => `  ${ item }`));
       contents.push('  }');
       contents.push('}\r\n');
-
-      if (addOverride) {
-        contents.push('.prefer-dark {');
-        contents.push('  color-scheme: only dark;');
-        contents.push(...darkContents);
-        contents.push('}\r\n');
-      }
+    } else {
+      contents.push(`@mixin ${ name }-dark {`);
+      contents.push(...darkContents);
+      contents.push('}\r\n');
     }
 
-    return contents.join('\r\n');
-  } else {
-    return '';
+    if (mode === 'css' && addOverride) {
+      contents.push('.prefer-dark {');
+      contents.push('  color-scheme: only dark;');
+      contents.push(...darkContents);
+      contents.push('}\r\n');
+    }
   }
+
+  return contents.join('\r\n');
 }
 
-function parseVariables(tokens: Token[], kind: TokenTypes, parent?: string): string[] {
+export function parseVariables(tokens: Token[], kind: TokenTypes, parent?: string): string[] {
   const results: string[] = [];
 
   for (const token of tokens) {
@@ -152,7 +173,7 @@ function parseVariables(tokens: Token[], kind: TokenTypes, parent?: string): str
   return results;
 }
 
-function validate(name: string, kind: TokenTypes, value: unknown) {
+export function validate(name: string, kind: TokenTypes, value: unknown) {
   if (typeof value === 'string' && (
     value.startsWith('@') ||
     value.startsWith('$') ||
@@ -202,7 +223,7 @@ function validate(name: string, kind: TokenTypes, value: unknown) {
   }
 }
 
-function resolveInheritances(tokens: TokenGroup[], content: string, prefix?: string) {
+export function resolveInheritances(tokens: TokenGroup[], content: string, prefix?: string) {
   let result = content;
   const variables = content.match(/@[\w\d.]+;/g);
 

@@ -1,0 +1,71 @@
+{
+  "name": "Toqin",
+  "version": "1.0.0",
+  "description": "Toqin Design Tokens",
+  "variablePrefix": "tq",
+  "tokens": [
+    {
+      "name": "palette",
+      "type": "color",
+      "description": "Base Color Palettes",
+      "tokens": [
+        {
+          "name": "white",
+          "tags": ["white"],
+          "description": "White",
+          "value": "#dddddd"
+        },
+        {
+          "name": "black",
+          "tags": ["black"],
+          "description": "Black",
+          "value": "#000000"
+        }
+      ]
+    },
+    {
+      "name": "color",
+      "type": "color",
+      "description": "Color palette",
+      "tokens": [
+        {
+          "name": "foreground",
+          "tags": ["text"],
+          "description": "Text color",
+          "value": {
+            "@light": "@palette.black",
+            "@dark": "@palette.white"
+          }
+        },
+        {
+          "name": "background",
+          "tags": ["background"],
+          "description": "Background color",
+          "value": {
+            "@light": "@palette.white",
+            "@dark": "@palette.black"
+          }
+        }
+      ]
+    },
+    {
+      "name": "space",
+      "type": "unit",
+      "description": "Spacing",
+      "tokens": [
+        {
+          "name": "sm",
+          "value": "8px"
+        },
+        {
+          "name": "md",
+          "value": "10px"
+        },
+        {
+          "name": "lg",
+          "value": "12px"
+        }
+      ]
+    }
+  ]
+}

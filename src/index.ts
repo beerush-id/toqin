@@ -7,11 +7,21 @@ import { compile } from './tokin.js';
 export * from './tokin.js';
 export * from './plugins/index.js';
 
+export type ToqinConfig = {
+  outDir?: string;
+  watch?: boolean;
+  tokenPath?: string;
+}
+
 export class Toqin {
   private compilers: Compiler[] = [];
-  private tokenPath = join(process.cwd(), 'design-token.json');
+  private tokenPath = join(process.cwd(), 'design.toqin');
 
-  constructor(public options: CompilerOptions) {}
+  constructor(public options: ToqinConfig) {
+    if (options?.tokenPath) {
+      this.tokenPath = join(process.cwd(), options.tokenPath);
+    }
+  }
 
   public use(compiler: Compiler): this {
     if (!this.compilers.includes(compiler)) {
@@ -21,7 +31,7 @@ export class Toqin {
     return this;
   }
 
-  public run(options?: CompilerOptions): void {
+  public run(options?: ToqinConfig): void {
     try {
       this.compile(options);
 
@@ -44,20 +54,18 @@ export class Toqin {
     }
   }
 
-  public compile(options?: CompilerOptions): Result[] {
+  public compile(options?: ToqinConfig): Result[] {
     const config: CompilerOptions = { ...this.options || {}, ...options || {} };
     const design = fs.readFileSync(this.tokenPath, 'utf-8');
     const result = compile(JSON.parse(design), this.compilers, options ?? this.options);
 
-    if (config.writeFile) {
-      const outDir = join(process.cwd(), config.outDir ?? 'tokens');
+    const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 
-      for (const item of result) {
-        const filePath = join(outDir, item.fileName);
+    for (const item of result) {
+      const filePath = join(outDir, item.fileName);
 
-        fs.ensureDirSync(outDir);
-        fs.writeFileSync(filePath, item.content);
-      }
+      fs.ensureFileSync(filePath);
+      fs.writeFileSync(filePath, item.content);
     }
 
     return result;
