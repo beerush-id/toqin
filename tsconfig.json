@@ -2,6 +2,7 @@
   "extends": "../configs/tsconfig.json",
   "compilerOptions": {
     "outDir": "dist/esm",
+    "target": "ES2020",
     "module": "esnext",
     "moduleResolution": "nodenext",
     "resolveJsonModule": true,

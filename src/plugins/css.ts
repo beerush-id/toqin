@@ -36,6 +36,12 @@ export function css(configs: CssPluginConfig = {}): Compiler {
       });
     }
 
+    results.push({
+      name: 'global',
+      fileName: `index.${ configs.extension ?? 'css' }`,
+      content: design.tokens.map(g => `@import "${ g.name }";`).join('\r\n')
+    });
+
     return results;
   };
 }
