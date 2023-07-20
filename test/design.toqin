@@ -1,7 +1,7 @@
 {
   "name": "Toqin",
   "version": "1.0.0",
-  "description": "Toqin Design Tokens",
+  "description": "Toqin Design System",
   "variablePrefix": "tq",
   "tokens": [
     {
@@ -64,6 +64,70 @@
         {
           "name": "lg",
           "value": "12px"
+        }
+      ]
+    }
+  ],
+  "designs": [
+    {
+      "name": "button",
+      "tags": ["button", ".button"],
+      "description": "Default button style",
+      "styles": {
+        "--background": {
+          ".": "@color.foreground",
+          "@dark": "@color.background"
+        },
+        "--color": {
+          "@light": "@color.foreground",
+          "@dark": "@color.background",
+          "::hover": {
+            "@light": "@color.foreground",
+            "@dark": "@color.background"
+          }
+        },
+        "--shadow-color": {
+          "@light": "@color.foreground",
+          "@dark": "@color.background"
+        },
+        "background": "~background",
+        "color": "~color",
+        "border-color": {
+          "@light": "@color.foreground",
+          "@dark": "@color.background"
+        },
+        "padding": "@space.sm @space.md",
+        "align-content": "center",
+        "border-radius": "@space.sm"
+      },
+      "variants": [
+        {
+          "name": "solid",
+          "description": "Solid button style",
+          "styles": {
+            "background": "@color.foreground",
+            "color": "@color.background",
+            "ring": {
+              "::focus": "@color.foreground"
+            }
+          }
+        },
+        {
+          "name": "destructive",
+          "description": "Destructive button style",
+          "styles": {
+            "background": {
+              "@": "@color.destructive",
+              "::hover": "@color.destructive.hover",
+              "::focus": "@color.destructive.focus",
+              "::active": "@color.destructive.active",
+              "::disabled": "@color.destructive.disabled"
+            },
+            "color": "@color.background",
+            "ring": {
+              "::focus": "@color.destructive"
+            }
+          }
         }
       ]
     }

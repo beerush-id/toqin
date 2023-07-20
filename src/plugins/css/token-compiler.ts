@@ -1,5 +1,5 @@
-import type { Compiler, Result, Token, TokenGroup, TokenTypes } from '../tokin.js';
-import { getToken } from '../tokin.js';
+import type { TokenGroup, TokenOutput } from '../../token.js';
+import { DesignSpecs, DesignToken, getToken, TokenTypes } from '../../token.js';
 
 export const COLOR_REGEX = /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/i;
 export const CSS_UNIT_REGEX = /^-?\d+(\.\d+)?(px|em|rem|vh|vw|vmin|vmax|%)$/i;
@@ -9,76 +9,51 @@ export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)
 export const COLOR_HSL_REGEX = /^hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/i;
 export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d+)?)\)$/i;
 
-export type CssPluginConfig = {
+export type CSSCompileTokenConfig = {
   mode?: 'css' | 'scss';
   prefix?: string;
-  outDir?: string;
-  indexName?: string;
-  indexOnly?: boolean;
   extension?: 'css' | 'scss';
-  addOverride?: boolean;
+  themeClasses?: boolean;
+  themeClassNames?: {
+    light?: string;
+    dark?: string;
+  }
 }
 
-export function css(config: CssPluginConfig = {}): Compiler {
-  return (design) => {
-    let results: Result[] = [];
+export function compileToken(spec: DesignSpecs, config: CSSCompileTokenConfig): TokenOutput[] {
+  const outputs: TokenOutput[] = [];
+  const prefix = config?.prefix ?? spec.variablePrefix;
 
-    for (const group of design.tokens) {
-      const content = compileVariables(
-        group.name,
-        group.tokens,
-        group.type,
-        config,
-        design.variablePrefix
-      );
+  for (const group of spec.tokens) {
+    const content = compileVariables(
+      group.name,
+      group.tokens,
+      group.type,
+      config,
+      prefix
+    );
 
-      results.push({
-        name: group.name,
-        fileName: `${ config?.outDir ?? 'tokens' }/${ group.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
-        content: resolveInheritances(design.tokens, content, design.variablePrefix ?? config?.prefix),
-      });
-    }
+    outputs.push({
+      name: group.name,
+      fileName: `tokens/${ group.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
+      content: resolveCssInheritances(spec.tokens, content, prefix),
+    });
+  }
 
-    if (config?.mode === 'css') {
-      if (config?.indexOnly) {
-        results = [
-          {
-            name: 'index',
-            fileName: `${ config?.indexName ?? 'tokens' }.css`,
-            content: results.map(item => item.content).join('\r\n')
-          }
-        ];
-      } else {
-        results.push({
-          name: 'index',
-          fileName: `${ config?.indexName ?? 'tokens' }.css`,
-          content: results.map(item => item.content).join('\r\n')
-        });
-      }
-    } else {
-      results.push({
-        name: 'index',
-        fileName: `${ config?.outDir ?? 'tokens' }/index.${ config?.extension ?? config?.mode ?? 'css' }`,
-        content: design.tokens.map(g => `@import "${ g.name }";`).join('\r\n') + '\r\n'
-      });
-    }
-
-    return results;
-  };
+  return outputs;
 }
 
 export function compileVariables(
   name: string,
-  tokens: Token[],
+  tokens: DesignToken[],
   kind: TokenTypes,
-  configs: CssPluginConfig,
+  configs: CSSCompileTokenConfig,
   prefix?: string
 ) {
-  const { prefix: pfx, mode, addOverride } = configs;
-  const variablePrefix = prefix ?? pfx;
-
+  const { mode = 'css', themeClasses = true, themeClassNames = {} } = configs || {};
+  const { light: lightClass = 'prefer-light', dark: darkClass = 'prefer-dark' } = themeClassNames || {};
   const contents: string[] = [];
-  const variables: string[] = parseVariables(tokens, kind, name);
+  const variables: string[] = parseVariables(tokens, kind, name, prefix);
 
   const globalVariables: string[] = variables
     .filter(item => !item.includes('-@light:') && !item.includes('-@dark:'));
@@ -91,7 +66,7 @@ export function compileVariables(
 
   if (globalVariables.length) {
     const globalContents = globalVariables
-      .map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
+      .map(item => `  --${ prefix ? `${ prefix }-` : '' }${ item };`);
 
     contents.push(mode === 'css' ? ':root {' : `@mixin ${ name } {`);
     contents.push(...globalContents);
@@ -100,14 +75,14 @@ export function compileVariables(
 
   if (lightVariables.length) {
     const lightContents = lightVariables
-      .map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
+      .map(item => `  --${ prefix ? `${ prefix }-` : '' }${ item };`);
 
     contents.push(mode === 'css' ? ':root {' : `@mixin ${ name }-light {`);
     contents.push(...lightContents);
     contents.push('}\r\n');
 
-    if (mode === 'css' && addOverride) {
-      contents.push('.prefer-light {');
+    if (mode === 'css' && themeClasses) {
+      contents.push(`.${ lightClass } {`);
       contents.push('  color-scheme: only light;');
       contents.push(...lightContents);
       contents.push('}\r\n');
@@ -115,7 +90,7 @@ export function compileVariables(
   }
 
   if (darkVariables.length) {
-    const darkContents = darkVariables.map(item => `  --${ variablePrefix ? `${ variablePrefix }-` : '' }${ item };`);
+    const darkContents = darkVariables.map(item => `  --${ prefix ? `${ prefix }-` : '' }${ item };`);
 
     if (mode === 'css') {
       contents.push('@media (prefers-color-scheme: dark) {');
@@ -129,8 +104,8 @@ export function compileVariables(
       contents.push('}\r\n');
     }
 
-    if (mode === 'css' && addOverride) {
-      contents.push('.prefer-dark {');
+    if (mode === 'css' && themeClasses) {
+      contents.push(`.${ darkClass } {`);
       contents.push('  color-scheme: only dark;');
       contents.push(...darkContents);
       contents.push('}\r\n');
@@ -140,7 +115,7 @@ export function compileVariables(
   return contents.join('\r\n');
 }
 
-export function parseVariables(tokens: Token[], kind: TokenTypes, parent?: string): string[] {
+export function parseVariables(tokens: DesignToken[], kind: TokenTypes, parent?: string, prefix?: string): string[] {
   const results: string[] = [];
 
   for (const token of tokens) {
@@ -152,19 +127,19 @@ export function parseVariables(tokens: Token[], kind: TokenTypes, parent?: strin
           validate(`${ name }-${ key }`, kind, value);
 
           if (key === 'default') {
-            results.push(`${ name }: ${ value }`);
+            results.push(`${ name }: ${ resolveCssValue(value as string, prefix) }`);
           } else {
-            results.push(`${ name }-${ key }: ${ value }`);
+            results.push(`${ name }-${ key }: ${ resolveCssValue(value as string, prefix) }`);
           }
         }
       } else {
         validate(name, kind, token.value);
-        results.push(`${ name }: ${ token.value }`);
+        results.push(`${ name }: ${ resolveCssValue(token.value as string, prefix) }`);
       }
     }
 
     if (token.tokens) {
-      const childResults = parseVariables(token.tokens, kind, token.name)
+      const childResults = parseVariables(token.tokens, kind, token.name, prefix)
         .map(item => parent ? `${ parent }-${ item }` : item);
       results.push(...childResults);
     }
@@ -177,6 +152,7 @@ export function validate(name: string, kind: TokenTypes, value: unknown) {
   if (typeof value === 'string' && (
     value.startsWith('@') ||
     value.startsWith('$') ||
+    value.startsWith('~') ||
     value.startsWith('var(') ||
     value.startsWith('calc(')
   )) {
@@ -223,19 +199,36 @@ export function validate(name: string, kind: TokenTypes, value: unknown) {
   }
 }
 
-export function resolveInheritances(tokens: TokenGroup[], content: string, prefix?: string) {
-  let result = content;
-  const variables = content.match(/@[\w\d.]+;/g);
+export function resolveCssValue(value: string, prefix?: string): string {
+  const globals = value.match(/@[\w\d.-]+/g);
 
-  if (variables) {
-    for (const search of variables) {
-      const value = search.replace(/\./g, '-')
-        .replace('@', `var(--${ prefix ? `${ prefix }-` : '' }`)
-        .replace(';', ');');
+  if (globals) {
+    globals.forEach(item => {
+      const variable = item
+        .replace('@', '')
+        .replace(/\./g, '-');
 
-      result = result.replace(search, value);
-    }
+      value = value.replace(item, `var(--${ prefix ? prefix + '-' : '' }${ variable })`);
+    });
   }
+
+  const locals = value.match(/~[\w\d.-]+/g);
+
+  if (locals) {
+    locals.forEach(item => {
+      const variable = item
+        .replace('~', '')
+        .replace(/\./g, '-');
+
+      value = value.replace(item, `var(--${ variable })`);
+    });
+  }
+
+  return value;
+}
+
+export function resolveCssInheritances(tokens: TokenGroup[], content: string, prefix?: string) {
+  let result = content;
 
   const copies = content.match(/\$[\w\d.!]+;/g);
 
@@ -295,4 +288,30 @@ export function hexToRgba(hex: string, alpha?: number): string {
 export function hexToRgbValue(hex: string): [ number, number, number ] {
   const colors = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex) || [];
   return [ parseInt(colors[1], 16), parseInt(colors[2], 16), parseInt(colors[3], 16) ];
+}
+
+export function parseMediaQuery(query: string) {
+  const queries = query
+    .replace(/^@/, '')
+    .split('@');
+  return queries.map(getMedia).join(' and ');
+}
+
+export function getMedia(query: string) {
+  switch (query.replace('@', '')) {
+    case 'light':
+      return '(prefers-color-scheme: light)';
+    case 'dark':
+      return '(prefers-color-scheme: dark)';
+    case 'mobile':
+      return '(max-width: 767px)';
+    case 'tablet':
+      return '(min-width: 768px) and (max-width: 1023px)';
+    case 'desktop':
+      return '(min-width: 1024px)';
+    case 'print':
+      return 'print';
+    default:
+      return query;
+  }
 }

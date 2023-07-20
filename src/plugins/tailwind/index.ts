@@ -1,4 +1,4 @@
-import { DesignToken } from '../tokin.js';
+import type { DesignSpecs } from '../../token.js';
 
 export type TailwindPluginConfig = {
   prefix?: string;
@@ -6,7 +6,7 @@ export type TailwindPluginConfig = {
 }
 
 export function tailwind(config: TailwindPluginConfig) {
-  return (design: DesignToken) => {
+  return (spec: DesignSpecs) => {
     return [];
   };
 }

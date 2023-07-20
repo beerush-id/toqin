@@ -1,4 +1,4 @@
-import { css, Toqin } from '../dist/esm/index.js';
+const { css, Toqin } = require('../dist/cjs/index.cjs');
 
 const toqin = new Toqin({ outDir: './output' });
 

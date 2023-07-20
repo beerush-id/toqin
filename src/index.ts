@@ -1,10 +1,10 @@
 import { watch } from 'chokidar';
 import fs from 'fs-extra';
 import { join } from 'path';
-import type { Compiler, CompilerOptions, Result } from './tokin.js';
-import { compile } from './tokin.js';
+import type { CompilerOptions, TokenCompiler, TokenOutput } from './token.js';
+import { compileToken } from './token.js';
 
-export * from './tokin.js';
+export * from './token.js';
 export * from './plugins/index.js';
 
 export type ToqinConfig = {
@@ -14,7 +14,7 @@ export type ToqinConfig = {
 }
 
 export class Toqin {
-  private compilers: Compiler[] = [];
+  private compilers: TokenCompiler[] = [];
   private tokenPath = join(process.cwd(), 'design.toqin');
 
   constructor(public options: ToqinConfig) {
@@ -23,7 +23,7 @@ export class Toqin {
     }
   }
 
-  public use(compiler: Compiler): this {
+  public use(compiler: TokenCompiler): this {
     if (!this.compilers.includes(compiler)) {
       this.compilers.push(compiler);
     }
@@ -54,10 +54,10 @@ export class Toqin {
     }
   }
 
-  public compile(options?: ToqinConfig): Result[] {
+  public compile(options?: ToqinConfig): TokenOutput[] {
     const config: CompilerOptions = { ...this.options || {}, ...options || {} };
     const design = fs.readFileSync(this.tokenPath, 'utf-8');
-    const result = compile(JSON.parse(design), this.compilers, options ?? this.options);
+    const result = compileToken(JSON.parse(design), this.compilers, options ?? this.options);
 
     const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 
