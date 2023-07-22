@@ -9,6 +9,16 @@
       "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs"
+    },
+    "./plugins": {
+      "types": "./dist/esm/plugins/index.d.ts",
+      "import": "./dist/esm/plugins/index.js",
+      "require": "./dist/cjs/plugins/index.cjs"
+    },
+    "./css-plugin": {
+      "types": "./dist/esm/plugins/css/index.d.ts",
+      "import": "./dist/esm/plugins/css/index.js",
+      "require": "./dist/cjs/plugins/css/index.cjs"
     }
   },
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
@@ -17,10 +27,11 @@
   "devDependencies": {
     "glob": "^10.3.3",
     "rimraf": "^5.0.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "vite": "^4.4.6"
   },
   "scripts": {
-    "dev": "rimraf ./dist && node ./dev.js",
+    "dev": "node ./dev.js",
     "build": "rimraf ./dist && tsc -p ./tsconfig.json && tsc -p ./tsconfig-cjs.json && node ./rename.js --cjs",
     "test": "cd test && rimraf ./output && node index.test.js"
   },

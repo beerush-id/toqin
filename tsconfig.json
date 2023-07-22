@@ -5,6 +5,7 @@
     "target": "ES2020",
     "module": "esnext",
     "moduleResolution": "nodenext",
+    "allowJs": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": false

@@ -4,10 +4,10 @@ import type {
   ToqinMediaQueries,
   ToqinMediaQueriesList,
   ToqinStates,
-  ToqinStyleState
+  ToqinStyleState,
 } from '../../design.js';
 import type { DesignSpecs } from '../../token.js';
-import { getMedia, parseMediaQuery, resolveCssInheritances, resolveCssValue } from './token-compiler.js';
+import { parseMediaQuery, resolveCssValue } from './token-compiler.js';
 
 export type CSSCompileDesignConfig = {
   mode?: 'css' | 'scss';
@@ -17,76 +17,57 @@ export type CSSCompileDesignConfig = {
   themeClassNames?: {
     light?: string;
     dark?: string;
-  }
-}
+  };
+};
 
-export type ElementSelectors = {
+export type ElementStyles = {
   [key: string]: Partial<CSSStyleDeclaration>;
-}
+};
 export type MediaSelectors = {
-  [key: string]: ElementSelectors
-}
+  [key: string]: ElementStyles;
+};
 export type DesignSelectors = {
-  [key: string]: ElementSelectors | MediaSelectors;
-}
+  [key: string]: ElementStyles | MediaSelectors;
+};
 
 export type CSSDeclarations = {
   [key: string]: Partial<CSSStyleDeclaration>;
-}
+};
 export type CSSSelectors = {
   [key: string]: unknown;
-}
+};
 
 export type StateSelectors = {
   [key in ToqinStates]?: {
     [selector: string]: Partial<CSSStyleDeclaration>;
-  }
-}
+  };
+};
 
 export type QuerySelectors = {
   [key in ToqinMediaQueries]?: {
     [selector: string]: Partial<CSSStyleDeclaration>;
-  }
-}
+  };
+};
 
 export function compileDesign(spec: DesignSpecs, config: CSSCompileDesignConfig): DesignOutput[] {
-  const { themeClasses = true, themeClassNames = {} } = config || {};
-  const { light: lightClass = 'prefer-light', dark: darkClass = 'prefer-dark' } = themeClassNames || {};
-
   const outputs: DesignOutput[] = [];
   const prefix = config?.prefix ?? spec.variablePrefix;
 
-  for (const design of (spec.designs || [])) {
-    const output = parseDesign(design, undefined, prefix);
-
-    if (themeClasses) {
-      ejectThemeVariables(output, lightClass, darkClass);
-    }
-
-    const contents = [
-      resolveCssInheritances(spec.tokens, cssFromDeclarations(output), prefix),
-    ];
+  for (const design of spec.designs || []) {
+    const output = parseDesign(spec, design, undefined, prefix);
+    const contents = [cssFromDeclarations(output)];
 
     if (design.variants) {
       for (const variant of design.variants) {
-        const variantOutput = parseDesign(variant, design, prefix);
-
-        if (themeClasses) {
-          ejectThemeVariables(variantOutput, lightClass, darkClass);
-        }
-
-        contents.push(resolveCssInheritances(
-          spec.tokens,
-          cssFromDeclarations(variantOutput),
-          prefix
-        ));
+        const variantOutput = parseDesign(spec, variant, design, prefix);
+        contents.push(cssFromDeclarations(variantOutput));
       }
     }
 
     outputs.push({
       name: design.name,
-      fileName: `designs/${ design.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
-      content: contents.join('\r\n')
+      fileName: `designs/${design.name}.${config?.extension ?? config?.mode ?? 'css'}`,
+      content: contents.join('\r\n'),
     });
   }
 
@@ -96,82 +77,132 @@ export function compileDesign(spec: DesignSpecs, config: CSSCompileDesignConfig)
 export function cssFromDeclarations(declarations: DesignSelectors, space = '') {
   const contents: string[] = [];
 
-  for (const [ selector, styles ] of Object.entries(declarations)) {
-    contents.push(`${ space }${ selector.replace('!@', '@') } {`);
+  for (const [selector, styles] of Object.entries(declarations)) {
+    contents.push(`${space}${selector.replace('!@', '@')} {`);
 
     if (selector.startsWith('@media') || selector.startsWith('!@media')) {
-      const content = cssFromDeclarations(styles as never, space + '  ')
-        .replace(/\r\n$/, '');
+      const content = cssFromDeclarations(styles as never, space + '  ').replace(/\r\n$/, '');
       contents.push(content);
     } else {
-      for (const [ prop, value ] of Object.entries(styles as object)) {
-        contents.push(`${ space }  ${ prop }: ${ value };`);
+      for (const [prop, value] of Object.entries(styles as object)) {
+        contents.push(`${space}  ${prop}: ${value};`);
       }
     }
 
-    contents.push(`${ space }}\r\n`);
+    contents.push(`${space}}\r\n`);
   }
 
   return contents.join('\r\n');
 }
 
-function parseDesign(design: DesignSystem, parent?: DesignSystem, prefix?: string): DesignSelectors {
+function parseDesign(spec: DesignSpecs, design: DesignSystem, parent?: DesignSystem, prefix?: string): DesignSelectors {
   const selectors: DesignSelectors = {};
 
-  const normal: ElementSelectors = {};
+  const normal: ElementStyles = {};
   const states: StateSelectors = {} as never;
   const queries: QuerySelectors = {} as never;
 
-  for (const [ prop, styles ] of Object.entries(design.styles)) {
+  for (const [prop, styles] of Object.entries(design.styles)) {
     if (typeof styles === 'string') {
-      normal[prop as never] = resolveCssValue(styles, prefix);
+      let key: string = prop as never;
+
+      if (key.startsWith('--') && !key.startsWith('--this-')) {
+        key = key.replace('--', `--this-`);
+      }
+
+      normal[key as never] = resolveCssValue(styles, prefix);
     } else if (typeof styles === 'object') {
-      assignDesignValues(
-        normal,
-        states,
-        queries,
-        prop as keyof CSSStyleDeclaration,
-        styles,
-        prefix
-      );
+      assignDesignValues(spec, normal, states, queries, prop as keyof CSSStyleDeclaration, styles, prefix);
     }
   }
 
-  let tags = design.tags ?? [ design.name?.toLowerCase() || '' ];
+  let tags = design.tags ?? [design.name?.toLowerCase() || ''];
   if (parent) {
-    tags = (parent.tags || [ parent.name ]).map(tag => `${ tag }.${ design.name?.toLowerCase() }`);
+    tags = (parent.tags || [parent.name]).map((tag) => `${tag}.${design.name?.toLowerCase()}`);
   }
 
-  selectors[tags.join(', ')] = normal;
+  if (Object.keys(normal).length) {
+    selectors[tags.join(', ')] = normal;
+  }
 
   if (Object.keys(states).length) {
-    Object.assign(selectors, parseDeclarations(tags, states));
+    mergeSelectors(selectors as MediaSelectors, parseDeclarations(tags, states));
   }
 
-  if (Object.keys(queries).length) {
-    for (const [ query, styles ] of Object.entries(queries)) {
-      const q = `@media ${ parseMediaQuery(query) }`;
+  const queryKeys = Object.keys(queries) as ToqinMediaQueries[];
 
-      if (!selectors[q]) {
-        selectors[q] = {};
+  if (queryKeys.length) {
+    for (const query of queryKeys) {
+      const styles: CSSSelectors = queries[query] as never;
+      const parsed = parseMediaQuery(query, spec.mediaQueries);
+      const customs = parsed.match(/\[[\w-]+]/g);
+
+      if (customs) {
+        let queryTags: string[] = tags.map((tag) => `${customs.join('')} ${tag}`);
+        let newQuery = parsed;
+
+        if (spec?.customQueryMode === 'class') {
+          queryTags = queryTags.map((tag) => tag.replace(/\[/g, '.').replace(/]/g, ''));
+        } else if (spec?.customQueryMode === 'id') {
+          queryTags = queryTags.map((tag) => tag.replace(/\[/g, '#').replace(/]/g, ''));
+        }
+
+        customs.forEach((c) => {
+          newQuery = newQuery.replace(` and ${c}`, '').replace(`${c} and `, '').replace(c, '');
+        });
+
+        if (newQuery) {
+          const q = `@media ${newQuery}`;
+
+          if (!selectors[q]) {
+            selectors[q] = {};
+          }
+
+          mergeSelectors(selectors[q], parseDeclarations(queryTags, styles));
+        } else {
+          mergeSelectors(selectors as MediaSelectors, parseDeclarations(queryTags, styles));
+        }
+      } else {
+        const q = `@media ${parsed}`;
+
+        if (!selectors[q]) {
+          selectors[q] = {};
+        }
+
+        mergeSelectors(selectors[q], parseDeclarations(tags, styles));
       }
-
-      Object.assign(selectors[q], parseDeclarations(tags, styles as any));
     }
   }
 
   return selectors;
 }
 
+function mergeSelectors(target: ElementStyles | MediaSelectors, source: ElementStyles | MediaSelectors) {
+  for (const [selector, styles] of Object.entries(source)) {
+    if (!target[selector]) {
+      target[selector] = {};
+    }
+
+    Object.assign(target[selector], styles);
+  }
+}
+
 function assignDesignValues(
-  normal: ElementSelectors,
+  spec: DesignSpecs,
+  normal: ElementStyles,
   states: StateSelectors,
   queries: QuerySelectors,
-  prop: keyof CSSStyleDeclaration,
+  property: keyof CSSStyleDeclaration,
   styles: ToqinStyleState,
   prefix?: string
 ) {
-  for (const [ key, style ] of Object.entries(styles)) {
+  let prop: string = property as never;
+
+  if (prop.startsWith('--') && !prop.startsWith('--this-')) {
+    prop = prop.replace('--', `--this-`);
+  }
+
+  for (const [key, style] of Object.entries(styles)) {
     if (key.startsWith('::')) {
       const s: keyof ToqinStates = key as never;
 
@@ -180,26 +211,24 @@ function assignDesignValues(
       }
 
       if (typeof style === 'string') {
-        states[s][prop] = resolveCssValue(style, prefix) as never;
+        states[s][prop] = resolveCssValue(style, prefix, spec) as never;
       } else if (typeof style === 'object') {
-        Object
-          .entries(style as ToqinMediaQueriesList)
-          .forEach(([ query, value ]) => {
-            const q: keyof ToqinMediaQueries = query as never;
+        Object.entries(style as ToqinMediaQueriesList).forEach(([query, value]) => {
+          const q: keyof ToqinMediaQueries = query as never;
 
-            if (!queries[q]) {
-              queries[q] = {} as never;
-            }
+          if (!queries[q]) {
+            queries[q] = {} as never;
+          }
 
-            if (!queries[q][s]) {
-              queries[q][s] = {} as never;
-            }
+          if (!queries[q][s]) {
+            queries[q][s] = {} as never;
+          }
 
-            queries[q][s][prop] = resolveCssValue(value, prefix) as never;
-          });
+          queries[q][s][prop] = resolveCssValue(value, prefix, spec) as never;
+        });
       }
     } else if (key === '@' || key === '.') {
-      normal[prop as never] = resolveCssValue(style as string, prefix) as never;
+      normal[prop as never] = resolveCssValue(style as string, prefix, spec) as never;
     } else if (key.startsWith('@')) {
       const q: keyof ToqinMediaQueries = key as never;
 
@@ -211,23 +240,20 @@ function assignDesignValues(
         queries[q][prop] = {} as never;
       }
 
-      queries[q][prop] = resolveCssValue(style as string, prefix) as never;
+      queries[q][prop] = resolveCssValue(style as string, prefix, spec) as never;
     }
   }
 }
 
 function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclarations {
   const selectors: any = {
-    [tags.join(', ')]: {}
+    [tags.join(', ')]: {},
   };
 
-  for (const [ key, value ] of Object.entries(styles)) {
+  for (const [key, value] of Object.entries(styles)) {
     if (key.startsWith('::')) {
       const state = key.replace('::', '');
-      const selector = [
-        ...tags.map(t => `${ t }:${ state }`),
-        ...tags.map(t => `${ t }.${ state }`)
-      ].join(', ');
+      const selector = [...tags.map((t) => `${t}:${state}`), ...tags.map((t) => `${t}.${state}`)].join(', ');
 
       if (!selectors[selector]) {
         selectors[selector] = {};
@@ -239,73 +265,11 @@ function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclaration
     }
   }
 
-  for (const [ key, value ] of Object.entries(selectors)) {
+  for (const [key, value] of Object.entries(selectors)) {
     if (!Object.keys(value as object).length) {
       delete selectors[key];
     }
   }
 
   return selectors;
-}
-
-function ejectThemeVariables(
-  selectors: DesignSelectors,
-  lightClass: string,
-  darkClass: string
-) {
-  const light = getMedia('@light');
-  const dark = getMedia('@dark');
-
-  for (const [ key, elements ] of Object.entries(selectors)) {
-    if (key.includes(light)) {
-      ejectVariables(
-        selectors,
-        elements as ElementSelectors,
-        `!@media ${ light }`,
-        lightClass
-      );
-    } else if (key.includes(dark)) {
-      ejectVariables(
-        selectors,
-        elements as ElementSelectors,
-        `!@media ${ dark }`,
-        darkClass
-      );
-    }
-  }
-}
-
-function ejectVariables(
-  selectors: DesignSelectors,
-  elements: ElementSelectors,
-  theme: string,
-  themeClass: string,
-) {
-  for (const [ selector, styles ] of Object.entries(elements)) {
-    const variables: { [key: string]: string } = {};
-
-    for (const [ prop, value ] of Object.entries(styles)) {
-      if (prop.startsWith('--')) {
-        variables[prop] = value as string;
-        // delete styles[prop as never];
-      }
-    }
-
-    if (!Object.keys(styles).length) {
-      // delete elements[selector];
-    }
-
-    if (Object.keys(variables).length) {
-      const keys = selector
-        .split(',').map(item => item.replace(/^\s+/g, ''));
-      const key = keys.map(item => `.${ themeClass } ${ item }`).join(', ');
-
-      if (!selectors[theme]) {
-        // selectors[theme] = {};
-      }
-
-      // selectors[theme][selector] = variables;
-      selectors[key] = variables;
-    }
-  }
 }

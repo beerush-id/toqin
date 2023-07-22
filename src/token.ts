@@ -7,43 +7,61 @@ export type DesignToken = {
   description?: string;
 
   tokens?: DesignToken[];
-  value?: string | number | boolean | {
-    default: string | number | boolean;
-    [key: string]: string | number | boolean;
-  };
-}
+  value?:
+    | string
+    | number
+    | boolean
+    | {
+        default: string | number | boolean;
+        [key: string]: string | number | boolean;
+      };
+};
 
 export type TokenGroup = {
   name: string;
-  type: TokenTypes
+  type: TokenTypes;
   description?: string;
   tokens: DesignToken[];
-}
+};
+
+export type CustomMediaQueries = {
+  [key: string]:
+    | string
+    | {
+        query: string;
+        scheme?: 'light' | 'dark';
+      };
+};
 
 export type DesignSpecs = {
   name: string;
-  tokens: TokenGroup[];
-
   version?: string;
   description?: string;
-  variablePrefix?: string;
+
+  tokens: TokenGroup[];
   designs?: DesignSystem[];
-}
+
+  variablePrefix?: string;
+  mediaQueries?: CustomMediaQueries;
+  colorScheme?: 'light' | 'dark' | 'system' | string;
+  customQueryMode?: 'attribute' | 'class' | 'id';
+  screenSizes?: { [key: string]: string };
+};
 
 export type CompilerOptions = {
   outDir?: string;
   watch?: boolean;
-}
+};
 
 export type TokenOutput = {
   name: string;
-  fileName: string;
   content: string;
-}
+  fileName?: string;
+};
 
 export type TokenCompiler = (spec: DesignSpecs, options?: CompilerOptions) => TokenOutput[];
 
-export function compileToken(spec: DesignSpecs, compilers: TokenCompiler[], options?: CompilerOptions) {
+export function compileSpecs(spec: DesignSpecs, compilers: TokenCompiler[], options?: CompilerOptions) {
   const results: TokenOutput[] = [];
 
   if (compilers?.length) {
@@ -62,7 +80,7 @@ export function getToken(tokens: TokenGroup[], path: string): DesignToken | void
   let token: DesignToken | undefined = undefined;
 
   for (const part of paths) {
-    token = (lists as TokenGroup[] || []).find(item => item.name === part);
+    token = ((lists as TokenGroup[]) || []).find((item) => item.name === part);
 
     if (!token) {
       return undefined;

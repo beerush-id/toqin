@@ -1,13 +1,7 @@
-import type { TokenGroup, TokenOutput } from '../../token.js';
+import { merge } from '@beerush/utils/object';
+import { ToqinMediaQueries } from '../../design.js';
+import type { CustomMediaQueries, TokenOutput } from '../../token.js';
 import { DesignSpecs, DesignToken, getToken, TokenTypes } from '../../token.js';
-
-export const COLOR_REGEX = /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/i;
-export const CSS_UNIT_REGEX = /^-?\d+(\.\d+)?(px|em|rem|vh|vw|vmin|vmax|%)$/i;
-export const COLOR_HEX_REGEX = /^#([0-9a-f]{3}){1,2}$/i;
-export const COLOR_RGB_REGEX = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
-export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/i;
-export const COLOR_HSL_REGEX = /^hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/i;
-export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d+)?)\)$/i;
 
 export type CSSCompileTokenConfig = {
   mode?: 'css' | 'scss';
@@ -17,240 +11,245 @@ export type CSSCompileTokenConfig = {
   themeClassNames?: {
     light?: string;
     dark?: string;
-  }
-}
+  };
+  mediaQueries?: {
+    [key in ToqinMediaQueries]?: string;
+  };
+};
+
+export const COLOR_REGEX = /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/i;
+export const CSS_UNIT_REGEX = /^-?\d+(\.\d+)?(px|em|rem|vh|vw|vmin|vmax|%)$/i;
+export const COLOR_HEX_REGEX = /^#([0-9a-f]{3}){1,2}$/i;
+export const COLOR_RGB_REGEX = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
+export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/i;
+export const COLOR_HSL_REGEX = /^hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/i;
+export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d+)?)\)$/i;
+
+export const MEDIA_QUERIES: Partial<{
+  [key in ToqinMediaQueries]?: string;
+}> = {
+  '@light': '[toqin-theme-light]',
+  '@dark': '[toqin-theme-dark]',
+  '@mobile': '(max-width: 767px)',
+  '@tablet': '(min-width: 768px) and (max-width: 1023px)',
+  '@desktop': '(min-width: 1024px)',
+  '@print': 'print',
+};
 
 export function compileToken(spec: DesignSpecs, config: CSSCompileTokenConfig): TokenOutput[] {
   const outputs: TokenOutput[] = [];
   const prefix = config?.prefix ?? spec.variablePrefix;
 
   for (const group of spec.tokens) {
-    const content = compileVariables(
-      group.name,
-      group.tokens,
-      group.type,
-      config,
-      prefix
-    );
-
-    outputs.push({
+    const result = parseToken(spec, group, group.type, prefix ? `--${prefix}` : undefined, prefix);
+    const output = {
       name: group.name,
-      fileName: `tokens/${ group.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
-      content: resolveCssInheritances(spec.tokens, content, prefix),
-    });
+      fileName: `tokens/${group.name}.${config?.extension ?? config?.mode ?? 'css'}`,
+      content: [':root {', parseDeclarations(result.root, '  '), '}\r\n', parseDeclarations(result.queries) + '\r\n']
+        .join('\r\n')
+        .replace(/\r\n\r\n/g, '\r\n'),
+    };
+    outputs.push(output);
   }
 
   return outputs;
 }
 
-export function compileVariables(
-  name: string,
-  tokens: DesignToken[],
+export type VariableList = {
+  [key: string]: string;
+};
+
+export type VariableQueries = {
+  [key: string]: {
+    root: VariableList;
+    [key: string]: VariableList | VariableQueries;
+  };
+};
+
+export type VariableDeclarations = {
+  root: VariableList;
+  queries: VariableQueries;
+};
+
+function parseToken(
+  spec: DesignSpecs,
+  token: DesignToken,
   kind: TokenTypes,
-  configs: CSSCompileTokenConfig,
+  parent?: string,
   prefix?: string
-) {
-  const { mode = 'css', themeClasses = true, themeClassNames = {} } = configs || {};
-  const { light: lightClass = 'prefer-light', dark: darkClass = 'prefer-dark' } = themeClassNames || {};
+): VariableDeclarations {
+  const name = parent ? (token.name ? `${parent}-${token.name}` : parent) : token.name;
+  const root: VariableList = {};
+  const queries: VariableQueries = {};
+
+  if (typeof token.value === 'string') {
+    root[name] = parseTokenValue(spec, name, kind, token.value, prefix);
+  } else if (typeof token.value === 'object') {
+    for (const [key, value] of Object.entries(token.value)) {
+      if (key.startsWith('@')) {
+        if (key === '@') {
+          root[name] = parseTokenValue(spec, name, kind, value as string, prefix);
+        } else {
+          const query = parseMediaQuery(key, spec.mediaQueries);
+          const customs = query.match(/\[[\w-]+]/g);
+
+          if (customs) {
+            let custom = customs.join('');
+            let newQuery = query;
+
+            if (spec?.customQueryMode === 'class') {
+              custom = custom.replace(/\[/g, '.').replace(/]/g, '');
+            } else if (spec?.customQueryMode === 'id') {
+              custom = custom.replace(/\[/g, '#').replace(/]/g, '');
+            }
+
+            for (const c of customs) {
+              newQuery = newQuery.replace(` and ${c}`, '').replace(`${c} and `, '').replace(c, '');
+            }
+
+            if (newQuery) {
+              const q = `@media ${newQuery}`;
+
+              queries[q] = queries[q] || {};
+              queries[q][custom] = queries[q][custom] || {};
+              queries[q][custom][name as never] = parseTokenValue(spec, name, kind, value as string, prefix) as never;
+            } else {
+              queries[custom] = queries[custom] || {};
+              queries[custom][name] = parseTokenValue(spec, name, kind, value as string, prefix) as never;
+            }
+          } else {
+            const q = `@media ${query}`;
+
+            queries[q] = queries[q] || {};
+            queries[q].root = queries[q].root || {};
+            queries[q].root[name] = parseTokenValue(spec, name, kind, value as string, prefix);
+          }
+        }
+      }
+    }
+  }
+
+  if (token.tokens) {
+    for (const child of token.tokens) {
+      const { root: childRoot, queries: childQueries } = parseToken(spec, child, kind, name, prefix);
+
+      merge(root, childRoot);
+      merge(queries, childQueries);
+    }
+  }
+
+  return { root, queries };
+}
+
+function parseTokenValue(spec: DesignSpecs, name: string, kind: TokenTypes, value: string, prefix?: string): string {
+  validate(name, kind, value);
+  return resolveCssValue(value, prefix, spec);
+}
+
+function parseDeclarations(declarations: VariableList | VariableQueries, space = ''): string {
   const contents: string[] = [];
-  const variables: string[] = parseVariables(tokens, kind, name, prefix);
 
-  const globalVariables: string[] = variables
-    .filter(item => !item.includes('-@light:') && !item.includes('-@dark:'));
-  const lightVariables: string[] = variables
-    .filter(item => item.includes('-@light:'))
-    .map(item => item.replace('-@light:', ':'));
-  const darkVariables: string[] = variables
-    .filter(item => item.includes('-@dark:'))
-    .map(item => item.replace('-@dark:', ':'));
-
-  if (globalVariables.length) {
-    const globalContents = globalVariables
-      .map(item => `  --${ prefix ? `${ prefix }-` : '' }${ item };`);
-
-    contents.push(mode === 'css' ? ':root {' : `@mixin ${ name } {`);
-    contents.push(...globalContents);
-    contents.push('}\r\n');
-  }
-
-  if (lightVariables.length) {
-    const lightContents = lightVariables
-      .map(item => `  --${ prefix ? `${ prefix }-` : '' }${ item };`);
-
-    contents.push(mode === 'css' ? ':root {' : `@mixin ${ name }-light {`);
-    contents.push(...lightContents);
-    contents.push('}\r\n');
-
-    if (mode === 'css' && themeClasses) {
-      contents.push(`.${ lightClass } {`);
-      contents.push('  color-scheme: only light;');
-      contents.push(...lightContents);
-      contents.push('}\r\n');
-    }
-  }
-
-  if (darkVariables.length) {
-    const darkContents = darkVariables.map(item => `  --${ prefix ? `${ prefix }-` : '' }${ item };`);
-
-    if (mode === 'css') {
-      contents.push('@media (prefers-color-scheme: dark) {');
-      contents.push('  :root {');
-      contents.push(...darkContents.map(item => `  ${ item }`));
-      contents.push('  }');
-      contents.push('}\r\n');
+  for (const [q, v] of Object.entries(declarations)) {
+    if (typeof v === 'object') {
+      contents.push(`${space}${q === 'root' ? ':root' : q} {`);
+      contents.push(parseDeclarations(v, space + '  '));
+      contents.push(`${space}}\r\n`);
     } else {
-      contents.push(`@mixin ${ name }-dark {`);
-      contents.push(...darkContents);
-      contents.push('}\r\n');
-    }
-
-    if (mode === 'css' && themeClasses) {
-      contents.push(`.${ darkClass } {`);
-      contents.push('  color-scheme: only dark;');
-      contents.push(...darkContents);
-      contents.push('}\r\n');
+      contents.push(`${space}${q}: ${v};`);
     }
   }
 
   return contents.join('\r\n');
 }
 
-export function parseVariables(tokens: DesignToken[], kind: TokenTypes, parent?: string, prefix?: string): string[] {
-  const results: string[] = [];
-
-  for (const token of tokens) {
-    if (token.value) {
-      const name = parent ? (token.name ? `${ parent }-${ token.name }` : parent) : token.name;
-
-      if (typeof token.value === 'object') {
-        for (const [ key, value ] of Object.entries(token.value)) {
-          validate(`${ name }-${ key }`, kind, value);
-
-          if (key === 'default') {
-            results.push(`${ name }: ${ resolveCssValue(value as string, prefix) }`);
-          } else {
-            results.push(`${ name }-${ key }: ${ resolveCssValue(value as string, prefix) }`);
-          }
-        }
-      } else {
-        validate(name, kind, token.value);
-        results.push(`${ name }: ${ resolveCssValue(token.value as string, prefix) }`);
-      }
-    }
-
-    if (token.tokens) {
-      const childResults = parseVariables(token.tokens, kind, token.name, prefix)
-        .map(item => parent ? `${ parent }-${ item }` : item);
-      results.push(...childResults);
-    }
-  }
-
-  return results;
-}
-
 export function validate(name: string, kind: TokenTypes, value: unknown) {
-  if (typeof value === 'string' && (
-    value.startsWith('@') ||
-    value.startsWith('$') ||
-    value.startsWith('~') ||
-    value.startsWith('var(') ||
-    value.startsWith('calc(')
-  )) {
+  if (
+    typeof value === 'string' &&
+    (value.startsWith('@') ||
+      value.startsWith('$') ||
+      value.startsWith('~') ||
+      value.startsWith('var(') ||
+      value.startsWith('calc('))
+  ) {
     return;
   }
 
   switch (kind) {
     case 'color':
       if (typeof value !== 'string') {
-        throw new Error(`The value of "${ name }: ( ${ value } )" must be a string.`);
+        throw new Error(`The value of "${name}: ( ${value} )" must be a string.`);
       }
 
       if (!COLOR_REGEX.test(value)) {
-        throw new Error(`The value of "${ name }: ( ${ value } )" must be a valid CSS color.`);
+        throw new Error(`The value of "${name}: ( ${value} )" must be a valid CSS color.`);
       }
 
       break;
     case 'unit':
       if (typeof value !== 'string' && parseFloat(value as never) !== 0) {
-        throw new Error(`The value of "${ name }: ( ${ value } )" must be a string or "0".`);
+        throw new Error(`The value of "${name}: ( ${value} )" must be a string or "0".`);
       }
 
       if (!CSS_UNIT_REGEX.test(value as string)) {
-        throw new Error(`The value of "${ name }: ( ${ value } )" must be a valid CSS unit.`);
+        throw new Error(`The value of "${name}: ( ${value} )" must be a valid CSS unit.`);
       }
 
       break;
     case 'number':
       if (typeof value !== 'number') {
-        throw new Error(`The value of "${ name }: ( ${ value } )" must be a number.`);
+        throw new Error(`The value of "${name}: ( ${value} )" must be a number.`);
       }
 
       break;
     case 'boolean':
       if (typeof value !== 'boolean') {
-        throw new Error(`The value of "${ name }: ( ${ value } )" must be a boolean.`);
+        throw new Error(`The value of "${name}: ( ${value} )" must be a boolean.`);
       }
 
       break;
     case 'any':
       break;
     default:
-      throw new Error(`The kind of "${ name }: ( ${ value } )" is not supported.`);
+      throw new Error(`The kind of "${name}: ( ${value} )" is not supported.`);
   }
 }
 
-export function resolveCssValue(value: string, prefix?: string): string {
-  const globals = value.match(/@[\w\d.-]+/g);
-
+export function resolveCssValue(value: string, prefix?: string, spec?: DesignSpecs): string {
+  const globals = value.match(/@[\w.-]+/g);
   if (globals) {
-    globals.forEach(item => {
-      const variable = item
-        .replace('@', '')
-        .replace(/\./g, '-');
+    globals.forEach((item) => {
+      const variable = item.replace('@', '').replace(/\./g, '-');
 
-      value = value.replace(item, `var(--${ prefix ? prefix + '-' : '' }${ variable })`);
+      value = value.replace(item, `var(--${prefix ? prefix + '-' : ''}${variable})`);
     });
   }
 
-  const locals = value.match(/~[\w\d.-]+/g);
-
+  const locals = value.match(/~[\w.-]+/g);
   if (locals) {
-    locals.forEach(item => {
-      const variable = item
-        .replace('~', '')
-        .replace(/\./g, '-');
+    locals.forEach((item) => {
+      const variable = item.replace('~', '').replace(/\./g, '-');
 
-      value = value.replace(item, `var(--${ variable })`);
+      value = value.replace(item, `var(--this-${variable})`);
+    });
+  }
+
+  const copies = value.match(/\$[\w!.-]+/g);
+  if (copies) {
+    copies.forEach((copy) => {
+      const [key, alpha] = copy.replace('$', '').split('!');
+      const token = getToken(spec?.tokens || [], key);
+
+      if (token && token.value) {
+        if (alpha) {
+          value = value.replace(copy, colorOpacity(token.value as string, alpha));
+        } else {
+          value = value.replace(copy, token.value as string);
+        }
+      }
     });
   }
 
   return value;
-}
-
-export function resolveCssInheritances(tokens: TokenGroup[], content: string, prefix?: string) {
-  let result = content;
-
-  const copies = content.match(/\$[\w\d.!]+;/g);
-
-  if (copies) {
-    for (const copy of copies) {
-      const [ key, alpha ] = copy.replace('$', '')
-        .replace(';', '')
-        .split('!');
-
-      const token = getToken(tokens, key);
-
-      if (token && token.value) {
-        if (alpha) {
-          result = result.replace(copy, colorOpacity(token.value as string, alpha) + ';');
-        } else {
-          result = result.replace(copy, token.value as string + ';');
-        }
-      }
-    }
-  }
-
-  return result;
 }
 
 export function colorOpacity(color: string, opacity: string | number): string {
@@ -260,15 +259,13 @@ export function colorOpacity(color: string, opacity: string | number): string {
     if (COLOR_HEX_REGEX.test(color)) {
       return hexToRgba(color, alpha);
     } else if (COLOR_RGB_REGEX.test(color)) {
-      return color.replace(')', `, ${ alpha / 100 })`)
-        .replace('rgb', 'rgba');
+      return color.replace(')', `, ${alpha / 100})`).replace('rgb', 'rgba');
     } else if (COLOR_RGBA_REGEX.test(color)) {
-      return color.replace(/,\s*\d+(\.\d+)?\)/, `, ${ alpha / 100 })`);
+      return color.replace(/,\s*\d+(\.\d+)?\)/, `, ${alpha / 100})`);
     } else if (COLOR_HSL_REGEX.test(color)) {
-      return color.replace(')', `, ${ alpha / 100 })`)
-        .replace('hsl', 'hsla');
+      return color.replace(')', `, ${alpha / 100})`).replace('hsl', 'hsla');
     } else if (COLOR_HSLA_REGEX.test(color)) {
-      return color.replace(/,\s*\d+(\.\d+)?\)/, `, ${ alpha / 100 })`);
+      return color.replace(/,\s*\d+(\.\d+)?\)/, `, ${alpha / 100})`);
     }
   }
 
@@ -279,39 +276,46 @@ export function hexToRgba(hex: string, alpha?: number): string {
   const colors = hexToRgbValue(hex);
 
   if (alpha) {
-    return `rgba(${ colors.join(', ') }, ${ alpha > 1 ? alpha / 100 : alpha })`;
+    return `rgba(${colors.join(', ')}, ${alpha > 1 ? alpha / 100 : alpha})`;
   } else {
-    return `rgb(${ colors.join(', ') })`;
+    return `rgb(${colors.join(', ')})`;
   }
 }
 
-export function hexToRgbValue(hex: string): [ number, number, number ] {
+export function hexToRgbValue(hex: string): [number, number, number] {
   const colors = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex) || [];
-  return [ parseInt(colors[1], 16), parseInt(colors[2], 16), parseInt(colors[3], 16) ];
+  return [parseInt(colors[1], 16), parseInt(colors[2], 16), parseInt(colors[3], 16)];
 }
 
-export function parseMediaQuery(query: string) {
-  const queries = query
-    .replace(/^@/, '')
-    .split('@');
-  return queries.map(getMedia).join(' and ');
+export function parseMediaQuery(query: ToqinMediaQueries | string, userQueries: CustomMediaQueries = {}) {
+  const queries = query.replace(/^@/, '').split('@') as ToqinMediaQueries[];
+  return queries.map((q) => getMedia(q, userQueries)).join(' and ');
 }
 
-export function getMedia(query: string) {
-  switch (query.replace('@', '')) {
-    case 'light':
-      return '(prefers-color-scheme: light)';
-    case 'dark':
-      return '(prefers-color-scheme: dark)';
-    case 'mobile':
-      return '(max-width: 767px)';
-    case 'tablet':
-      return '(min-width: 768px) and (max-width: 1023px)';
-    case 'desktop':
-      return '(min-width: 1024px)';
-    case 'print':
-      return 'print';
-    default:
-      return query;
+export function getMedia(query: ToqinMediaQueries, userQueries: CustomMediaQueries = {}): string {
+  const queries = { ...MEDIA_QUERIES };
+
+  if (typeof userQueries === 'object') {
+    for (const [key, value] of Object.entries(userQueries)) {
+      if (typeof value === 'string') {
+        queries[`${key}` as ToqinMediaQueries] = value;
+      } else if (typeof value === 'object') {
+        queries[`${key}` as ToqinMediaQueries] = value.query;
+      }
+    }
   }
+
+  const q: ToqinMediaQueries = `@${query.replace(/^@/, '')}` as never;
+
+  if (typeof queries[q] === 'string') {
+    return queries[q] as string;
+  }
+
+  console.warn(`The media query "${query}" is not supported.`);
+
+  return query;
+}
+
+export function setMedia(query: ToqinMediaQueries, value: string) {
+  MEDIA_QUERIES[query] = value;
 }
