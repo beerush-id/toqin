@@ -1,6 +1,6 @@
 import type { DesignSystem } from './design.js';
 
-export type TokenTypes = 'color' | 'unit' | 'number' | 'boolean' | 'any';
+export type TokenType = 'color' | 'unit' | 'number' | 'boolean' | 'any';
 
 export type DesignToken = {
   name: string;
@@ -19,7 +19,7 @@ export type DesignToken = {
 
 export type TokenGroup = {
   name: string;
-  type: TokenTypes;
+  type: TokenType;
   description?: string;
   tokens: DesignToken[];
 };
@@ -29,9 +29,13 @@ export type CustomMediaQueries = {
     | string
     | {
         query: string;
+        mediaQuery?: string;
+        group?: 'color' | 'display';
         scheme?: 'light' | 'dark';
       };
 };
+
+export type TagType = 'class' | 'id' | 'attribute' | 'element';
 
 export type DesignSpecs = {
   name: string;
@@ -45,7 +49,9 @@ export type DesignSpecs = {
   mediaQueries?: CustomMediaQueries;
   colorScheme?: 'light' | 'dark' | 'system' | string;
   customQueryMode?: 'attribute' | 'class' | 'id';
-  screenSizes?: { [key: string]: string };
+  strictTags?: TagType[];
+  rootScope?: string;
+  extends?: string[];
 };
 
 export type CompilerOptions = {
@@ -53,16 +59,16 @@ export type CompilerOptions = {
   watch?: boolean;
 };
 
-export type TokenOutput = {
+export type DesignOutput = {
   name: string;
   content: string;
   fileName?: string;
 };
 
-export type TokenCompiler = (spec: DesignSpecs, options?: CompilerOptions) => TokenOutput[];
+export type TokenCompiler = (spec: DesignSpecs, options?: CompilerOptions) => DesignOutput[];
 
 export function compileSpecs(spec: DesignSpecs, compilers: TokenCompiler[], options?: CompilerOptions) {
-  const results: TokenOutput[] = [];
+  const results: DesignOutput[] = [];
 
   if (compilers?.length) {
     for (const compiler of compilers) {
@@ -96,12 +102,14 @@ export function getToken(tokens: TokenGroup[], path: string): DesignToken | void
   return token;
 }
 
-export function getTokenValue(spec: DesignSpecs, name: string): string | number | boolean {
-  const token: DesignToken | void = getToken(spec.tokens, name);
-
-  if (token && token.value) {
-    return token.value as string;
+export function getTagType(tag: string): TagType {
+  if (tag.startsWith('.')) {
+    return 'class';
+  } else if (tag.startsWith('#')) {
+    return 'id';
+  } else if (tag.startsWith('[')) {
+    return 'attribute';
   }
 
-  return '';
+  return 'element';
 }

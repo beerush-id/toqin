@@ -1,7 +1,8 @@
 import { watch } from 'chokidar';
 import fs from 'fs-extra';
 import { join } from 'path';
-import type { CompilerOptions, TokenCompiler, TokenOutput } from './token.js';
+import { resolveSpec } from './resolver.js';
+import type { CompilerOptions, DesignOutput, TokenCompiler } from './token.js';
 import { compileSpecs } from './token.js';
 
 export * from './token.js';
@@ -52,10 +53,10 @@ export class Toqin {
     }
   }
 
-  public compile(options?: ToqinConfig): TokenOutput[] {
+  public compile(options?: ToqinConfig): DesignOutput[] {
     const config: CompilerOptions = { ...(this.options || {}), ...(options || {}) };
     const design = fs.readFileSync(this.tokenPath, 'utf-8');
-    const result = compileSpecs(JSON.parse(design), this.compilers, options ?? this.options);
+    const result = compileSpecs(resolveSpec(design), this.compilers, options ?? this.options);
 
     const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 

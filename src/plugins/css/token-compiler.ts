@@ -1,7 +1,7 @@
 import { merge } from '@beerush/utils/object';
-import { ToqinMediaQueries } from '../../design.js';
-import type { CustomMediaQueries, TokenOutput } from '../../token.js';
-import { DesignSpecs, DesignToken, getToken, TokenTypes } from '../../token.js';
+import { MediaQuery } from '../../design.js';
+import type { CustomMediaQueries, DesignOutput } from '../../token.js';
+import { DesignSpecs, DesignToken, getToken, TokenType } from '../../token.js';
 
 export type CSSCompileTokenConfig = {
   mode?: 'css' | 'scss';
@@ -13,7 +13,7 @@ export type CSSCompileTokenConfig = {
     dark?: string;
   };
   mediaQueries?: {
-    [key in ToqinMediaQueries]?: string;
+    [key in MediaQuery]?: string;
   };
 };
 
@@ -24,20 +24,19 @@ export const COLOR_RGB_REGEX = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
 export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/i;
 export const COLOR_HSL_REGEX = /^hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/i;
 export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d+)?)\)$/i;
+export const PSEUDO_STATES = ['hover', 'focus', 'disabled', 'active', 'visited', 'checked', 'default', 'indeterminate'];
 
-export const MEDIA_QUERIES: Partial<{
-  [key in ToqinMediaQueries]?: string;
-}> = {
-  '@light': '[toqin-theme-light]',
-  '@dark': '[toqin-theme-dark]',
+export const MEDIA_QUERIES: Partial<CustomMediaQueries> = {
+  '@light': '(prefers-color-scheme: light)',
+  '@dark': '(prefers-color-scheme: dark)',
   '@mobile': '(max-width: 767px)',
   '@tablet': '(min-width: 768px) and (max-width: 1023px)',
   '@desktop': '(min-width: 1024px)',
   '@print': 'print',
 };
 
-export function compileToken(spec: DesignSpecs, config: CSSCompileTokenConfig): TokenOutput[] {
-  const outputs: TokenOutput[] = [];
+export function compileToken(spec: DesignSpecs, config: CSSCompileTokenConfig): DesignOutput[] {
+  const outputs: DesignOutput[] = [];
   const prefix = config?.prefix ?? spec.variablePrefix;
 
   for (const group of spec.tokens) {
@@ -45,7 +44,12 @@ export function compileToken(spec: DesignSpecs, config: CSSCompileTokenConfig): 
     const output = {
       name: group.name,
       fileName: `tokens/${group.name}.${config?.extension ?? config?.mode ?? 'css'}`,
-      content: [':root {', parseDeclarations(result.root, '  '), '}\r\n', parseDeclarations(result.queries) + '\r\n']
+      content: [
+        `${spec.rootScope || ':root'} {`,
+        parseDeclarations(spec, result.root, '  '),
+        '}\r\n',
+        parseDeclarations(spec, result.queries) + '\r\n',
+      ]
         .join('\r\n')
         .replace(/\r\n\r\n/g, '\r\n'),
     };
@@ -74,7 +78,7 @@ export type VariableDeclarations = {
 function parseToken(
   spec: DesignSpecs,
   token: DesignToken,
-  kind: TokenTypes,
+  kind: TokenType,
   parent?: string,
   prefix?: string
 ): VariableDeclarations {
@@ -86,8 +90,8 @@ function parseToken(
     root[name] = parseTokenValue(spec, name, kind, token.value, prefix);
   } else if (typeof token.value === 'object') {
     for (const [key, value] of Object.entries(token.value)) {
-      if (key.startsWith('@')) {
-        if (key === '@') {
+      if (key.startsWith('@') || key === '.') {
+        if (key === '@' || key === '.') {
           root[name] = parseTokenValue(spec, name, kind, value as string, prefix);
         } else {
           const query = parseMediaQuery(key, spec.mediaQueries);
@@ -141,28 +145,29 @@ function parseToken(
   return { root, queries };
 }
 
-function parseTokenValue(spec: DesignSpecs, name: string, kind: TokenTypes, value: string, prefix?: string): string {
-  validate(name, kind, value);
+function parseTokenValue(spec: DesignSpecs, name: string, kind: TokenType, value: string, prefix?: string): string {
+  // validate(name, kind, value);
   return resolveCssValue(value, prefix, spec);
 }
 
-function parseDeclarations(declarations: VariableList | VariableQueries, space = ''): string {
+function parseDeclarations(spec: DesignSpecs, declarations: VariableList | VariableQueries, space = ''): string {
   const contents: string[] = [];
 
-  for (const [q, v] of Object.entries(declarations)) {
-    if (typeof v === 'object') {
-      contents.push(`${space}${q === 'root' ? ':root' : q} {`);
-      contents.push(parseDeclarations(v, space + '  '));
+  for (const [q, declaration] of Object.entries(declarations)) {
+    if (typeof declaration === 'object') {
+      const scope = q === 'root' ? spec.rootScope || ':root' : spec.rootScope ? `${q} ${spec.rootScope}` : q;
+      contents.push(`${space}${scope} {`);
+      contents.push(parseDeclarations(spec, declaration, space + '  '));
       contents.push(`${space}}\r\n`);
     } else {
-      contents.push(`${space}${q}: ${v};`);
+      contents.push(`${space}${q}: ${declaration};`);
     }
   }
 
   return contents.join('\r\n');
 }
 
-export function validate(name: string, kind: TokenTypes, value: unknown) {
+export function validate(name: string, kind: TokenType, value: unknown) {
   if (
     typeof value === 'string' &&
     (value.startsWith('@') ||
@@ -215,21 +220,23 @@ export function validate(name: string, kind: TokenTypes, value: unknown) {
 }
 
 export function resolveCssValue(value: string, prefix?: string, spec?: DesignSpecs): string {
-  const globals = value.match(/@[\w.-]+/g);
+  const globals = value.match(/@[\w.\-|]+/g);
   if (globals) {
     globals.forEach((item) => {
-      const variable = item.replace('@', '').replace(/\./g, '-');
+      const [key, fallback] = item.split('|');
+      const variable = key.replace('@', '').replace(/\./g, '-');
 
-      value = value.replace(item, `var(--${prefix ? prefix + '-' : ''}${variable})`);
+      value = value.replace(item, `var(--${prefix ? prefix + '-' : ''}${variable}${fallback ? ', ' + fallback : ''})`);
     });
   }
 
-  const locals = value.match(/~[\w.-]+/g);
+  const locals = value.match(/~[\w.\-|]+/g);
   if (locals) {
     locals.forEach((item) => {
-      const variable = item.replace('~', '').replace(/\./g, '-');
+      const [key, fallback] = item.split('|');
+      const variable = key.replace('~', '').replace(/\./g, '-');
 
-      value = value.replace(item, `var(--this-${variable})`);
+      value = value.replace(item, `var(--this-${variable}${fallback ? ', ' + fallback : ''})`);
     });
   }
 
@@ -245,6 +252,8 @@ export function resolveCssValue(value: string, prefix?: string, spec?: DesignSpe
         } else {
           value = value.replace(copy, token.value as string);
         }
+      } else {
+        throw new Error(`COPY VALUE ERROR: Can not find the token value of "${copy}".`);
       }
     });
   }
@@ -287,25 +296,25 @@ export function hexToRgbValue(hex: string): [number, number, number] {
   return [parseInt(colors[1], 16), parseInt(colors[2], 16), parseInt(colors[3], 16)];
 }
 
-export function parseMediaQuery(query: ToqinMediaQueries | string, userQueries: CustomMediaQueries = {}) {
-  const queries = query.replace(/^@/, '').split('@') as ToqinMediaQueries[];
+export function parseMediaQuery(query: MediaQuery | string, userQueries: CustomMediaQueries = {}) {
+  const queries = query.replace(/^@/, '').split('@') as MediaQuery[];
   return queries.map((q) => getMedia(q, userQueries)).join(' and ');
 }
 
-export function getMedia(query: ToqinMediaQueries, userQueries: CustomMediaQueries = {}): string {
+export function getMedia(query: MediaQuery, userQueries: CustomMediaQueries = {}): string {
   const queries = { ...MEDIA_QUERIES };
 
   if (typeof userQueries === 'object') {
     for (const [key, value] of Object.entries(userQueries)) {
       if (typeof value === 'string') {
-        queries[`${key}` as ToqinMediaQueries] = value;
+        queries[`${key}` as MediaQuery] = value;
       } else if (typeof value === 'object') {
-        queries[`${key}` as ToqinMediaQueries] = value.query;
+        queries[`${key}` as MediaQuery] = value.query;
       }
     }
   }
 
-  const q: ToqinMediaQueries = `@${query.replace(/^@/, '')}` as never;
+  const q: MediaQuery = `@${query.replace(/^@/, '')}` as never;
 
   if (typeof queries[q] === 'string') {
     return queries[q] as string;
@@ -316,6 +325,6 @@ export function getMedia(query: ToqinMediaQueries, userQueries: CustomMediaQueri
   return query;
 }
 
-export function setMedia(query: ToqinMediaQueries, value: string) {
+export function setMedia(query: MediaQuery, value: string) {
   MEDIA_QUERIES[query] = value;
 }

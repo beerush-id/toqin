@@ -1,9 +1,18 @@
 {
   "name": "@beerush/toqin",
   "version": "0.0.1",
-  "description": "Design Token Manager",
+  "description": "Design System Manager",
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.js",
+  "files": [
+    "dist/",
+    "designs/"
+  ],
+  "directories": {
+    "test": "test",
+    "dist": "dist",
+    "designs": "designs"
+  },
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
@@ -19,25 +28,36 @@
       "types": "./dist/esm/plugins/css/index.d.ts",
       "import": "./dist/esm/plugins/css/index.js",
       "require": "./dist/cjs/plugins/css/index.cjs"
-    }
+    },
+    "./designs/*": "./designs/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beerush-id/toqin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/beerush-id/toqin/issues"
   },
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "esdev --watch",
+    "build": "esdev --clean",
+    "test": "cd test && node design.test.js",
+    "test:extend": "cd test && node extend.test.js"
+  },
   "devDependencies": {
-    "glob": "^10.3.3",
-    "rimraf": "^5.0.1",
+    "@beerush/esdev": "*",
+    "@types/fs-extra": "^11.0.1",
     "typescript": "^5.1.6",
     "vite": "^4.4.6"
   },
-  "scripts": {
-    "dev": "node ./dev.js",
-    "build": "rimraf ./dist && tsc -p ./tsconfig.json && tsc -p ./tsconfig-cjs.json && node ./rename.js --cjs",
-    "test": "cd test && rimraf ./output && node index.test.js"
-  },
   "dependencies": {
     "@beerush/utils": "^0.1.0",
-    "@types/fs-extra": "^11.0.1",
     "chokidar": "^3.5.3",
     "fs-extra": "^11.1.1"
   }

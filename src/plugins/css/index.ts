@@ -1,6 +1,7 @@
 import type { HmrContext } from 'vite';
-import type { DesignOutput, ToqinMediaQueries } from '../../design.js';
-import type { CustomMediaQueries, DesignSpecs, TokenOutput } from '../../token.js';
+import type { MediaQuery } from '../../design.js';
+import { resolveSpec } from '../../resolver.js';
+import type { CustomMediaQueries, DesignOutput, DesignSpecs, TagType } from '../../token.js';
 import { compileDesign } from './design-compiler.js';
 import { script } from './script.js';
 import { compileToken, type CSSCompileTokenConfig, MEDIA_QUERIES, setMedia } from './token-compiler.js';
@@ -9,21 +10,33 @@ export type CSSConfig = {
   outDir?: string;
   indexName?: string;
   indexOnly?: boolean;
+  rootScope?: string;
+  strictTags?: TagType[];
 } & CSSCompileTokenConfig;
 
 export function css(config: CSSConfig = {}) {
   if (config?.mediaQueries) {
     for (const [query, value] of Object.entries(config.mediaQueries)) {
-      setMedia(query as ToqinMediaQueries, value);
+      setMedia(query as MediaQuery, value);
     }
   }
 
-  return (spec: DesignSpecs): TokenOutput[] => {
+  return (specs: DesignSpecs): DesignOutput[] => {
+    const spec: DesignSpecs = { ...specs };
+
+    if (config?.rootScope) {
+      spec.rootScope = config.rootScope;
+    }
+
+    if (config?.strictTags) {
+      spec.strictTags = config.strictTags;
+    }
+
     const { mode = 'css', extension = mode as 'css', indexOnly = true, outDir = mode as string } = config || {};
 
-    let outputs: TokenOutput[] = [];
+    let outputs: DesignOutput[] = [];
 
-    const queries: CustomMediaQueries = { ...MEDIA_QUERIES, ...(spec?.mediaQueries || {}) };
+    const queries: CustomMediaQueries = { ...MEDIA_QUERIES, ...(spec?.mediaQueries || {}) } as never;
     if (Object.keys(queries).length) {
       const schemes: {
         light: string[];
@@ -131,7 +144,7 @@ export function viteCss(config?: CSSConfig) {
 
   const compile = (src: string, id: string) => {
     try {
-      specs = JSON.parse(src);
+      specs = resolveSpec(src);
 
       const results = transform(specs);
 

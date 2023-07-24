@@ -1,17 +1,27 @@
-export type ToqinMediaQueries = '.' | '@' | '@light' | '@dark' | '@mobile' | '@desktop' | '@tablet' | '@print';
-export type ToqinMediaQueriesList = Partial<{
-  [key in ToqinMediaQueries]: string;
+export type MediaQuery = '.' | '@' | '@light' | '@dark' | '@mobile' | '@desktop' | '@tablet' | '@print';
+export type MediaQueryList = Partial<{
+  [key in MediaQuery]: string;
 }>;
 
-export type ToqinStates = '::normal' | '::hover' | '::active' | '::focus' | '::disabled' | '::checked';
-export type ToqinPseudoStates = '::before' | '::after' | '::selection' | '::placeholder' | '::marker';
-export type ToqinStatesList = Partial<{
-  [key in ToqinStates]: ToqinMediaQueriesList | string;
-}> & Partial<{
-  [key in ToqinPseudoStates]: ToqinMediaQueriesList | string;
-}>;
+export type ElementState =
+  | '::normal'
+  | '::hover'
+  | '::active'
+  | '::focus'
+  | '::disabled'
+  | '::checked'
+  | '::visited'
+  | '::default'
+  | '::intermediate';
+export type PseudoElement = '::before' | '::after' | '::selection' | '::placeholder' | '::marker';
+export type ElementStateList = Partial<{
+  [key in ElementState]: MediaQueryList | string;
+}> &
+  Partial<{
+    [key in PseudoElement]: MediaQueryList | string;
+  }>;
 
-export type ToqinStyleState = ToqinMediaQueriesList & ToqinStatesList;
+export type ToqinStyleState = MediaQueryList & ElementStateList;
 
 export type ToqinStyle = Partial<{
   [key in keyof CSSStyleDeclaration]: ToqinStyleState | string;
@@ -20,20 +30,23 @@ export type ToqinStyle = Partial<{
 export type DesignSystem = {
   name: string;
   styles: ToqinStyle;
+  root?: boolean;
   tags?: string[];
+  important?: boolean;
   description?: string;
   variants?: DesignSystem[];
-}
+  children?: DesignSystem[];
+};
 
-export type DesignOutput = {
+export type FileOutput = {
   name: string;
-  fileName: string;
   content: string;
-}
+  fileName: string;
+};
 
 export type ToqinStateStyles = Partial<{
-  [key in ToqinStates]: Partial<CSSStyleDeclaration>;
+  [key in ElementState]: Partial<CSSStyleDeclaration>;
 }>;
 export type ToqinQueryStyles = Partial<{
-  [key in ToqinMediaQueries]: Partial<CSSStyleDeclaration>;
+  [key in MediaQuery]: Partial<CSSStyleDeclaration>;
 }>;

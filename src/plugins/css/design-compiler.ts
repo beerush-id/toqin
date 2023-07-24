@@ -1,13 +1,7 @@
-import type {
-  DesignOutput,
-  DesignSystem,
-  ToqinMediaQueries,
-  ToqinMediaQueriesList,
-  ToqinStates,
-  ToqinStyleState,
-} from '../../design.js';
-import type { DesignSpecs } from '../../token.js';
-import { parseMediaQuery, resolveCssValue } from './token-compiler.js';
+import type { DesignSystem, ElementState, MediaQuery, MediaQueryList, ToqinStyleState } from '../../design.js';
+import type { DesignOutput, DesignSpecs, TagType } from '../../token.js';
+import { getTagType } from '../../token.js';
+import { parseMediaQuery, PSEUDO_STATES, resolveCssValue } from './token-compiler.js';
 
 export type CSSCompileDesignConfig = {
   mode?: 'css' | 'scss';
@@ -38,13 +32,13 @@ export type CSSSelectors = {
 };
 
 export type StateSelectors = {
-  [key in ToqinStates]?: {
+  [key in ElementState]?: {
     [selector: string]: Partial<CSSStyleDeclaration>;
   };
 };
 
 export type QuerySelectors = {
-  [key in ToqinMediaQueries]?: {
+  [key in MediaQuery]?: {
     [selector: string]: Partial<CSSStyleDeclaration>;
   };
 };
@@ -54,13 +48,20 @@ export function compileDesign(spec: DesignSpecs, config: CSSCompileDesignConfig)
   const prefix = config?.prefix ?? spec.variablePrefix;
 
   for (const design of spec.designs || []) {
-    const output = parseDesign(spec, design, undefined, prefix);
+    const output = parseDesign(spec, design, undefined, undefined, prefix);
     const contents = [cssFromDeclarations(output)];
 
-    if (design.variants) {
+    if (design.variants?.length) {
       for (const variant of design.variants) {
-        const variantOutput = parseDesign(spec, variant, design, prefix);
+        const variantOutput = parseDesign(spec, variant, design, undefined, prefix);
         contents.push(cssFromDeclarations(variantOutput));
+      }
+    }
+
+    if (design.children?.length) {
+      for (const child of design.children) {
+        const childOutput = parseDesign(spec, child, undefined, design, prefix);
+        contents.push(cssFromDeclarations(childOutput));
       }
     }
 
@@ -78,7 +79,8 @@ export function cssFromDeclarations(declarations: DesignSelectors, space = '') {
   const contents: string[] = [];
 
   for (const [selector, styles] of Object.entries(declarations)) {
-    contents.push(`${space}${selector.replace('!@', '@')} {`);
+    const formattedSelector = `${space}${selector.replace('!@', '@')}`.replace(/,\s?/g, `,\r\n${space}`);
+    contents.push(`${formattedSelector} {`);
 
     if (selector.startsWith('@media') || selector.startsWith('!@media')) {
       const content = cssFromDeclarations(styles as never, space + '  ').replace(/\r\n$/, '');
@@ -95,9 +97,36 @@ export function cssFromDeclarations(declarations: DesignSelectors, space = '') {
   return contents.join('\r\n');
 }
 
-function parseDesign(spec: DesignSpecs, design: DesignSystem, parent?: DesignSystem, prefix?: string): DesignSelectors {
-  const selectors: DesignSelectors = {};
+function parseDesign(
+  spec: DesignSpecs,
+  design: DesignSystem,
+  extend?: DesignSystem,
+  parent?: DesignSystem,
+  prefix?: string
+): DesignSelectors {
+  let tags = ensureTags(design, !design.important ? spec.strictTags : undefined);
 
+  if (!tags.length) {
+    return {};
+  }
+
+  if (extend) {
+    const extendedTags = ensureTags(extend, spec.strictTags);
+    tags = joinTags(extendedTags, tags);
+  } else if (parent) {
+    const parentTags = ensureTags(parent, spec.strictTags);
+    tags = joinTags(parentTags, tags, ' ');
+  }
+
+  if (spec.rootScope) {
+    if (design.root) {
+      tags = [spec.rootScope];
+    } else if (!design.important) {
+      tags = scopeTags(tags, spec.rootScope);
+    }
+  }
+
+  const selectors: DesignSelectors = {};
   const normal: ElementStyles = {};
   const states: StateSelectors = {} as never;
   const queries: QuerySelectors = {} as never;
@@ -116,11 +145,6 @@ function parseDesign(spec: DesignSpecs, design: DesignSystem, parent?: DesignSys
     }
   }
 
-  let tags = design.tags ?? [design.name?.toLowerCase() || ''];
-  if (parent) {
-    tags = (parent.tags || [parent.name]).map((tag) => `${tag}.${design.name?.toLowerCase()}`);
-  }
-
   if (Object.keys(normal).length) {
     selectors[tags.join(', ')] = normal;
   }
@@ -129,7 +153,7 @@ function parseDesign(spec: DesignSpecs, design: DesignSystem, parent?: DesignSys
     mergeSelectors(selectors as MediaSelectors, parseDeclarations(tags, states));
   }
 
-  const queryKeys = Object.keys(queries) as ToqinMediaQueries[];
+  const queryKeys = Object.keys(queries) as MediaQuery[];
 
   if (queryKeys.length) {
     for (const query of queryKeys) {
@@ -204,7 +228,7 @@ function assignDesignValues(
 
   for (const [key, style] of Object.entries(styles)) {
     if (key.startsWith('::')) {
-      const s: keyof ToqinStates = key as never;
+      const s: keyof ElementState = key as never;
 
       if (!states[s]) {
         states[s] = {} as never;
@@ -213,24 +237,29 @@ function assignDesignValues(
       if (typeof style === 'string') {
         states[s][prop] = resolveCssValue(style, prefix, spec) as never;
       } else if (typeof style === 'object') {
-        Object.entries(style as ToqinMediaQueriesList).forEach(([query, value]) => {
-          const q: keyof ToqinMediaQueries = query as never;
+        Object.entries(style as MediaQueryList).forEach(([query, value]) => {
+          const q: keyof MediaQuery = query as never;
 
-          if (!queries[q]) {
-            queries[q] = {} as never;
+          if (q === '@' || q === '.') {
+            states[s] = states[s] || {};
+            states[s][prop] = resolveCssValue(value, prefix, spec) as never;
+          } else {
+            if (!queries[q]) {
+              queries[q] = {} as never;
+            }
+
+            if (!queries[q][s]) {
+              queries[q][s] = {} as never;
+            }
+
+            queries[q][s][prop] = resolveCssValue(value, prefix, spec) as never;
           }
-
-          if (!queries[q][s]) {
-            queries[q][s] = {} as never;
-          }
-
-          queries[q][s][prop] = resolveCssValue(value, prefix, spec) as never;
         });
       }
     } else if (key === '@' || key === '.') {
       normal[prop as never] = resolveCssValue(style as string, prefix, spec) as never;
     } else if (key.startsWith('@')) {
-      const q: keyof ToqinMediaQueries = key as never;
+      const q: keyof MediaQuery = key as never;
 
       if (!queries[q]) {
         queries[q] = {} as never;
@@ -253,7 +282,10 @@ function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclaration
   for (const [key, value] of Object.entries(styles)) {
     if (key.startsWith('::')) {
       const state = key.replace('::', '');
-      const selector = [...tags.map((t) => `${t}:${state}`), ...tags.map((t) => `${t}.${state}`)].join(', ');
+      const stateClasses = PSEUDO_STATES.includes(state) ? tags.map((t) => `${t}.${state}`) : [];
+      const selector = [...tags.map((t) => `${t}:${state}`), ...stateClasses]
+        .sort((a, b) => b.localeCompare(a))
+        .join(', ');
 
       if (!selectors[selector]) {
         selectors[selector] = {};
@@ -272,4 +304,34 @@ function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclaration
   }
 
   return selectors;
+}
+
+function ensureTags(design: DesignSystem, filters?: TagType[], scope?: string): string[] {
+  const tags = (design.tags || [`.${design.name?.toLowerCase() || ''}`]).filter((t) => t !== '.');
+
+  if (filters?.length) {
+    return scopeTags(strictTags(tags, filters), scope);
+  }
+
+  return scopeTags(tags, scope);
+}
+
+function scopeTags(tags: string[], scope?: string) {
+  return scope ? tags.map((tag) => `${scope} ${tag}`) : tags;
+}
+
+function strictTags(tags: string[], filters: TagType[]): string[] {
+  return tags.filter((tag) => filters.includes(getTagType(tag)));
+}
+
+function joinTags(target: string[], source: string[], joint = '') {
+  const tags: string[] = [];
+
+  for (const t of target) {
+    for (const s of source) {
+      tags.push(`${t}${joint}${s}`);
+    }
+  }
+
+  return tags;
 }
