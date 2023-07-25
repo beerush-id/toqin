@@ -1,5 +1,5 @@
 import type { DesignSystem, ElementState, MediaQuery, MediaQueryList, ToqinStyleState } from '../../design.js';
-import type { DesignOutput, DesignSpecs, TagType } from '../../token.js';
+import type { DesignOutput, DesignSpec, TagType } from '../../token.js';
 import { getTagType } from '../../token.js';
 import { parseMediaQuery, PSEUDO_STATES, resolveCssValue } from './token-compiler.js';
 
@@ -43,13 +43,13 @@ export type QuerySelectors = {
   };
 };
 
-export function compileDesign(spec: DesignSpecs, config: CSSCompileDesignConfig): DesignOutput[] {
+export function compileDesign(spec: DesignSpec, config: CSSCompileDesignConfig): DesignOutput[] {
   const outputs: DesignOutput[] = [];
   const prefix = config?.prefix ?? spec.variablePrefix;
 
   for (const design of spec.designs || []) {
     const output = parseDesign(spec, design, undefined, undefined, prefix);
-    const contents = [cssFromDeclarations(output)];
+    const contents = [ cssFromDeclarations(output) ];
 
     if (design.variants?.length) {
       for (const variant of design.variants) {
@@ -67,7 +67,7 @@ export function compileDesign(spec: DesignSpecs, config: CSSCompileDesignConfig)
 
     outputs.push({
       name: design.name,
-      fileName: `designs/${design.name}.${config?.extension ?? config?.mode ?? 'css'}`,
+      fileName: `designs/${ design.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
       content: contents.join('\r\n'),
     });
   }
@@ -78,27 +78,27 @@ export function compileDesign(spec: DesignSpecs, config: CSSCompileDesignConfig)
 export function cssFromDeclarations(declarations: DesignSelectors, space = '') {
   const contents: string[] = [];
 
-  for (const [selector, styles] of Object.entries(declarations)) {
-    const formattedSelector = `${space}${selector.replace('!@', '@')}`.replace(/,\s?/g, `,\r\n${space}`);
-    contents.push(`${formattedSelector} {`);
+  for (const [ selector, styles ] of Object.entries(declarations)) {
+    const formattedSelector = `${ space }${ selector.replace('!@', '@') }`.replace(/,\s?/g, `,\r\n${ space }`);
+    contents.push(`${ formattedSelector } {`);
 
     if (selector.startsWith('@media') || selector.startsWith('!@media')) {
       const content = cssFromDeclarations(styles as never, space + '  ').replace(/\r\n$/, '');
       contents.push(content);
     } else {
-      for (const [prop, value] of Object.entries(styles as object)) {
-        contents.push(`${space}  ${prop}: ${value};`);
+      for (const [ prop, value ] of Object.entries(styles as object)) {
+        contents.push(`${ space }  ${ prop }: ${ value };`);
       }
     }
 
-    contents.push(`${space}}\r\n`);
+    contents.push(`${ space }}\r\n`);
   }
 
   return contents.join('\r\n');
 }
 
 function parseDesign(
-  spec: DesignSpecs,
+  spec: DesignSpec,
   design: DesignSystem,
   extend?: DesignSystem,
   parent?: DesignSystem,
@@ -120,7 +120,7 @@ function parseDesign(
 
   if (spec.rootScope) {
     if (design.root) {
-      tags = [spec.rootScope];
+      tags = [ spec.rootScope ];
     } else if (!design.important) {
       tags = scopeTags(tags, spec.rootScope);
     }
@@ -131,7 +131,7 @@ function parseDesign(
   const states: StateSelectors = {} as never;
   const queries: QuerySelectors = {} as never;
 
-  for (const [prop, styles] of Object.entries(design.styles)) {
+  for (const [ prop, styles ] of Object.entries(design.styles)) {
     if (typeof styles === 'string') {
       let key: string = prop as never;
 
@@ -139,7 +139,7 @@ function parseDesign(
         key = key.replace('--', `--this-`);
       }
 
-      normal[key as never] = resolveCssValue(styles, prefix);
+      normal[key as never] = resolveCssValue(spec, styles, prefix);
     } else if (typeof styles === 'object') {
       assignDesignValues(spec, normal, states, queries, prop as keyof CSSStyleDeclaration, styles, prefix);
     }
@@ -162,7 +162,7 @@ function parseDesign(
       const customs = parsed.match(/\[[\w-]+]/g);
 
       if (customs) {
-        let queryTags: string[] = tags.map((tag) => `${customs.join('')} ${tag}`);
+        let queryTags: string[] = tags.map((tag) => `${ customs.join('') } ${ tag }`);
         let newQuery = parsed;
 
         if (spec?.customQueryMode === 'class') {
@@ -172,11 +172,11 @@ function parseDesign(
         }
 
         customs.forEach((c) => {
-          newQuery = newQuery.replace(` and ${c}`, '').replace(`${c} and `, '').replace(c, '');
+          newQuery = newQuery.replace(` and ${ c }`, '').replace(`${ c } and `, '').replace(c, '');
         });
 
         if (newQuery) {
-          const q = `@media ${newQuery}`;
+          const q = `@media ${ newQuery }`;
 
           if (!selectors[q]) {
             selectors[q] = {};
@@ -187,7 +187,7 @@ function parseDesign(
           mergeSelectors(selectors as MediaSelectors, parseDeclarations(queryTags, styles));
         }
       } else {
-        const q = `@media ${parsed}`;
+        const q = `@media ${ parsed }`;
 
         if (!selectors[q]) {
           selectors[q] = {};
@@ -202,7 +202,7 @@ function parseDesign(
 }
 
 function mergeSelectors(target: ElementStyles | MediaSelectors, source: ElementStyles | MediaSelectors) {
-  for (const [selector, styles] of Object.entries(source)) {
+  for (const [ selector, styles ] of Object.entries(source)) {
     if (!target[selector]) {
       target[selector] = {};
     }
@@ -212,7 +212,7 @@ function mergeSelectors(target: ElementStyles | MediaSelectors, source: ElementS
 }
 
 function assignDesignValues(
-  spec: DesignSpecs,
+  spec: DesignSpec,
   normal: ElementStyles,
   states: StateSelectors,
   queries: QuerySelectors,
@@ -226,7 +226,7 @@ function assignDesignValues(
     prop = prop.replace('--', `--this-`);
   }
 
-  for (const [key, style] of Object.entries(styles)) {
+  for (const [ key, style ] of Object.entries(styles)) {
     if (key.startsWith('::')) {
       const s: keyof ElementState = key as never;
 
@@ -235,14 +235,14 @@ function assignDesignValues(
       }
 
       if (typeof style === 'string') {
-        states[s][prop] = resolveCssValue(style, prefix, spec) as never;
+        states[s][prop] = resolveCssValue(spec, style, prefix) as never;
       } else if (typeof style === 'object') {
-        Object.entries(style as MediaQueryList).forEach(([query, value]) => {
+        Object.entries(style as MediaQueryList).forEach(([ query, value ]) => {
           const q: keyof MediaQuery = query as never;
 
           if (q === '@' || q === '.') {
             states[s] = states[s] || {};
-            states[s][prop] = resolveCssValue(value, prefix, spec) as never;
+            states[s][prop] = resolveCssValue(spec, value, prefix) as never;
           } else {
             if (!queries[q]) {
               queries[q] = {} as never;
@@ -252,12 +252,12 @@ function assignDesignValues(
               queries[q][s] = {} as never;
             }
 
-            queries[q][s][prop] = resolveCssValue(value, prefix, spec) as never;
+            queries[q][s][prop] = resolveCssValue(spec, value, prefix) as never;
           }
         });
       }
     } else if (key === '@' || key === '.') {
-      normal[prop as never] = resolveCssValue(style as string, prefix, spec) as never;
+      normal[prop as never] = resolveCssValue(spec, style as string, prefix) as never;
     } else if (key.startsWith('@')) {
       const q: keyof MediaQuery = key as never;
 
@@ -269,7 +269,7 @@ function assignDesignValues(
         queries[q][prop] = {} as never;
       }
 
-      queries[q][prop] = resolveCssValue(style as string, prefix, spec) as never;
+      queries[q][prop] = resolveCssValue(spec, style as string, prefix) as never;
     }
   }
 }
@@ -279,11 +279,11 @@ function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclaration
     [tags.join(', ')]: {},
   };
 
-  for (const [key, value] of Object.entries(styles)) {
+  for (const [ key, value ] of Object.entries(styles)) {
     if (key.startsWith('::')) {
       const state = key.replace('::', '');
-      const stateClasses = PSEUDO_STATES.includes(state) ? tags.map((t) => `${t}.${state}`) : [];
-      const selector = [...tags.map((t) => `${t}:${state}`), ...stateClasses]
+      const stateClasses = PSEUDO_STATES.includes(state) ? tags.map((t) => `${ t }.${ state }`) : [];
+      const selector = [ ...tags.map((t) => `${ t }:${ state }`), ...stateClasses ]
         .sort((a, b) => b.localeCompare(a))
         .join(', ');
 
@@ -297,7 +297,7 @@ function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclaration
     }
   }
 
-  for (const [key, value] of Object.entries(selectors)) {
+  for (const [ key, value ] of Object.entries(selectors)) {
     if (!Object.keys(value as object).length) {
       delete selectors[key];
     }
@@ -307,7 +307,7 @@ function parseDeclarations(tags: string[], styles: CSSSelectors): CSSDeclaration
 }
 
 function ensureTags(design: DesignSystem, filters?: TagType[], scope?: string): string[] {
-  const tags = (design.tags || [`.${design.name?.toLowerCase() || ''}`]).filter((t) => t !== '.');
+  const tags = (design.tags || [ `.${ design.name?.toLowerCase() || '' }` ]).filter((t) => t !== '.');
 
   if (filters?.length) {
     return scopeTags(strictTags(tags, filters), scope);
@@ -317,7 +317,7 @@ function ensureTags(design: DesignSystem, filters?: TagType[], scope?: string): 
 }
 
 function scopeTags(tags: string[], scope?: string) {
-  return scope ? tags.map((tag) => `${scope} ${tag}`) : tags;
+  return scope ? tags.map((tag) => `${ scope } ${ tag }`) : tags;
 }
 
 function strictTags(tags: string[], filters: TagType[]): string[] {
@@ -329,7 +329,7 @@ function joinTags(target: string[], source: string[], joint = '') {
 
   for (const t of target) {
     for (const s of source) {
-      tags.push(`${t}${joint}${s}`);
+      tags.push(`${ t }${ joint }${ s }`);
     }
   }
 

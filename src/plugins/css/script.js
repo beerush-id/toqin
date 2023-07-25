@@ -1,7 +1,7 @@
 export const script = (themes = {}, mode, scheme) => {
   if (typeof window !== 'undefined') {
     const applyTheme = (name) => {
-      for (const [, s] of Object.entries(themes)) {
+      for (const [ , s ] of Object.entries(themes)) {
         if (mode === 'class') {
           document.documentElement.classList.remove(s);
         } else if (mode === 'attribute') {
@@ -69,6 +69,10 @@ export const script = (themes = {}, mode, scheme) => {
       });
     }
 
+    window.Toqin = {
+      setTheme,
+      meta: import.meta
+    };
     window.setTheme = setTheme;
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       if (localStorage.getItem('toqin-color-scheme') === 'system') {

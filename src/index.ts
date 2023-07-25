@@ -1,7 +1,7 @@
 import { watch } from 'chokidar';
 import fs from 'fs-extra';
 import { join } from 'path';
-import { resolveSpec } from './resolver.js';
+import { loadSpec } from './loader.js';
 import type { CompilerOptions, DesignOutput, TokenCompiler } from './token.js';
 import { compileSpecs } from './token.js';
 
@@ -30,9 +30,9 @@ export class Toqin {
     return this;
   }
 
-  public run(options?: ToqinConfig): void {
+  public async run(options?: ToqinConfig): Promise<void> {
     try {
-      this.compile(options);
+      await this.compile(options);
 
       if (options?.watch || this.options?.watch) {
         watch(this.tokenPath).on('change', () => {
@@ -53,10 +53,10 @@ export class Toqin {
     }
   }
 
-  public compile(options?: ToqinConfig): DesignOutput[] {
+  public async compile(options?: ToqinConfig): Promise<DesignOutput[]> {
     const config: CompilerOptions = { ...(this.options || {}), ...(options || {}) };
-    const design = fs.readFileSync(this.tokenPath, 'utf-8');
-    const result = compileSpecs(resolveSpec(design), this.compilers, options ?? this.options);
+    const { spec } = await loadSpec(this.tokenPath);
+    const result = compileSpecs(spec, this.compilers, options ?? this.options);
 
     const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 

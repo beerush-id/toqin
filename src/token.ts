@@ -5,6 +5,7 @@ export type TokenType = 'color' | 'unit' | 'number' | 'boolean' | 'any';
 export type DesignToken = {
   name: string;
   description?: string;
+  type?: TokenType;
 
   tokens?: DesignToken[];
   value?:
@@ -12,38 +13,33 @@ export type DesignToken = {
     | number
     | boolean
     | {
-        default: string | number | boolean;
-        [key: string]: string | number | boolean;
-      };
-};
-
-export type TokenGroup = {
-  name: string;
-  type: TokenType;
-  description?: string;
-  tokens: DesignToken[];
+    default: string | number | boolean;
+    [key: string]: string | number | boolean;
+  };
 };
 
 export type CustomMediaQueries = {
   [key: string]:
     | string
     | {
-        query: string;
-        mediaQuery?: string;
-        group?: 'color' | 'display';
-        scheme?: 'light' | 'dark';
-      };
+    query: string;
+    mediaQuery?: string;
+    group?: 'color' | 'display';
+    scheme?: 'light' | 'dark';
+  };
 };
 
 export type TagType = 'class' | 'id' | 'attribute' | 'element';
 
-export type DesignSpecs = {
+export type DesignSpec = {
   name: string;
   version?: string;
   description?: string;
 
-  tokens: TokenGroup[];
+  tokens?: DesignToken[];
+  initTokens?: DesignToken[];
   designs?: DesignSystem[];
+  initDesigns?: DesignSystem[];
 
   variablePrefix?: string;
   mediaQueries?: CustomMediaQueries;
@@ -51,7 +47,13 @@ export type DesignSpecs = {
   customQueryMode?: 'attribute' | 'class' | 'id';
   strictTags?: TagType[];
   rootScope?: string;
+
+  id?: string;
+  url?: string;
   extends?: string[];
+  extendedSpecs?: DesignSpec[];
+  includes?: string[];
+  includedSpecs?: DesignSpec[];
 };
 
 export type CompilerOptions = {
@@ -65,9 +67,9 @@ export type DesignOutput = {
   fileName?: string;
 };
 
-export type TokenCompiler = (spec: DesignSpecs, options?: CompilerOptions) => DesignOutput[];
+export type TokenCompiler = (spec: DesignSpec, options?: CompilerOptions) => DesignOutput[];
 
-export function compileSpecs(spec: DesignSpecs, compilers: TokenCompiler[], options?: CompilerOptions) {
+export function compileSpecs(spec: DesignSpec, compilers: TokenCompiler[], options?: CompilerOptions) {
   const results: DesignOutput[] = [];
 
   if (compilers?.length) {
@@ -79,14 +81,14 @@ export function compileSpecs(spec: DesignSpecs, compilers: TokenCompiler[], opti
   return results;
 }
 
-export function getToken(tokens: TokenGroup[], path: string): DesignToken | void {
+export function getToken(tokens: DesignToken[], path: string): DesignToken | void {
   const paths = (path || '').split('.');
 
-  let lists: TokenGroup[] | DesignToken[] = tokens;
+  let lists: DesignToken[] = tokens;
   let token: DesignToken | undefined = undefined;
 
   for (const part of paths) {
-    token = ((lists as TokenGroup[]) || []).find((item) => item.name === part);
+    token = lists.find((item) => item.name === part);
 
     if (!token) {
       return undefined;
