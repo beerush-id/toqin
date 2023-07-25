@@ -5,6 +5,12 @@ import type { CustomMediaQueries, DesignOutput, DesignSpec, TagType } from '../.
 import { compileDesign } from './design-compiler.js';
 import { script } from './script.js';
 import { compileToken, type CSSCompileTokenConfig, MEDIA_QUERIES, setMedia } from './token-compiler.js';
+import type { ProcessOptions as PostCSSOptions } from 'postcss';
+import postcss from 'postcss';
+import type { Options as CSSNanoOptions } from 'cssnano';
+import cssnano from 'cssnano';
+import type { Options as AutoprefixerOptions } from 'autoprefixer';
+import autoprefixer from 'autoprefixer';
 
 export type CSSConfig = {
   outDir?: string;
@@ -12,6 +18,9 @@ export type CSSConfig = {
   indexOnly?: boolean;
   rootScope?: string;
   strictTags?: TagType[];
+  postcss?: PostCSSOptions | boolean;
+  cssnano?: CSSNanoOptions | boolean;
+  autoprefixer?: AutoprefixerOptions | boolean;
 } & CSSCompileTokenConfig;
 
 export function css(config: CSSConfig = {}) {
@@ -21,7 +30,7 @@ export function css(config: CSSConfig = {}) {
     }
   }
 
-  return (specs: DesignSpec): DesignOutput[] => {
+  return async (specs: DesignSpec): Promise<DesignOutput[]> => {
     const spec: DesignSpec = { ...specs };
 
     if (config?.rootScope) {
@@ -85,14 +94,14 @@ export function css(config: CSSConfig = {}) {
 
     const tokenOutputs = compileToken(spec, config).map((item) => {
       item.fileName = `${ outDir }/${ item.fileName }`;
-      item.content = [ `/* Design Token: ${ item.name }. */`, item.content ].join('\r\n');
+      item.content = [ `/* Design Token: ${ item.name } */`, item.content ].join('\r\n');
 
       return item;
     });
 
     const designOutputs: DesignOutput[] = compileDesign(spec, config).map((item) => {
       item.fileName = `${ outDir }/${ item.fileName }`;
-      item.content = [ `/* Design System: ${ item.name }. */`, item.content ].join('\r\n');
+      item.content = [ `/* Design System: ${ item.name } */`, item.content ].join('\r\n');
 
       return item;
     });
@@ -133,6 +142,28 @@ export function css(config: CSSConfig = {}) {
       });
     }
 
+    if (config?.postcss) {
+      const useNano = config?.cssnano || !('cssnano' in config);
+      const useAutoPrefix = config?.autoprefixer || !('autoprefixer' in config);
+      const plugins = [];
+
+      if (useNano) {
+        plugins.push(cssnano(config?.cssnano as CSSNanoOptions));
+      }
+
+      if (useAutoPrefix) {
+        plugins.push(autoprefixer(config?.autoprefixer as AutoprefixerOptions));
+      }
+
+      for (const output of outputs) {
+        const result = await postcss(plugins).process(output.content, {
+          ...(config?.postcss as PostCSSOptions || {}),
+          from: output.fileName
+        });
+        output.content = result.css;
+      }
+    }
+
     return outputs;
   };
 }
@@ -170,7 +201,7 @@ export async function viteCss(config?: ViteCSSConfig) {
       });
 
       designSpec = spec;
-      const results = transform(designSpec);
+      const results = await transform(designSpec);
 
       content = results.map((item) => item.content).join('\r\n');
     } catch (error) {

@@ -15,9 +15,15 @@ export type ToqinConfig = {
   tokenPath?: string;
 };
 
+export type CompilerOutput = {
+  outputs: DesignOutput[];
+  paths: string[];
+}
+
 export class Toqin {
   private compilers: TokenCompiler[] = [];
   private readonly tokenPath;
+  private wathPaths: string[] = [];
 
   constructor(public options: ToqinConfig) {
     this.tokenPath = options?.tokenPath ? join(process.cwd(), options.tokenPath) : join(process.cwd(), 'design.toqin');
@@ -34,34 +40,33 @@ export class Toqin {
   public async run(options?: ToqinConfig): Promise<void> {
     try {
       await this.compile(options);
-
-      if (options?.watch || this.options?.watch) {
-        watch(this.tokenPath).on('change', () => {
-          console.log(`Design token has been changed. Recompile...`);
-
-          try {
-            this.compile(options);
-            console.log(`Design token has been recompiled.`);
-          } catch (error) {
-            console.error('Failed to compile design token.');
-            console.error(error);
-          }
-        });
-      }
     } catch (error) {
       console.error('Failed to compile design token.');
       console.error(error);
     }
   }
 
-  public async compile(options?: ToqinConfig): Promise<DesignOutput[]> {
+  public watch(path: string, options?: ToqinConfig) {
+    watch(path).on('change', async () => {
+      console.log(`Design token ${ path } has been changed.`);
+
+      try {
+        await this.compile(options);
+      } catch (error) {
+        console.error('Failed to compile design token.');
+        console.error(error);
+      }
+    });
+  }
+
+  public async compile(options?: ToqinConfig): Promise<CompilerOutput> {
     const config: CompilerOptions = { ...(this.options || {}), ...(options || {}) };
-    const { spec } = await loadSpec(this.tokenPath);
-    const result = compileSpecs(spec, this.compilers, options ?? this.options);
+    const { spec, paths } = await loadSpec(this.tokenPath);
+    const outputs = await compileSpecs(spec, this.compilers, options ?? this.options);
 
     const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 
-    for (const item of result) {
+    for (const item of outputs) {
       if (item.fileName) {
         const filePath = join(outDir, item.fileName);
 
@@ -70,6 +75,15 @@ export class Toqin {
       }
     }
 
-    return result;
+    if (options?.watch || this.options?.watch) {
+      for (const path of paths) {
+        if (!this.wathPaths.includes(path)) {
+          this.watch(path, options);
+          this.wathPaths.push(path);
+        }
+      }
+    }
+
+    return { outputs, paths };
   }
 }

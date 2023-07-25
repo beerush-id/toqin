@@ -6,6 +6,7 @@ export type DesignToken = {
   name: string;
   description?: string;
   type?: TokenType;
+  url?: string;
 
   tokens?: DesignToken[];
   value?:
@@ -67,14 +68,14 @@ export type DesignOutput = {
   fileName?: string;
 };
 
-export type TokenCompiler = (spec: DesignSpec, options?: CompilerOptions) => DesignOutput[];
+export type TokenCompiler = (spec: DesignSpec, options?: CompilerOptions) => Promise<DesignOutput[]> | DesignOutput[];
 
-export function compileSpecs(spec: DesignSpec, compilers: TokenCompiler[], options?: CompilerOptions) {
+export async function compileSpecs(spec: DesignSpec, compilers: TokenCompiler[], options?: CompilerOptions) {
   const results: DesignOutput[] = [];
 
   if (compilers?.length) {
     for (const compiler of compilers) {
-      results.push(...compiler(spec, options));
+      results.push(...await compiler(spec, options));
     }
   }
 

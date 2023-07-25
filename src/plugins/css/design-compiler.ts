@@ -7,11 +7,6 @@ export type CSSCompileDesignConfig = {
   mode?: 'css' | 'scss';
   prefix?: string;
   extension?: 'css' | 'scss';
-  themeClasses?: boolean;
-  themeClassNames?: {
-    light?: string;
-    dark?: string;
-  };
 };
 
 export type ElementStyles = {
@@ -68,7 +63,9 @@ export function compileDesign(spec: DesignSpec, config: CSSCompileDesignConfig):
     outputs.push({
       name: design.name,
       fileName: `designs/${ design.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
-      content: contents.join('\r\n'),
+      content: [
+        ...contents
+      ].join('\r\n'),
     });
   }
 

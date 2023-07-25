@@ -30,6 +30,7 @@ export type ToqinStyle = Partial<{
 export type DesignSystem = {
   name: string;
   styles: ToqinStyle;
+  url?: string;
   root?: boolean;
   tags?: string[];
   important?: boolean;

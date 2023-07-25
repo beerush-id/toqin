@@ -35,6 +35,14 @@ export async function loadSpec(url: string, fromPath?: string, fromFile?: string
   spec.url = normalize(path);
   specs.push(spec);
 
+  if (spec.tokens?.length) {
+    spec.tokens.forEach(token => token.url = spec.url);
+  }
+
+  if (spec.designs?.length) {
+    spec.designs.forEach(design => design.url = spec.url);
+  }
+
   if (spec.includes?.length || spec.extends?.length) {
     spec.initTokens = [ ...(spec.tokens || []) ];
     spec.initDesigns = [ ...(spec.designs || []) ];

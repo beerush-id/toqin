@@ -7,11 +7,6 @@ export type CSSCompileTokenConfig = {
   mode?: 'css' | 'scss';
   prefix?: string;
   extension?: 'css' | 'scss';
-  themeClasses?: boolean;
-  themeClassNames?: {
-    light?: string;
-    dark?: string;
-  };
   mediaQueries?: {
     [key in MediaQuery]?: string;
   };
@@ -49,11 +44,11 @@ export function compileToken(spec: DesignSpec, config: CSSCompileTokenConfig): D
   const outputs: DesignOutput[] = [];
   const prefix = config?.prefix ?? spec.variablePrefix;
 
-  for (const group of (spec.tokens || [])) {
-    const result = parseToken(spec, group, prefix ? `--${ prefix }` : undefined, prefix);
+  for (const token of (spec.tokens || [])) {
+    const result = parseToken(spec, token, prefix ? `--${ prefix }` : undefined, prefix);
     const output = {
-      name: group.name,
-      fileName: `tokens/${ group.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
+      name: token.name,
+      fileName: `tokens/${ token.name }.${ config?.extension ?? config?.mode ?? 'css' }`,
       content: [
         `${ spec.rootScope || ':root' } {`,
         parseDeclarations(spec, result.root, '  '),
