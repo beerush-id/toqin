@@ -4,14 +4,13 @@
   "description": "Design System Manager",
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist/",
     "designs/"
   ],
   "directories": {
-    "test": "test",
-    "dist": "dist",
-    "designs": "designs"
+    "test": "test"
   },
   "exports": {
     ".": {
@@ -57,8 +56,17 @@
     "vite": "^4.4.6"
   },
   "dependencies": {
+    "@beerush/resolve": "*",
     "@beerush/utils": "^0.1.0",
     "chokidar": "^3.5.3",
     "fs-extra": "^11.1.1"
-  }
+  },
+  "homepage": "https://github.com/beerush-id/toqin#readme",
+  "keywords": [
+    "css",
+    "design",
+    "token",
+    "design",
+    "system"
+  ]
 }

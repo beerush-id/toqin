@@ -7,6 +7,7 @@ import { compileSpecs } from './token.js';
 
 export * from './token.js';
 export * from './plugins/index.js';
+export * from './loader.js';
 
 export type ToqinConfig = {
   outDir?: string;

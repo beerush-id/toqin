@@ -1,5 +1,3 @@
-module.exports = {
-  resolve(path) {
-    return require.resolve(path);
-  },
+exports.resolve = function (path) {
+  return require.resolve(path);
 };

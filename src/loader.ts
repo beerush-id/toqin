@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import type { DesignSpec } from './token.js';
-import util from './utils.cjs';
 import { get as https } from 'https';
+import { resolve as resolveModule } from '@beerush/resolve';
 import { dirname, join, normalize, resolve } from 'path';
 
 export type ResolvedSpec = {
@@ -9,8 +9,6 @@ export type ResolvedSpec = {
   path: string;
   paths: string[];
   specs?: DesignSpec[];
-  parents: ResolvedSpec[];
-  children: ResolvedSpec[];
 }
 
 export type SingleSpec = {
@@ -31,8 +29,6 @@ const RESTRICTED_KEYS = [
 export async function loadSpec(url: string, fromPath?: string, fromFile?: string): Promise<ResolvedSpec> {
   const specs: DesignSpec[] = [];
   const paths: string[] = [];
-  const parents: ResolvedSpec[] = [];
-  const children: ResolvedSpec[] = [];
   const { spec, path } = await readSpec(url, fromPath, fromFile);
 
   spec.id = btoa(path);
@@ -81,7 +77,6 @@ export async function loadSpec(url: string, fromPath?: string, fromFile?: string
         }
       }
 
-      children.push(resolved);
       specs.push(...(childSpecs || []));
     }
   }
@@ -120,12 +115,11 @@ export async function loadSpec(url: string, fromPath?: string, fromFile?: string
         }
       }
 
-      parents.unshift(resolved);
       specs.unshift(...(parentSpecs || []));
     }
   }
 
-  return { spec, path, paths, specs, parents, children };
+  return { spec, path, paths, specs };
 }
 
 /**
@@ -166,7 +160,7 @@ export async function readSpec(path: string, fromPath?: string, fromFile?: strin
           path: file
         };
       } catch (error) {
-        const file = util.resolve(path);
+        const file = resolveModule(path);
         const content = fs.readFileSync(file, 'utf-8');
 
         return {
