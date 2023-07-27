@@ -97,10 +97,6 @@ export function getMedia(query: MediaQuery, userQueries: CustomMediaQueries = {}
   return query;
 }
 
-export function setMedia(query: MediaQuery, value: string) {
-  MEDIA_QUERIES[query] = value;
-}
-
 export function parseMediaQuery(query: MediaQuery | string, userQueries: CustomMediaQueries = {}) {
   const queries = query.replace(/^@/, '').split('@') as MediaQuery[];
   return queries.map((q) => getMedia(q, userQueries)).join(' and ');
@@ -307,26 +303,4 @@ export function parseQueries(
   }
 
   return { root, queries };
-}
-
-/**
- * Convert flat list of CSS selectors into css string list.
- * @param {NestedDeclarations} declarations
- * @param space
- * @returns {string[]}
- */
-export function parseDeclaration(declarations: NestedDeclarations, space = ''): string[] {
-  const contents: string[] = [];
-
-  for (const [ name, properties ] of Object.entries(declarations)) {
-    if (typeof (properties as NestedDeclarations) === 'string') {
-      contents.push(`${ space }${ name }: ${ properties };`);
-    } else if (typeof properties === 'object') {
-      contents.push(`${ space }${ name } {`);
-      contents.push(...parseDeclaration(properties, `${ space }  `));
-      contents.push(`${ space }}${ space === '' ? '\r\n' : '' }`);
-    }
-  }
-
-  return contents;
 }

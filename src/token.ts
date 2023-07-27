@@ -8,6 +8,7 @@ export type TokenType = 'color' | 'unit' | 'number' | 'boolean' | 'any';
 export type DesignToken = {
   name: string;
   description?: string;
+  tags?: string[];
   type?: TokenType;
   url?: string;
 
@@ -80,12 +81,9 @@ export type DesignSpec = {
 
   tokens?: DesignToken[];
   tokenMaps?: TokenMap;
-  initTokens?: DesignToken[];
   designs?: DesignSystem[];
   designMaps?: DesignMap;
-  initDesigns?: DesignSystem[];
   animations?: AnimationSpec[];
-  initAnimations?: AnimationSpec[];
   animationMaps?: AnimationMap;
 
   variablePrefix?: string;
@@ -136,29 +134,6 @@ export async function compileSpecs(spec: DesignSpec, compilers: TokenCompiler[],
   }
 
   return results;
-}
-
-export function getToken(tokens: DesignToken[], path: string): DesignToken | void {
-  const paths = (path || '').split('.');
-
-  let lists: DesignToken[] = tokens;
-  let token: DesignToken | undefined = undefined;
-
-  for (const part of paths) {
-    token = lists.find((item) => item.name === part);
-
-    if (!token) {
-      return undefined;
-    }
-
-    if (token?.tokens) {
-      lists = token.tokens;
-    } else {
-      lists = [];
-    }
-  }
-
-  return token;
 }
 
 export function getTagType(tag: string): TagType {
