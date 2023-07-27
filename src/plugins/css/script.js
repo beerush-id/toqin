@@ -1,92 +1,111 @@
-export const script = (themes = {}, mode, scheme) => {
-  if (typeof window !== 'undefined') {
-    const applyTheme = (name) => {
-      for (const [ , s ] of Object.entries(themes)) {
+export const script = (queries = [], mode, scheme) => {
+  const useQuery = (name) => {
+    if (!name.startsWith('@')) {
+      name = `@${name}`;
+    }
+
+    const { query, group } = queries.find((q) => q.name === name) || {};
+
+    if (query) {
+      const elem = document.documentElement;
+      const groups = queries.filter((q) => q.group === group);
+
+      for (const g of groups) {
         if (mode === 'class') {
-          document.documentElement.classList.remove(s);
+          elem.classList.remove(g.query);
         } else if (mode === 'attribute') {
-          document.documentElement.removeAttribute(s);
-        } else if (mode === 'id') {
-          document.documentElement.removeAttribute('id');
+          elem.removeAttribute(g.query);
         }
       }
 
-      const theme = themes[`@${name.replace('@', '')}`];
-
-      if (theme) {
-        if (mode === 'class') {
-          document.documentElement.classList.add(theme);
-        } else if (mode === 'attribute') {
-          document.documentElement.setAttribute(theme, '');
-        } else if (mode === 'id') {
-          document.documentElement.setAttribute('id', theme);
-        }
+      if (mode === 'class') {
+        elem.classList.add(query);
+      } else if (mode === 'attribute') {
+        elem.setAttribute(query, '');
       }
-    };
+    }
+  };
 
-    const applySystemTheme = () => {
-      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      applyTheme(dark ? 'dark' : 'light');
-    };
+  const applySystemTheme = () => {
+    const scheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const query = queries.find((q) => q.scheme === scheme);
 
-    const setTheme = (name) => {
-      localStorage.setItem('toqin-color-scheme', name);
+    if (query) {
+      useQuery(query.name);
+    }
+  };
 
-      if (name === 'system') {
-        applySystemTheme();
-      } else {
-        applyTheme(name);
-      }
-    };
+  const setTheme = (name) => {
+    localStorage.setItem('toqin-color-scheme', name);
 
+    if (name === 'system') {
+      applySystemTheme();
+    } else {
+      useQuery(name);
+    }
+  };
+
+  const bootstrap = () => {
     const content = `--CONTENT--`;
     const theme = localStorage.getItem('toqin-color-scheme') || scheme || 'system';
 
     if (theme === 'system') {
       applySystemTheme();
     } else {
-      applyTheme(theme);
+      useQuery(theme);
     }
 
     let style = document.querySelector('style#toqin');
 
-    if (style) {
-      style.innerHTML = content;
-    } else {
-      style = document.createElement('style');
-      style.id = 'toqin';
-      style.type = 'text/css';
-      style.innerHTML = content;
+    if (content) {
+      if (style) {
+        style.innerHTML = content;
+      } else {
+        style = document.createElement('style');
+        style.id = 'toqin';
+        style.type = 'text/css';
 
-      document.head.appendChild(style);
+        if (content) {
+          style.innerHTML = content;
+          document.head.appendChild(style);
+        }
+      }
     }
 
     if (import.meta.hot) {
       import.meta.hot.on('toqin-change', (data) => {
-        if (typeof data === 'string') {
+        if (style && typeof data === 'string') {
           style.innerHTML = data;
+        }
+
+        const link = document.querySelector('link#toqin');
+        if (link) {
+          const attr = link.getAttribute('href');
+          link.setAttribute('href', attr.replace(/\.css$/, `.css?v=${Date.now()}`));
         }
       });
     }
 
-    window.Toqin = {
-      setTheme,
-      meta: import.meta
-    };
     window.setTheme = setTheme;
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      if (localStorage.getItem('toqin-color-scheme') === 'system') {
-        applySystemTheme();
-      }
-    });
+    window.matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', () => {
+        if (localStorage.getItem('toqin-color-scheme') === 'system') {
+          applySystemTheme();
+        }
+      });
     window.addEventListener('storage', (e) => {
       if (e.key === 'toqin-color-scheme') {
         if (e.newValue === 'system') {
           applySystemTheme();
         } else {
-          applyTheme(e.newValue);
+          useQuery(e.newValue);
         }
       }
     });
+  };
+
+  if (typeof window !== 'undefined') {
+    window.Toqin = { useQuery, setTheme, meta: import.meta };
+    bootstrap();
   }
 };

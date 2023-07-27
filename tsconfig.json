@@ -10,6 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": false
   },
-  "include": ["./src"],
+  "include": ["./src", "./index.d.ts"],
   "exclude": ["./dist", "./node_modules"]
 }

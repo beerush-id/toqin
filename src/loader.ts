@@ -3,6 +3,10 @@ import type { DesignSpec } from './token.js';
 import { get as https } from 'https';
 import { resolve as resolveModule } from '@beerush/resolve';
 import { dirname, join, normalize, resolve } from 'path';
+import { createAnimationMap, createDesignMap, createTokenMap } from './parser.js';
+import { merge } from '@beerush/utils/object';
+import type { JSONMap, JSONPointers } from 'json-source-map';
+import { parse as parseJson } from 'json-source-map';
 
 export type ResolvedSpec = {
   spec: DesignSpec;
@@ -14,22 +18,45 @@ export type ResolvedSpec = {
 export type SingleSpec = {
   spec: DesignSpec;
   path: string;
+  pointers: JSONPointers;
 }
 
 const cachedSpecs: {
-  [key: string]: DesignSpec;
+  [key: string]: SingleSpec;
 } = {};
 
-const RESTRICTED_KEYS = [
-  'extends', 'includes', 'tokens', 'designs',
-  'id', 'url', 'initTokens', 'initDesigns',
-  'extendedSpecs', 'includedSpecs'
+export const ALLOWED_OVERRIDE_KEYS: Array<keyof DesignSpec> = [
+  'variablePrefix',
+  'mediaQueries',
+  'defaultColorScheme',
+  'customQueryMode',
+  'rootScope'
 ];
 
-export async function loadSpec(url: string, fromPath?: string, fromFile?: string): Promise<ResolvedSpec> {
+function parse<T>(json: string, compact?: boolean): JSONMap<T> {
+  if (compact) {
+    return { data: JSON.parse(json), pointers: {} };
+  }
+
+  return parseJson<T>(json);
+}
+
+export async function loadSpec(
+  url: string,
+  fromPath?: string,
+  fromFile?: string,
+  compact?: boolean
+): Promise<ResolvedSpec> {
   const specs: DesignSpec[] = [];
   const paths: string[] = [];
-  const { spec, path } = await readSpec(url, fromPath, fromFile);
+  const { spec, pointers, path } = await readSpec(url, fromPath, fromFile, compact);
+
+  if (!compact) {
+    spec.pointers = pointers;
+    spec.tokenMaps = {};
+    spec.designMaps = {};
+    spec.animationMaps = {};
+  }
 
   spec.id = btoa(path);
   spec.url = normalize(path);
@@ -43,87 +70,69 @@ export async function loadSpec(url: string, fromPath?: string, fromFile?: string
     spec.designs.forEach(design => design.url = spec.url);
   }
 
-  if (spec.includes?.length || spec.extends?.length) {
-    spec.initTokens = [ ...(spec.tokens || []) ];
-    spec.initDesigns = [ ...(spec.designs || []) ];
-  }
-
   paths.push(path);
 
-  if (spec.includes?.length) {
-    for (const child of spec.includes) {
-      const resolved = await loadSpec(child, dirname(path), path);
-      const { spec: childSpec, paths: childPaths, specs: childSpecs } = resolved;
-
-      paths.unshift(...childPaths);
-
-      if (Array.isArray(childSpec.tokens)) {
-        if (!spec.tokens) {
-          spec.tokens = [];
-        }
-
-        spec.tokens.push(...childSpec.tokens);
-      }
-
-      if (Array.isArray(childSpec.designs)) {
-        if (!spec.designs) {
-          spec.designs = [];
-        }
-
-        spec.designs.push(...childSpec.designs);
-      }
-
-      if (!spec.includedSpecs) {
-        spec.includedSpecs = [];
-      }
-
-      spec.includedSpecs.push(childSpec);
-
-      for (const [ key, value ] of Object.entries(childSpec)) {
-        if (RESTRICTED_KEYS.includes(key) && typeof spec[key as never] === 'undefined') {
-          spec[key as never] = value as never;
-        }
-      }
-
-      specs.push(...(childSpecs || []));
-    }
-  }
+  const tokenMaps = createTokenMap(spec);
+  const designMaps = createDesignMap(spec);
+  const animationMaps = createAnimationMap(spec);
 
   if (spec.extends?.length) {
-    for (const parent of spec.extends) {
-      const resolved = await loadSpec(parent, dirname(path), path);
-      const { spec: parentSpec, paths: parentPaths, specs: parentSpecs } = resolved;
+    for (const extend of spec.extends) {
+      const resolved = await loadSpec(extend, dirname(path), path, compact);
+      const { spec: extendedSpec, paths: extendedPaths, specs: extendedSpecs } = resolved;
 
-      paths.unshift(...parentPaths);
-
-      if (Array.isArray(parentSpec.tokens)) {
-        if (!spec.tokens) {
-          spec.tokens = [];
-        }
-
-        spec.tokens.unshift(...parentSpec.tokens);
-      }
-
-      if (Array.isArray(parentSpec.designs)) {
-        if (!spec.designs) {
-          spec.designs = [];
-        }
-        spec.designs.unshift(...parentSpec.designs);
-      }
+      paths.unshift(...extendedPaths);
 
       if (!spec.extendedSpecs) {
         spec.extendedSpecs = [];
       }
 
-      spec.extendedSpecs.unshift(parentSpec);
+      spec.extendedSpecs.unshift(extendedSpec);
 
-      for (const [ key, value ] of Object.entries(parentSpec)) {
-        if (!RESTRICTED_KEYS.includes(key) && typeof spec[key as never] === 'undefined') {
+      for (const [ key, value ] of Object.entries(extendedSpec)) {
+        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof spec[key as never] === 'undefined') {
           spec[key as never] = value as never;
         }
       }
 
-      specs.unshift(...(parentSpecs || []));
+      specs.unshift(...(extendedSpecs || []));
+    }
+  }
+
+  if (!compact) {
+    if (Object.keys(tokenMaps).length) {
+      merge(spec.tokenMaps || {}, tokenMaps);
+    }
+
+    if (Object.keys(animationMaps).length) {
+      merge(spec.animationMaps || {}, animationMaps);
+    }
+
+    if (Object.keys(designMaps).length) {
+      merge(spec.designMaps || {}, designMaps);
+    }
+  }
+
+  if (spec.includes?.length) {
+    for (const child of spec.includes) {
+      const resolved = await loadSpec(child, dirname(path), path, compact);
+      const { spec: includedSpec, paths: includedPaths, specs: includedSpecs } = resolved;
+
+      paths.push(...includedPaths);
+
+      if (!spec.includedSpecs) {
+        spec.includedSpecs = [];
+      }
+
+      spec.includedSpecs.push(includedSpec);
+
+      for (const [ key, value ] of Object.entries(includedSpec)) {
+        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof spec[key as never] === 'undefined') {
+          spec[key as never] = value as never;
+        }
+      }
+
+      specs.push(...(includedSpecs || []));
     }
   }
 
@@ -135,44 +144,54 @@ export async function loadSpec(url: string, fromPath?: string, fromFile?: string
  * @param {string} path - Path to the design spec file.
  * @param {string} [fromPath] - Parent path of the design spec file.
  * @param {string} [fromFile] - Parent file of the design spec file.
+ * @param compact
  * @returns {Promise<SingleSpec>}
  */
-export async function readSpec(path: string, fromPath?: string, fromFile?: string): Promise<SingleSpec> {
+export async function readSpec(
+  path: string,
+  fromPath?: string,
+  fromFile?: string,
+  compact?: boolean
+): Promise<SingleSpec> {
   try {
     if (path.startsWith('http')) {
       if (cachedSpecs[path]) {
-        return { spec: cachedSpecs[path], path };
+        return cachedSpecs[path];
       }
 
-      const spec = await new Promise<DesignSpec>((resolve, reject) => {
+      const { data: spec, pointers } = await new Promise<JSONMap<DesignSpec>>((resolve, reject) => {
         https(path, (res) => {
           const data: string[] = [];
 
           res.on('data', (chunk) => data.push(chunk));
           res.on('end', () => {
-            resolve(JSON.parse(data.join('')));
+            resolve(parse(data.join(''), compact));
           });
           res.on('error', reject);
         });
       });
 
-      cachedSpecs[path] = spec;
-      return { spec, path };
+      cachedSpecs[path] = { spec, pointers, path };
+      return cachedSpecs[path];
     } else {
       try {
         const file = fromPath && path.startsWith('.') ? join(fromPath, path) : resolve(path);
         const content = fs.readFileSync(file, 'utf-8');
+        const { data: spec, pointers } = parse<DesignSpec>(content, compact);
 
         return {
-          spec: JSON.parse(content),
+          spec,
+          pointers,
           path: file
         };
       } catch (error) {
         const file = resolveModule(path);
         const content = fs.readFileSync(file, 'utf-8');
+        const { data: spec, pointers } = parse<DesignSpec>(content, compact);
 
         return {
-          spec: JSON.parse(content),
+          spec,
+          pointers,
           path: file
         };
       }

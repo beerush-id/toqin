@@ -1,146 +1,77 @@
 import type { HmrContext, ViteDevServer } from 'vite';
-import type { MediaQuery } from '../../design.js';
-import { loadSpec, type ResolvedSpec } from '../../loader.js';
-import type { CustomMediaQueries, DesignOutput, DesignSpec, TagType } from '../../token.js';
-import { compileDesign } from './design-compiler.js';
-import { script } from './script.js';
-import { compileToken, type CSSCompileTokenConfig, MEDIA_QUERIES, setMedia } from './token-compiler.js';
+import { FSWatcher, normalizePath } from 'vite';
+import { loadSpec } from '../../loader.js';
+import type { DesignOutput, DesignSpec } from '../../token.js';
 import type { ProcessOptions as PostCSSOptions } from 'postcss';
 import postcss from 'postcss';
 import type { Options as CSSNanoOptions } from 'cssnano';
 import cssnano from 'cssnano';
 import type { Options as AutoprefixerOptions } from 'autoprefixer';
 import autoprefixer from 'autoprefixer';
+import { ParserOptions } from './parser.js';
+import { CSSCompiler } from './compiler.js';
+import { SourceMapGenerator } from 'source-map';
+import fs from 'fs-extra';
+import { join } from 'path';
 
 export type CSSConfig = {
   outDir?: string;
+  baseURL?: string;
   indexName?: string;
-  indexOnly?: boolean;
-  rootScope?: string;
-  strictTags?: TagType[];
+
+  sourceMap?: boolean | 'inline';
   postcss?: PostCSSOptions | boolean;
   cssnano?: CSSNanoOptions | boolean;
   autoprefixer?: AutoprefixerOptions | boolean;
-} & CSSCompileTokenConfig;
+
+  mode?: 'css' | 'scss';
+  extension?: 'css' | 'scss';
+} & Partial<ParserOptions>;
 
 export function css(config: CSSConfig = {}) {
-  if (config?.mediaQueries) {
-    for (const [ query, value ] of Object.entries(config.mediaQueries)) {
-      setMedia(query as MediaQuery, value);
-    }
-  }
+  return async (spec: DesignSpec | CSSCompiler): Promise<DesignOutput[]> => {
+    const { mode = 'css', extension = mode as 'css', outDir = mode as string } = config || {};
+    const outputs: DesignOutput[] = [];
+    const outName = `${ config?.indexName ?? spec?.name?.toLowerCase() ?? 'index' }.${ extension }`;
+    const outPath = `${ outDir }/${ outName }`;
+    const output = spec instanceof CSSCompiler ? spec : new CSSCompiler(spec, config);
 
-  return async (specs: DesignSpec): Promise<DesignOutput[]> => {
-    const spec: DesignSpec = { ...specs };
+    output.compile();
 
-    if (config?.rootScope) {
-      spec.rootScope = config.rootScope;
-    }
+    console.log(output);
 
-    if (config?.strictTags) {
-      spec.strictTags = config.strictTags;
-    }
-
-    const { mode = 'css', extension = mode as 'css', indexOnly = true, outDir = mode as string } = config || {};
-
-    let outputs: DesignOutput[] = [];
-
-    const queries: CustomMediaQueries = { ...MEDIA_QUERIES, ...(spec?.mediaQueries || {}) } as never;
-    if (Object.keys(queries).length) {
-      const schemes: {
-        light: string[];
-        dark: string[];
-      } = {
-        light: [],
-        dark: [],
-      };
-
-      for (let [ , value ] of Object.entries(queries)) {
-        if (typeof value === 'string' && value.includes('[')) {
-          if (spec?.customQueryMode === 'class') {
-            value = value.replace('[', '.').replace(']', '');
-          } else if (spec?.customQueryMode === 'id') {
-            value = value.replace('[', '#').replace(']', '');
-          }
-
-          if (value.includes('light')) {
-            schemes.light.push(value);
-          } else if (value.includes('dark')) {
-            schemes.dark.push(value);
-          }
-        } else if (typeof value === 'object') {
-          if (value.scheme === 'light') {
-            schemes.light.push(value.query);
-          } else if (value.scheme === 'dark') {
-            schemes.dark.push(value.query);
-          }
-        }
-      }
-
-      if (schemes.light.length) {
-        outputs.push({
-          name: 'light',
-          content: [ `${ schemes.light.join(', ') } {`, '  color-scheme: only light;', '}' ].join('\r\n') + '\r\n',
-        });
-      }
-
-      if (schemes.dark.length) {
-        outputs.push({
-          name: 'dark',
-          content: [ `${ schemes.dark.join(', ') } {`, '  color-scheme: only dark;', '}' ].join('\r\n') + '\r\n',
-        });
-      }
-    }
-
-    const tokenOutputs = compileToken(spec, config).map((item) => {
-      item.fileName = `${ outDir }/${ item.fileName }`;
-      item.content = [ `/* Design Token: ${ item.name } */`, item.content ].join('\r\n');
-
-      return item;
-    });
-
-    const designOutputs: DesignOutput[] = compileDesign(spec, config).map((item) => {
-      item.fileName = `${ outDir }/${ item.fileName }`;
-      item.content = [ `/* Design System: ${ item.name } */`, item.content ].join('\r\n');
-
-      return item;
-    });
-
-    outputs.push(...tokenOutputs);
-    outputs.push(...designOutputs);
-
-    if (mode === 'css') {
-      if (indexOnly) {
-        outputs = [
-          {
-            name: 'index',
-            fileName: `${ outDir }/${ config?.indexName ?? spec?.name?.toLowerCase() ?? 'index' }.${ extension }`,
-            content: outputs.map((item) => item.content).join('\r\n'),
-          },
-        ];
-      } else {
-        outputs.push({
-          name: 'token.index',
-          fileName: `${ outDir }/tokens.${ extension }`,
-          content: tokenOutputs.map((item) => item.content).join('\r\n'),
-        });
-
-        outputs.push({
-          name: 'design.index',
-          fileName: `${ outDir }/designs.${ extension }`,
-          content: designOutputs.map((item) => item.content).join('\r\n'),
-        });
-      }
-    } else {
-      const tokens: string[] = (spec.tokens ?? []).map((t) => `@import "tokens/${ t.name }";`);
-      const designs: string[] = (spec.designs ?? []).map((d) => `@import "designs/${ d.name }";`);
-
-      outputs.push({
-        name: 'index',
-        fileName: `${ outDir }/${ config?.indexName ?? spec?.name?.toLowerCase() ?? 'index' }.${ extension }`,
-        content: [ ...tokens, ...designs ].join('\r\n') + '\r\n',
+    if (config?.sourceMap || typeof config?.sourceMap === 'undefined') {
+      const map = new SourceMapGenerator({
+        file: outPath,
       });
+
+      for (const { name, url, input, output: out } of output.sourceMaps) {
+        map.addMapping({
+          name,
+          source: normalizePath(url || ''),
+          original: { line: input[0], column: input[1] },
+          generated: { line: out[0], column: out[1] },
+        });
+      }
+
+      if (config?.sourceMap === undefined || config?.sourceMap === 'inline') {
+        const base64 = Buffer.from(map.toString()).toString('base64');
+        output.contents.push(`/*# sourceMappingURL=data:application/json;base64,${ base64 } */`);
+      } else {
+        output.contents.push(`/*# sourceMappingURL=${ outPath }.map */`, '\r\n');
+        outputs.push({
+          name: 'index.map',
+          fileName: `${ outPath }.map`,
+          content: map.toString(),
+        });
+      }
     }
+
+    outputs.push({
+      name: 'index',
+      fileName: outPath,
+      content: output.stringify(),
+    });
 
     if (config?.postcss) {
       const useNano = config?.cssnano || !('cssnano' in config);
@@ -174,52 +105,87 @@ export type ViteCSSConfig = CSSConfig & {
 
 export async function viteCss(config?: ViteCSSConfig) {
   const watchPaths: string[] = [];
-  const transform = css(config);
+  const watchQueue: string[] = [];
+  const transform = css({ ...config, outDir: '.' });
 
-  let server: ViteDevServer;
+  let watcher: FSWatcher;
+  let specPath: string;
   let designSpec: DesignSpec;
-  let resolvedSpec: ResolvedSpec;
-  let mainSpecPath: string;
+  let designSpecs: DesignSpec[];
+
+  let compiler: CSSCompiler = undefined as never;
   let content = '';
 
   const compile = async (file: string) => {
+    specPath = specPath || file;
+
     try {
-      if (!mainSpecPath) {
-        mainSpecPath = file;
-      }
-
-      resolvedSpec = await loadSpec(mainSpecPath);
-      const { spec, paths } = resolvedSpec;
-
-      paths.forEach(path => {
-        if (!watchPaths.includes(path)) {
-          if (server?.watcher) {
-            server.watcher.add(path);
-            watchPaths.push(path);
-          }
-        }
-      });
+      const { spec, paths, specs = [] } = await loadSpec(specPath);
 
       designSpec = spec;
-      const results = await transform(designSpec);
+      designSpecs = specs;
 
-      content = results.map((item) => item.content).join('\r\n');
+      for (const path of paths) {
+        if (!watchQueue.includes(path)) {
+          watchQueue.push(path);
+        }
+      }
+
+      compiler = new CSSCompiler(spec, config);
+      const results = await transform(compiler);
+
+      content = results
+        .filter(item => !(item.fileName || '').endsWith('.map'))
+        .map((item) => item.content)
+        .join('\r\n');
+
+      if (config?.outDir) {
+        results.forEach((item) => {
+          if (item.fileName) {
+            const fileName = join(process.cwd(), config?.outDir || './', item.fileName);
+            fs.ensureFileSync(fileName);
+            fs.writeFileSync(fileName, item.content);
+          }
+        });
+
+        const scriptFile = join(process.cwd(), config?.outDir || './', `${ config?.indexName ?? 'index' }.js`);
+        fs.ensureFileSync(scriptFile);
+        fs.writeFileSync(scriptFile, compiler.createHelperScript(true));
+      }
+
+      if (watcher) {
+        watch();
+      }
     } catch (error) {
       console.error(`Failed to parse design token file: ${ file }`);
       console.error(error);
     }
   };
 
+  const watch = () => {
+    for (const path of watchQueue) {
+      if (!watchPaths.includes(path) && watcher) {
+        watcher.add(path);
+        watchPaths.push(path);
+      }
+    }
+  };
+
+  if (config?.tokenPath) {
+    specPath = config.tokenPath;
+    await compile(config.tokenPath);
+  }
+
   const find = (id: string) => {
-    return resolvedSpec.specs?.find((spec) => spec.id === id);
+    return designSpecs?.find((spec) => spec.id === id);
   };
 
   return {
     name: 'vite-plugin-toqin-css',
     configureServer(_server: ViteDevServer) {
-      server = _server;
+      watcher = _server.watcher;
 
-      server.middlewares.use((req, res, next) => {
+      _server.middlewares.use(async (req, res, next) => {
         if (req.url?.startsWith('/toqin/specs')) {
           const [ , child ] = decodeURI(req.url).split('/toqin/specs');
 
@@ -235,47 +201,48 @@ export async function viteCss(config?: ViteCSSConfig) {
                 return;
               }
             } else {
-              res.end(JSON.stringify(designSpec));
+              const { spec } = await loadSpec(specPath, undefined, undefined, false);
+              res.end(JSON.stringify(spec));
               return;
             }
+          }
+        }
+
+        if (req.url?.endsWith('.toqin')) {
+          const path = req.url?.replace(config?.baseURL ? config.baseURL + '/' : /^\//, '');
+
+          if (path) {
+            const file = fs.readFileSync(path);
+            res.end(file);
+            return;
           }
         }
 
         next();
       });
 
-      server.ws.on('toqin:set', (data) => {
+      _server.ws.on('toqin:set', (data) => {
         console.log(data);
       });
+
+      watch();
+    },
+    resolveId(id: string) {
+      if (id === 'virtual:toqin-helper') {
+        return id;
+      }
+    },
+    load(id: string) {
+      if (id === 'virtual:toqin-helper') {
+        return compiler?.createHelperScript(true);
+      }
     },
     transform: async (src: string, file: string) => {
       if (file.endsWith('.toqin')) {
         try {
           await compile(file);
 
-          const themes: {
-            [key: string]: string;
-          } = {};
-
-          for (const [ query, value ] of Object.entries(designSpec?.mediaQueries || {})) {
-            const selector = typeof value === 'string' ? value : value.query;
-
-            if (selector.includes('[')) {
-              themes[query] = selector.replace('[', '').replace(']', '');
-            }
-          }
-
-          const scriptContent = [
-            `(${ script.toString().replace('--CONTENT--', content) })`,
-            `(${ JSON.stringify(themes) }, '${ designSpec?.customQueryMode || 'attribute' }', '${
-              designSpec?.colorScheme || 'system'
-            }')`,
-          ].join('');
-
-          return {
-            code: scriptContent,
-            map: null,
-          };
+          return { code: compiler.createHelperScript(false, content), map: null };
         } catch (error) {
           console.error(`Failed to parse design token file: ${ file }`);
           console.error(error);
@@ -319,6 +286,7 @@ export async function viteCss(config?: ViteCSSConfig) {
         const prefix = designSpec?.variablePrefix;
 
         try {
+          console.log(`Design token ${ file } has been changed.`);
           await compile(file);
 
           if (prefix !== designSpec?.variablePrefix) {

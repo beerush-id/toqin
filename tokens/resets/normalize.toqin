@@ -1,0 +1,344 @@
+{
+  "name": "normalize",
+  "version": "1.0.0",
+  "description": "CSS Normalize (based on normalize.css)",
+  "tokens": [],
+  "designs": [
+    {
+      "name": "box-sizing",
+      "selectors": ["*", "*::before", "*::after"],
+      "important": true,
+      "description": "Use the default box model.",
+      "rules": {
+        "box-sizing": "border-box"
+      }
+    },
+    {
+      "name": "html",
+      "selectors": ["html"],
+      "root": true,
+      "important": true,
+      "description": [
+        "Correct the line height in all browsers.",
+        "Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS."
+      ],
+      "rules": {
+        "line-height": "1.15",
+        "text-size-adjust": "100%"
+      }
+    },
+    {
+      "name": "body",
+      "selectors": ["body"],
+      "important": true,
+      "description": "Remove the margin in all browsers.",
+      "rules": {
+        "margin": "0"
+      }
+    },
+    {
+      "name": "main",
+      "selectors": ["main"],
+      "description": "Render the `main` element consistently in IE.",
+      "rules": {
+        "display": "block"
+      }
+    },
+    {
+      "name": "heading-1",
+      "selectors": ["h1"],
+      "description": "Correct the font size and margin on `h1` elements within `section` and `article` contexts in Chrome, Firefox, and Safari.",
+      "rules": {
+        "font-size": "2em",
+        "margin": "0.67em 0"
+      }
+    },
+    {
+      "name": "hr",
+      "selectors": ["hr"],
+      "description": [
+        "Add the correct box sizing in Firefox.",
+        "Show the overflow in Edge and IE."
+      ],
+      "rules": {
+        "box-sizing": "content-box",
+        "height": "0",
+        "overflow": "visible"
+      }
+    },
+    {
+      "name": "pre",
+      "selectors": ["pre"],
+      "description": [
+        "Correct the inheritance and scaling of font size in all browsers.",
+        "Correct the odd `em` font sizing in all browsers."
+      ],
+      "rules": {
+        "font-family": "monospace, monospace",
+        "font-size": "1em"
+      }
+    },
+    {
+      "name": "anchor",
+      "selectors": ["a"],
+      "description": "Remove the gray background on active links in IE 10.",
+      "rules": {
+        "background-color": "transparent"
+      }
+    },
+    {
+      "name": "abbr",
+      "selectors": ["abbr[title]"],
+      "description": [
+        "Remove the bottom border in Chrome 57-.",
+        "Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari."
+      ],
+      "rules": {
+        "border-bottom": "none",
+        "text-decoration": "underline dotted"
+      }
+    },
+    {
+      "name": "bolder",
+      "selectors": ["b", "strong"],
+      "description": "Add the correct font weight in Chrome, Edge, and Safari.",
+      "rules": {
+        "font-weight": "bolder"
+      }
+    },
+    {
+      "name": "code",
+      "selectors": ["code", "kbd", "samp"],
+      "description": [
+        "Correct the inheritance and scaling of font size in all browsers.",
+        "Correct the odd `em` font sizing in all browsers."
+      ],
+      "rules": {
+        "font-family": "monospace, monospace",
+        "font-size": "1em"
+      }
+    },
+    {
+      "name": "small",
+      "selectors": ["small"],
+      "description": "Add the correct `small` element font size in all browsers.",
+      "rules": {
+        "font-size": "80%"
+      }
+    },
+    {
+      "name": "sub-sup",
+      "selectors": ["sub", "sup"],
+      "description": "Prevent `sub` and `sup` elements from affecting the line height in all browsers.",
+      "rules": {
+        "font-size": "75%",
+        "line-height": "0",
+        "position": "relative",
+        "vertical-align": "baseline"
+      }
+    },
+    {
+      "name": "sub",
+      "selectors": ["sub"],
+      "description": "Correct the bottom position in all browsers.",
+      "rules": {
+        "bottom": "-0.25em"
+      }
+    },
+    {
+      "name": "sup",
+      "selectors": ["sup"],
+      "description": "Correct the top position in all browsers.",
+      "rules": {
+        "top": "-0.5em"
+      }
+    },
+    {
+      "name": "img",
+      "selectors": ["img"],
+      "description": "Remove the border on images inside links in IE 10.",
+      "rules": {
+        "border-style": "none"
+      }
+    },
+    {
+      "name": "form-elements",
+      "selectors": ["button", "input", "optgroup", "select", "textarea"],
+      "description": [
+        "Change the font styles in all browsers.",
+        "Remove the margin in Firefox and Safari."
+      ],
+      "rules": {
+        "font-family": "inherit",
+        "font-size": "100%",
+        "line-height": "1.15",
+        "margin": "0"
+      }
+    },
+    {
+      "name": "button-input",
+      "selectors": ["button", "input"],
+      "description": [
+        "Show the overflow in IE.",
+        "Show the overflow in Edge."
+      ],
+      "rules": {
+        "overflow": "visible"
+      }
+    },
+    {
+      "name": "button-select",
+      "selectors": ["button", "select"],
+      "description": [
+        "Remove the inheritance of text transform in Edge, Firefox, and IE.",
+        "Remove the inheritance of text transform in Firefox."
+      ],
+      "rules": {
+        "text-transform": "none"
+      }
+    },
+    {
+      "name": "button-like",
+      "selectors": ["button", "[type=\"button\"]", "[type=\"reset\"]", "[type=\"submit\"]"],
+      "description": [
+        "Correct the inability to style clickable types in iOS and Safari.",
+        "Remove the inner border and padding in Firefox.",
+        "Restore the focus styles unset by the previous rule."
+      ],
+      "rules": {
+        "-webkit-appearance": "button",
+        "border-style": {
+          "::-moz-focus-inner": "none"
+        },
+        "padding": {
+          "::-moz-focus-inner": "0"
+        },
+        "outline": {
+          "::-moz-focusring": "1px dotted ButtonText"
+        }
+      }
+    },
+    {
+      "name": "fieldset",
+      "selectors": ["fieldset"],
+      "description": "Correct the padding in Firefox.",
+      "rules": {
+        "padding": "0.35em 0.75em 0.625em"
+      }
+    },
+    {
+      "name": "legend",
+      "selectors": ["legend"],
+      "description": [
+        "Correct the text wrapping in Edge and IE.",
+        "Correct the color inheritance from `fieldset` elements in IE.",
+        "Remove the padding so developers are not caught out when they zero out `fieldset` elements in all browsers."
+      ],
+      "rules": {
+        "box-sizing": "border-box",
+        "color": "inherit",
+        "display": "table",
+        "max-width": "100%",
+        "padding": "0",
+        "white-space": "normal"
+      }
+    },
+    {
+      "name": "progress",
+      "selectors": ["progress"],
+      "description": "Add the correct vertical alignment in Chrome, Firefox, and Opera.",
+      "rules": {
+        "vertical-align": "baseline"
+      }
+    },
+    {
+      "name": "textarea",
+      "selectors": ["textarea"],
+      "description": "Remove the default vertical scrollbar in IE 10+.",
+      "rules": {
+        "overflow": "auto"
+      }
+    },
+    {
+      "name": "radio-check",
+      "selectors": ["[type=\"checkbox\"]", "[type=\"radio\"]"],
+      "description": [
+        "Add the correct box sizing in IE 10.",
+        "Remove the padding in IE 10."
+      ],
+      "rules": {
+        "box-sizing": "border-box",
+        "padding": "0"
+      }
+    },
+    {
+      "name": "number-spin",
+      "selectors": ["[type=\"number\"]", "[type=\"number\"]"],
+      "description": "Correct the cursor style of increment and decrement buttons in Chrome.",
+      "rules": {
+        "height": {
+          "::-webkit-inner-spin-button": "auto"
+        }
+      }
+    },
+    {
+      "name": "search",
+      "selectors": ["[type=\"search\"]"],
+      "description": [
+        "Correct the outline style in Safari.",
+        "Remove the inner padding in Chrome and Safari on macOS."
+      ],
+      "rules": {
+        "appearance": {
+          "@": "none",
+          "::-webkit-search-decoration": "none"
+        },
+        "outline-offset": "-2px"
+      }
+    },
+    {
+      "name": "file-upload",
+      "selectors": ["::-webkit-file-upload-button"],
+      "description": [
+        "Correct the inability to style clickable types in iOS and Safari.",
+        "Change font properties to `inherit` in Safari."
+      ],
+      "rules": {
+        "-webkit-appearance": "button",
+        "font": "inherit"
+      }
+    },
+    {
+      "name": "details",
+      "selectors": ["details"],
+      "description": "Add the correct display in IE 10-, and firefox.",
+      "rules": {
+        "display": "block"
+      }
+    },
+    {
+      "name": "summary",
+      "selectors": ["summary"],
+      "description": "Add the correct display in all browsers.",
+      "rules": {
+        "display": "list-item"
+      }
+    },
+    {
+      "name": "template",
+      "selectors": ["template"],
+      "description": "Add the correct display in IE 10+.",
+      "rules": {
+        "display": "none"
+      }
+    },
+    {
+      "name": "hidden",
+      "selectors": ["[hidden]"],
+      "description": "Add the correct display in IE 10.",
+      "rules": {
+        "display": "none"
+      }
+    }
+  ]
+}

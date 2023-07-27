@@ -1,0 +1,319 @@
+{
+  "name": "tailwind.",
+  "version": "1.0.0",
+  "description": "Normalize CSS based on Tailwind Normalize",
+  "tokens": [
+    {
+      "name": "border",
+      "tokens": [
+        {
+          "name": "color",
+          "value": "#e5e7eb"
+        }
+      ]
+    },
+    {
+      "name": "placeholder",
+      "tokens": [
+        {
+          "name": "color",
+          "value": "#9ca3af"
+        }
+      ]
+    }
+  ],
+  "designs": [
+    {
+      "name": "box-standard",
+      "selectors": ["*", "::before", "::after"],
+      "rules": {
+        "box-sizing": "border-box",
+        "border-width": "0",
+        "border-style": "solid",
+        "border-color": "@border.color"
+      }
+    },
+    {
+      "name": "html",
+      "root": true,
+      "important": true,
+      "selectors": ["html"],
+      "rules": {
+        "line-height": "1.5",
+        "-webkit-text-size-adjust": "100%",
+        "-ms-text-size-adjust": "100%",
+        "-moz-tab-size": "4",
+        "tab-size": "4",
+        "font-family": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\""
+      }
+    },
+    {
+      "name": "body",
+      "root": true,
+      "selectors": ["body"],
+      "important": true,
+      "rules": {
+        "margin": "0",
+        "line-height": "inherit"
+      }
+    },
+    {
+      "name": "hr",
+      "selectors": ["hr"],
+      "rules": {
+        "height": "0",
+        "color": "inherit",
+        "border-top-width": "1px"
+      }
+    },
+    {
+      "name": "abbr",
+      "selectors": ["abbr:where([title])"],
+      "rules": {
+        "text-decoration": "underline dotted"
+      }
+    },
+    {
+      "name": "headings",
+      "selectors": ["h1", "h2", "h3", "h4", "h5", "h6"],
+      "rules": {
+        "font-size": "inherit",
+        "font-weight": "inherit"
+      }
+    },
+    {
+      "name": "anchor",
+      "selectors": ["a"],
+      "rules": {
+        "color": "inherit",
+        "text-decoration": "inherit"
+      }
+    },
+    {
+      "name": "strong",
+      "selectors": ["b", "strong"],
+      "rules": {
+        "font-weight": "bolder"
+      }
+    },
+    {
+      "name": "pre-code",
+      "selectors": ["pre", "code", "kbd", "samp"],
+      "rules": {
+        "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+        "font-size": "1em"
+      }
+    },
+    {
+      "name": "small",
+      "selectors": ["small"],
+      "rules": {
+        "font-size": "80%"
+      }
+    },
+    {
+      "name": "sub-sup",
+      "selectors": ["sub", "sup"],
+      "rules": {
+        "font-size": "75%",
+        "line-height": "0",
+        "position": "relative",
+        "vertical-align": "baseline"
+      }
+    },
+    {
+      "name": "sub",
+      "selectors": ["sub"],
+      "rules": {
+        "bottom": "-0.25em"
+      }
+    },
+    {
+      "name": "sup",
+      "selectors": ["sup"],
+      "rules": {
+        "top": "-0.5em"
+      }
+    },
+    {
+      "name": "table",
+      "selectors": ["table"],
+      "rules": {
+        "text-indent": "0",
+        "border-color": "inherit",
+        "border-collapse": "collapse"
+      }
+    },
+    {
+      "name": "form-elements",
+      "selectors": ["button", "input", "optgroup", "select", "textarea"],
+      "rules": {
+        "font-family": "inherit",
+        "font-feature-settings": "inherit",
+        "font-variant-settings": "inherit",
+        "font-size": "100%",
+        "font-weight": "inherit",
+        "line-height": "inherit",
+        "margin": "0",
+        "padding": "0"
+      }
+    },
+    {
+      "name": "button-select",
+      "selectors": ["button", "select"],
+      "rules": {
+        "text-transform": "none"
+      }
+    },
+    {
+      "name": "button",
+      "selectors": ["button", "[type=\"button\"]", "[type=\"reset\"]", "[type=\"submit\"]"],
+      "rules": {
+        "-webkit-appearance": "button",
+        "background-color": "transparent",
+        "background-image": "none"
+      }
+    },
+    {
+      "name": "focusring",
+      "selectors": [":-moz-focusring"],
+      "rules": {
+        "outline": "auto"
+      }
+    },
+    {
+      "name": "ui-invalid",
+      "selectors": [":-moz-ui-invalid"],
+      "rules": {
+        "box-shadow": "none"
+      }
+    },
+    {
+      "name": "progress",
+      "selectors": ["progress"],
+      "rules": {
+        "vertical-align": "baseline"
+      }
+    },
+    {
+      "name": "inner-spin-button",
+      "selectors": ["::-webkit-inner-spin-button", "::-webkit-outer-spin-button"],
+      "rules": {
+        "height": "auto"
+      }
+    },
+    {
+      "name": "search",
+      "selectors": ["[type=\"search\"]"],
+      "rules": {
+        "-webkit-appearance": "textfield",
+        "outline-offset": "-2px"
+      }
+    },
+    {
+      "name": "search-decoration",
+      "selectors": ["::-webkit-search-decoration"],
+      "rules": {
+        "-webkit-appearance": "none"
+      }
+    },
+    {
+      "name": "file-upload",
+      "selectors": ["::-webkit-file-upload-button"],
+      "rules": {
+        "-webkit-appearance": "button",
+        "font": "inherit"
+      }
+    },
+    {
+      "name": "summary",
+      "selectors": ["summary"],
+      "rules": {
+        "display": "list-item"
+      }
+    },
+    {
+      "name": "block-spacing",
+      "selectors": ["blockquote", "dl", "dd", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "figure", "p", "pre"],
+      "rules": {
+        "margin": "0"
+      }
+    },
+    {
+      "name": "fieldset",
+      "selectors": ["fieldset"],
+      "rules": {
+        "margin": "0",
+        "padding": "0"
+      }
+    },
+    {
+      "name": "legend",
+      "selectors": ["legend"],
+      "rules": {
+        "padding": "0"
+      }
+    },
+    {
+      "name": "list",
+      "selectors": ["ol", "ul", "menu"],
+      "rules": {
+        "list-style": "none",
+        "margin": "0",
+        "padding": "0"
+      }
+    },
+    {
+      "name": "textarea",
+      "selectors": ["textarea"],
+      "rules": {
+        "resize": "vertical"
+      }
+    },
+    {
+      "name": "placeholder",
+      "selectors": ["input::placeholder", "textarea::placeholder"],
+      "rules": {
+        "opacity": "1",
+        "color": "@placeholder.color"
+      }
+    },
+    {
+      "name": "button-pointer",
+      "selectors": ["button", "[role=\"button\"]"],
+      "rules": {
+        "cursor": "pointer"
+      }
+    },
+    {
+      "name": "disabled",
+      "selectors": [":disabled"],
+      "rules": {
+        "cursor": "default"
+      }
+    },
+    {
+      "name": "media",
+      "selectors": ["img", "svg", "video", "canvas", "audio", "iframe", "embed", "object"],
+      "rules": {
+        "display": "block",
+        "vertical-align": "middle"
+      }
+    },
+    {
+      "name": "img-video",
+      "selectors": ["img", "video"],
+      "rules": {
+        "max-width": "100%",
+        "height": "auto"
+      }
+    },
+    {
+      "name": "hidden",
+      "selectors": ["[hidden]"],
+      "rules": {
+        "display": "none"
+      }
+    }
+  ]
+}

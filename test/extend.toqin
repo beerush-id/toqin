@@ -1,4 +1,4 @@
 {
-  "extends": ["@beerush/ui/token"],
+  "extends": ["@beerush/ui/design/index.toqin"],
   "rootScope": ".toqin-style"
 }

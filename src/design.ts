@@ -27,27 +27,21 @@ export type ToqinStyle = Partial<{
   [key in keyof CSSStyleDeclaration]: ToqinStyleState | string;
 }>;
 
+export type DesignValue = string | {
+  [key: string]: string;
+}
+
+export type DesignType = 'element' | 'pseudo' | 'pseudo-element' | 'pseudo-class' | 'pseudo-state';
+
 export type DesignSystem = {
   name: string;
-  styles: ToqinStyle;
+  rules: ToqinStyle;
+  type?: DesignType;
+  selectors?: string[];
   url?: string;
   root?: boolean;
-  tags?: string[];
   important?: boolean;
   description?: string;
   variants?: DesignSystem[];
   children?: DesignSystem[];
 };
-
-export type FileOutput = {
-  name: string;
-  content: string;
-  fileName: string;
-};
-
-export type ToqinStateStyles = Partial<{
-  [key in ElementState]: Partial<CSSStyleDeclaration>;
-}>;
-export type ToqinQueryStyles = Partial<{
-  [key in MediaQuery]: Partial<CSSStyleDeclaration>;
-}>;
