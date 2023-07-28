@@ -231,7 +231,7 @@ export class CSSCompiler {
         const value = resolveCssValue(this.tokenMaps, ref.value, prefix, name, ref.type);
 
         this.putLine(`  ${ prop }: ${ value };`, {
-          pointer: ref.pointer, name: prop, url: ref.url
+          pointer: ref.pointer, name: prop, url: ref.sourceUrl
         });
       }
     }
@@ -303,7 +303,7 @@ export class CSSCompiler {
 
       if (ref.rules && Object.keys(ref.rules).length) {
         this.putLine(`${ selectors.join(', ') } {`, {
-          pointer: ref.pointer, name: selectors.join(', '), url: ref.url
+          pointer: ref.pointer, name: selectors.join(', '), url: ref.sourceUrl
         });
 
         for (const [ name, valueRef ] of Object.entries(ref.rules)) {

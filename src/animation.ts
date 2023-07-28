@@ -6,6 +6,7 @@ export type AnimationFrame = {
 
 export type AnimationSpec = {
   name: string;
+  url?: string;
   description?: string;
   children?: AnimationSpec[];
   frames: AnimationFrame;

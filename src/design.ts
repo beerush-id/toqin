@@ -38,7 +38,6 @@ export type DesignSystem = {
   rules: ToqinStyle;
   type?: DesignType;
   selectors?: string[];
-  url?: string;
   root?: boolean;
   important?: boolean;
   description?: string;

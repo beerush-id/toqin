@@ -36,6 +36,7 @@ export function css(config: CSSConfig = {}) {
     if (config?.sourceMap || typeof config?.sourceMap === 'undefined') {
       const map = new SourceMapGenerator({
         file: outPath,
+        skipValidation: true,
       });
 
       for (const { name, url, input, output: out } of output.sourceMaps) {

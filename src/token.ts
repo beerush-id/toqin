@@ -10,7 +10,6 @@ export type DesignToken = {
   description?: string;
   tags?: string[];
   type?: TokenType;
-  url?: string;
 
   tokens?: DesignToken[];
   value?: DesignValue;
@@ -41,7 +40,7 @@ export type TokenRef = {
   path?: string;
   type?: TokenType;
   tags?: string[];
-  url?: string;
+  sourceUrl?: string;
   pointer?: JSONLine;
   valuePointer?: JSONLine;
 };
@@ -61,7 +60,7 @@ export type DesignRef = {
   rules: DesignRules;
   root?: boolean;
   important?: boolean;
-  url?: string;
+  sourceUrl?: string;
   pointer?: JSONLine;
   path?: string;
 };
@@ -75,17 +74,14 @@ export type PseudoVariant = {
   type: DesignType;
 }
 
-export type DesignSpec = {
+export type SpecData = {
   name: string;
   version?: string;
   description?: string;
 
   tokens?: DesignToken[];
-  tokenMaps?: TokenMap;
   designs?: DesignSystem[];
-  designMaps?: DesignMap;
   animations?: AnimationSpec[];
-  animationMaps?: AnimationMap;
 
   variablePrefix?: string;
   mediaQueries?: CustomMediaQueries;
@@ -93,14 +89,22 @@ export type DesignSpec = {
   customQueryMode?: 'attribute' | 'class';
   rootScope?: string;
 
+  extends?: string[];
+  includes?: string[];
+
   excludeTokens?: string[];
   includeTokens?: string[];
+}
 
+export type DesignSpec = SpecData & {
   id?: string;
   url?: string;
-  extends?: string[];
+
+  tokenMaps: TokenMap;
+  designMaps: DesignMap;
+  animationMaps: AnimationMap;
+
   extendedSpecs?: DesignSpec[];
-  includes?: string[];
   includedSpecs?: DesignSpec[];
 
   pointers?: JSONPointers;
@@ -126,9 +130,9 @@ export type ScopedDeclarations = {
   queries: NestedDeclarations;
 };
 
-export type TokenCompiler = (spec: DesignSpec, options?: CompilerOptions) => Promise<DesignOutput[]> | DesignOutput[];
+export type Compiler = (spec: DesignSpec, options?: CompilerOptions) => Promise<DesignOutput[]> | DesignOutput[];
 
-export async function compileSpecs(spec: DesignSpec, compilers: TokenCompiler[], options?: CompilerOptions) {
+export async function compileSpecs(spec: DesignSpec, compilers: Compiler[], options?: CompilerOptions) {
   const results: DesignOutput[] = [];
 
   if (compilers?.length) {

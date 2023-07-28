@@ -57,7 +57,7 @@ export function tailwind(config?: TailwindPluginConfig) {
   const defaultOptions: TailwindPluginConfig = {
     outDir: '.',
     indexName: 'tailwind.config.js',
-    useCssVariable: false,
+    useCssVariable: true,
   };
   const options = { ...defaultOptions, ...config };
 

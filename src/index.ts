@@ -2,12 +2,13 @@ import { watch } from 'chokidar';
 import fs from 'fs-extra';
 import { join } from 'path';
 import { loadSpec } from './loader.js';
-import type { CompilerOptions, DesignOutput, TokenCompiler } from './token.js';
+import type { Compiler, CompilerOptions, DesignOutput } from './token.js';
 import { compileSpecs } from './token.js';
 
 export * from './token.js';
 export * from './plugins/index.js';
 export * from './loader.js';
+export * from './store.js';
 
 export type ToqinConfig = {
   outDir?: string;
@@ -21,7 +22,7 @@ export type CompilerOutput = {
 }
 
 export class Toqin {
-  private compilers: TokenCompiler[] = [];
+  private compilers: Compiler[] = [];
   private readonly tokenPath;
   private wathPaths: string[] = [];
 
@@ -29,7 +30,7 @@ export class Toqin {
     this.tokenPath = options?.tokenPath ? join(process.cwd(), options.tokenPath) : join(process.cwd(), 'design.toqin');
   }
 
-  public use(compiler: TokenCompiler): this {
+  public use(compiler: Compiler): this {
     if (!this.compilers.includes(compiler)) {
       this.compilers.push(compiler);
     }
@@ -60,9 +61,13 @@ export class Toqin {
   }
 
   public async compile(options?: ToqinConfig): Promise<CompilerOutput> {
+    const now = Date.now();
+
     const config: CompilerOptions = { ...(this.options || {}), ...(options || {}) };
     const { spec, paths } = await loadSpec(this.tokenPath);
     const outputs = await compileSpecs(spec, this.compilers, options ?? this.options);
+
+    console.debug(`Compiled design token in ${ Date.now() - now }ms.`);
 
     const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 

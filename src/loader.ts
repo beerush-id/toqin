@@ -1,8 +1,8 @@
 import fs from 'fs-extra';
-import type { DesignSpec } from './token.js';
+import type { DesignSpec, SpecData } from './token.js';
 import { get as https } from 'https';
 import { resolve as resolveModule } from '@beerush/resolve';
-import { dirname, join, normalize, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
 import { createAnimationMap, createDesignMap, createTokenMap } from './parser.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONMap, JSONPointers } from 'json-source-map';
@@ -10,6 +10,7 @@ import { parse as parseJson } from 'json-source-map';
 
 export type ResolvedSpec = {
   spec: DesignSpec;
+  data: SpecData;
   path: string;
   paths: string[];
   specs?: DesignSpec[];
@@ -17,8 +18,9 @@ export type ResolvedSpec = {
 
 export type SingleSpec = {
   spec: DesignSpec;
+  data: SpecData;
   path: string;
-  pointers: JSONPointers;
+  pointers: JSONPointers
 }
 
 const cachedSpecs: {
@@ -49,7 +51,7 @@ export async function loadSpec(
 ): Promise<ResolvedSpec> {
   const specs: DesignSpec[] = [];
   const paths: string[] = [];
-  const { spec, pointers, path } = await readSpec(url, fromPath, fromFile, compact);
+  const { spec, data, pointers, path } = await readSpec(url, fromPath, fromFile, compact);
 
   if (!compact) {
     spec.pointers = pointers;
@@ -59,17 +61,9 @@ export async function loadSpec(
   }
 
   spec.id = btoa(path);
-  spec.url = normalize(path);
+  spec.url = path;
+
   specs.push(spec);
-
-  if (spec.tokens?.length) {
-    spec.tokens.forEach(token => token.url = spec.url);
-  }
-
-  if (spec.designs?.length) {
-    spec.designs.forEach(design => design.url = spec.url);
-  }
-
   paths.push(path);
 
   const tokenMaps = createTokenMap(spec);
@@ -136,7 +130,7 @@ export async function loadSpec(
     }
   }
 
-  return { spec, path, paths, specs };
+  return { spec, data, path, paths, specs };
 }
 
 /**
@@ -159,19 +153,21 @@ export async function readSpec(
         return cachedSpecs[path];
       }
 
-      const { data: spec, pointers } = await new Promise<JSONMap<DesignSpec>>((resolve, reject) => {
+      const { spec, data, pointers } = await new Promise<SingleSpec>((resolve, reject) => {
         https(path, (res) => {
           const data: string[] = [];
 
           res.on('data', (chunk) => data.push(chunk));
           res.on('end', () => {
-            resolve(parse(data.join(''), compact));
+            const content = data.join('');
+            const result = parse<DesignSpec>(content, compact);
+            resolve({ path, spec: result.data, data: JSON.parse(content), pointers: result.pointers });
           });
           res.on('error', reject);
         });
       });
 
-      cachedSpecs[path] = { spec, pointers, path };
+      cachedSpecs[path] = { spec, data, pointers, path };
       return cachedSpecs[path];
     } else {
       try {
@@ -182,6 +178,7 @@ export async function readSpec(
         return {
           spec,
           pointers,
+          data: JSON.parse(content),
           path: file
         };
       } catch (error) {
@@ -192,6 +189,7 @@ export async function readSpec(
         return {
           spec,
           pointers,
+          data: JSON.parse(content),
           path: file
         };
       }

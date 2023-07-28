@@ -41,7 +41,7 @@ export async function viteCss(init: Initializer, config?: ViteCSSConfig) {
       }
 
       compiler = new CSSCompiler(spec, config);
-      const results = await transform(compiler);
+      const results = await transform(compiler as never);
 
       content = results
         .filter(item => !(item.fileName || '').endsWith('.map'))

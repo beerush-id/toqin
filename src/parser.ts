@@ -24,6 +24,9 @@ export const PSEUDO_ELEMENTS = [
 export const MOZ_PSEUDO_STATES = [
   '-moz-focusring'
 ];
+export const RESTRICTED_SPEC_KEYS: Array<keyof DesignSpec> = [
+  'extendedSpecs', 'includedSpecs'
+];
 
 export function mergeTokenMaps(spec: DesignSpec, maps: TokenMap = {}) {
   if (spec.extendedSpecs?.length) {
@@ -73,7 +76,7 @@ export function createTokenMap(
             name: token.name,
             type: token.type,
             tags: token.tags,
-            url: spec.url,
+            sourceUrl: spec.url,
             pointer: pointer?.key
           };
         }
@@ -85,7 +88,7 @@ export function createTokenMap(
           type: token.type,
           tags: token.tags,
           value: token.value,
-          url: spec.url,
+          sourceUrl: spec.url,
           pointer: pointer?.key
         };
       }
@@ -97,6 +100,10 @@ export function createTokenMap(
       merge(root, childMap);
     }
   });
+
+  if (!parent) {
+    console.debug(`Design tokens for "${ spec.name }" has been mapped.`);
+  }
 
   return root;
 }
@@ -165,7 +172,7 @@ export function createDesignMap(
         important: design.important,
         name: design.name,
         selectors: design.selectors || [ `.${ design.name }` ],
-        url: spec.url,
+        sourceUrl: spec.url,
         pointer: getPointer(spec.pointers, path + '.name')?.key,
         path,
         rules,
