@@ -57,9 +57,8 @@ export function createTokenMap(
     const path = parentPath ? `${ parentPath }.${ i }` : `tokens.${ i }`;
     const name = parentName ? `${ parentName }.${ token.name }` : token.name;
 
-    if (parent?.type && !token.type) {
-      token.type = parent.type;
-    }
+    token.type = token.type || parent?.type || 'any';
+    token.tags = token.tags || parent?.tags || [];
 
     if (token.value) {
       if (typeof token.value === 'object') {
@@ -73,6 +72,7 @@ export function createTokenMap(
             path: childPath,
             name: token.name,
             type: token.type,
+            tags: token.tags,
             url: spec.url,
             pointer: pointer?.key
           };
@@ -83,6 +83,7 @@ export function createTokenMap(
           path,
           name: token.name,
           type: token.type,
+          tags: token.tags,
           value: token.value,
           url: spec.url,
           pointer: pointer?.key
@@ -296,4 +297,8 @@ function parsePseudoVariants(name: string): PseudoVariant[] {
 
 export function getPointer(pointers: JSONPointers = {}, path = ''): JSONPointer {
   return pointers[`/${ path.replace(/\./g, '/') }`];
+}
+
+export function anyRegEx(rule: string): RegExp {
+  return new RegExp(rule.replace('.*', '\\.([^?]+)'), 'g');
 }

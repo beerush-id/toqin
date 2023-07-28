@@ -1,21 +1,10 @@
-import type {
-  CustomMediaQueries,
-  NestedDeclarations,
-  ScopedDeclarations,
-  TagType,
-  TokenMap,
-  TokenType
-} from '../../token.js';
+import type { CustomMediaQueries, NestedDeclarations, ScopedDeclarations, TokenMap, TokenType } from '../../token.js';
 import type { DesignValue, MediaQuery } from '../../design.js';
 
 export type ParserOptions = {
   tokens: TokenMap;
-  scope?: string;
-  prefix?: string;
-  strictTags?: TagType[];
   mediaQueries?: CustomMediaQueries;
   customQueryMode?: 'attribute' | 'class' | 'id';
-  colorScheme?: 'light' | 'dark' | 'system' | string;
 }
 
 export const CUSTOM_QUERY_REGEX = /\[[\w-]+]/g;
@@ -31,8 +20,8 @@ export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d
 export const MEDIA_QUERIES: CustomMediaQueries = {
   '@light': '(prefers-color-scheme: light)',
   '@dark': '(prefers-color-scheme: dark)',
-  '@sm': '(max-width: 767px)',
-  '@md': '(min-width: 768px) and (max-width: 1023px)',
+  '@sm': '(min-width: 640px)',
+  '@md': '(min-width: 768px)',
   '@lg': '(min-width: 1024px)',
   '@xl': '(min-width: 1440px)',
   '@print': 'print',
@@ -107,18 +96,30 @@ export function resolveCssValue(
   value: string,
   prefix?: string,
   name?: string,
-  kind?: TokenType
+  kind?: TokenType,
+  inline?: boolean,
 ): string {
   const globals = value.match(/@[\w.\-|]+/g);
   if (globals) {
     globals.forEach((item) => {
       const [ key, fallback ] = item.split('|');
-      const variable = key.replace('@', '').replace(/\./g, '-');
 
-      value = value.replace(
-        item,
-        `var(--${ prefix ? prefix + '-' : '' }${ variable }${ fallback ? ', ' + fallback : '' })`
-      );
+      if (inline) {
+        const token = maps?.[key.replace('@', '')];
+
+        if (/^(@|~|\$)/.test(token?.value as string)) {
+          value = resolveCssValue(maps, token?.value as string, prefix, name, kind, true);
+        } else {
+          value = value.replace(item, token?.value as string);
+        }
+      } else {
+        const variable = key.replace('@', '').replace(/\./g, '-');
+
+        value = value.replace(
+          item,
+          `var(--${ prefix ? prefix + '-' : '' }${ variable }${ fallback ? ', ' + fallback : '' })`
+        );
+      }
     });
   }
 

@@ -590,7 +590,7 @@
       "important": true,
       "description": "Body design",
       "rules": {
-        "font-family": "@font.family",
+        "font-family": "@font.family.base",
         "font-size": "@font.size.sm",
         "line-height": "@font.height",
         "font-weight": "@font.weight.regular",

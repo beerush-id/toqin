@@ -6,11 +6,12 @@ import type {
   NestedDeclarations,
   TokenMap
 } from '../../token.js';
+import { getTagType, TagType } from '../../token.js';
 import type { CSSConfig } from './index.js';
 import { MEDIA_QUERIES, parseQueries, type ParserOptions, resolveCssValue } from './parser.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONLine } from 'json-source-map';
-import { mergeTokenMaps } from '../../parser.js';
+import { anyRegEx, mergeTokenMaps } from '../../parser.js';
 import { script } from './script.js';
 
 export type CSSMap = {
@@ -25,6 +26,16 @@ export type LineMap = {
   url?: string;
   name?: string;
 }
+
+export type CSSCompilerOptions = {
+  prefix?: string;
+  scope?: string;
+  mediaQueries?: CustomMediaQueries;
+  strictTags?: TagType[];
+  defaultColorScheme?: 'light' | 'dark' | 'system' | string;
+  includeTokens?: string[];
+  excludeTokens?: string[];
+} & ParserOptions;
 
 export class CSSCompiler {
   public name: string;
@@ -59,7 +70,7 @@ export class CSSCompiler {
     return queries;
   }
 
-  constructor(public spec: DesignSpec, public config?: Partial<ParserOptions>, public parent?: CSSCompiler) {
+  constructor(public spec: DesignSpec, public config?: Partial<CSSCompilerOptions>, public parent?: CSSCompiler) {
     this.name = spec.name;
     this.tokenMaps = parent?.tokenMaps || mergeTokenMaps(spec);
     this.mediaQueries = parent?.mediaQueries || { ...MEDIA_QUERIES, ...(this.config?.mediaQueries || this.spec.mediaQueries) };
@@ -67,7 +78,7 @@ export class CSSCompiler {
 
   public createHelperScript(compact?: boolean, replace?: string) {
     const queries = JSON.stringify(this.mediaQueryMaps);
-    const scheme = this.config?.colorScheme || this.spec.defaultColorScheme || 'system';
+    const scheme = this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system';
     const mode = this.config?.customQueryMode || this.spec.customQueryMode || 'class';
 
     let body = script.toString();
@@ -84,7 +95,7 @@ export class CSSCompiler {
     ].join('');
   }
 
-  public compile(options?: ParserOptions, fromLine?: number): this {
+  public compile(options?: CSSCompilerOptions, fromLine?: number): this {
     const { spec } = this;
     const config = {
       tokens: this.tokenMaps,
@@ -94,7 +105,9 @@ export class CSSCompiler {
 
       prefix: this.config?.prefix || this.spec.variablePrefix,
       customQueryMode: this.config?.customQueryMode || this.spec.customQueryMode || 'class',
-      colorScheme: this.config?.colorScheme || this.spec.defaultColorScheme || 'system',
+      colorScheme: this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system',
+      excludeTokens: this.config?.excludeTokens || this.spec.excludeTokens,
+      includeTokens: this.config?.includeTokens || this.spec.includeTokens
     };
 
     options = { ...config, ...options };
@@ -142,7 +155,7 @@ export class CSSCompiler {
     return this.contents.join('\r\n');
   }
 
-  private assignColorScheme(options: Partial<ParserOptions>) {
+  private assignColorScheme(options: Partial<CSSCompilerOptions>) {
     for (const [ , option ] of Object.entries(this.mediaQueries)) {
       if (typeof option === 'string' && option.includes('[')) {
         if (option.includes('light') || option.includes('dark')) {
@@ -158,7 +171,7 @@ export class CSSCompiler {
     }
   }
 
-  private putColorScheme(query: string, color?: string, options: Partial<ParserOptions> = {}) {
+  private putColorScheme(query: string, color?: string, options: Partial<CSSCompilerOptions> = {}) {
     const { customQueryMode = 'class' } = options;
     let selector = query;
 
@@ -176,7 +189,7 @@ export class CSSCompiler {
     this.putLine('');
   }
 
-  private writeTokens(options: ParserOptions) {
+  private writeTokens(options: CSSCompilerOptions) {
     if (!Object.keys(this.spec.tokenMaps || {}).length) {
       return;
     }
@@ -189,6 +202,11 @@ export class CSSCompiler {
     const queries: NestedDeclarations = {};
 
     for (const [ name, ref ] of Object.entries(this.spec.tokenMaps || {})) {
+      if (this.shouldIgnore(name, options)) {
+        console.log('Skipping due to an exclusion rule:', name);
+        continue;
+      }
+
       const mQueries = name.match(/\.@[\w\-@]+$/);
 
       if (mQueries) {
@@ -257,13 +275,27 @@ export class CSSCompiler {
     }
   }
 
-  private writeDesigns(options: ParserOptions) {
+  private writeDesigns(options: CSSCompilerOptions) {
     const scope = options?.scope;
     const prefix = options?.prefix;
     const queries: NestedDeclarations = {};
 
     for (const [ selector, ref ] of Object.entries(this.spec.designMaps || {})) {
       let selectors = selector.split(/\s?,\s?/);
+
+      if (options?.strictTags?.length) {
+        selectors = selectors.filter((s) => {
+          const type = getTagType(s);
+
+          if (!options?.strictTags?.includes(type) || ref.important) {
+            return true;
+          }
+        });
+      }
+
+      if (!selectors.length) {
+        continue;
+      }
 
       if (scope && !ref.root) {
         selectors = selectors.map((s) => `${ scope } ${ s }`);
@@ -347,5 +379,12 @@ export class CSSCompiler {
 
     this.currentLine++;
     this.contents.push(text);
+  }
+
+  private shouldIgnore(token: string, options?: Partial<CSSCompilerOptions>): boolean {
+    const exclude = (options?.excludeTokens || []).filter(r => anyRegEx(r).test(token));
+    const include = (options?.includeTokens || []).filter(r => anyRegEx(r).test(token));
+
+    return exclude.length > 0 && include.length < 1;
   }
 }

@@ -40,6 +40,7 @@ export type TokenRef = {
   value: string;
   path?: string;
   type?: TokenType;
+  tags?: string[];
   url?: string;
   pointer?: JSONLine;
   valuePointer?: JSONLine;
@@ -91,6 +92,9 @@ export type DesignSpec = {
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;
   customQueryMode?: 'attribute' | 'class';
   rootScope?: string;
+
+  excludeTokens?: string[];
+  includeTokens?: string[];
 
   id?: string;
   url?: string;
