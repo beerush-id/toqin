@@ -1,5 +1,4 @@
 import fs from 'fs-extra';
-import type { DesignSpec, SpecData } from './token.js';
 import { get as https } from 'https';
 import { resolve as resolveModule } from '@beerush/resolve';
 import { dirname, join, resolve } from 'path';
@@ -7,18 +6,19 @@ import { createAnimationMap, createDesignMap, createTokenMap } from './parser.js
 import { merge } from '@beerush/utils/object';
 import type { JSONMap, JSONPointers } from 'json-source-map';
 import { parse as parseJson } from 'json-source-map';
+import type { DesignSpec, LoadedDesignSpec } from './core.js';
 
 export type ResolvedSpec = {
-  spec: DesignSpec;
-  data: SpecData;
+  spec: LoadedDesignSpec;
+  data: DesignSpec;
   path: string;
   paths: string[];
-  specs?: DesignSpec[];
+  specs?: LoadedDesignSpec[];
 }
 
 export type SingleSpec = {
-  spec: DesignSpec;
-  data: SpecData;
+  spec: LoadedDesignSpec;
+  data: DesignSpec;
   path: string;
   pointers: JSONPointers
 }
@@ -27,7 +27,7 @@ const cachedSpecs: {
   [key: string]: SingleSpec;
 } = {};
 
-export const ALLOWED_OVERRIDE_KEYS: Array<keyof DesignSpec> = [
+export const ALLOWED_OVERRIDE_KEYS: Array<keyof LoadedDesignSpec> = [
   'mediaQueries',
   'defaultColorScheme',
   'customQueryMode',
@@ -48,7 +48,7 @@ export async function loadSpec(
   fromFile?: string,
   compact?: boolean
 ): Promise<ResolvedSpec> {
-  const specs: DesignSpec[] = [];
+  const specs: LoadedDesignSpec[] = [];
   const paths: string[] = [];
   const { spec, data, pointers, path } = await readSpec(url, fromPath, fromFile, compact);
 
@@ -83,7 +83,7 @@ export async function loadSpec(
       spec.extendedSpecs.unshift(extendedSpec);
 
       for (const [ key, value ] of Object.entries(extendedSpec)) {
-        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof spec[key as never] === 'undefined') {
+        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof spec[key as never] === 'undefined') {
           spec[key as never] = value as never;
         }
       }
@@ -120,7 +120,7 @@ export async function loadSpec(
       spec.includedSpecs.push(includedSpec);
 
       for (const [ key, value ] of Object.entries(includedSpec)) {
-        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof spec[key as never] === 'undefined') {
+        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof spec[key as never] === 'undefined') {
           spec[key as never] = value as never;
         }
       }
@@ -159,7 +159,7 @@ export async function readSpec(
           res.on('data', (chunk) => data.push(chunk));
           res.on('end', () => {
             const content = data.join('');
-            const result = parse<DesignSpec>(content, compact);
+            const result = parse<LoadedDesignSpec>(content, compact);
             resolve({ path, spec: result.data, data: JSON.parse(content), pointers: result.pointers });
           });
           res.on('error', reject);
@@ -172,7 +172,7 @@ export async function readSpec(
       try {
         const file = fromPath && path.startsWith('.') ? join(fromPath, path) : resolve(path);
         const content = fs.readFileSync(file, 'utf-8');
-        const { data: spec, pointers } = parse<DesignSpec>(content, compact);
+        const { data: spec, pointers } = parse<LoadedDesignSpec>(content, compact);
 
         return {
           spec,
@@ -183,7 +183,7 @@ export async function readSpec(
       } catch (error) {
         const file = resolveModule(path);
         const content = fs.readFileSync(file, 'utf-8');
-        const { data: spec, pointers } = parse<DesignSpec>(content, compact);
+        const { data: spec, pointers } = parse<LoadedDesignSpec>(content, compact);
 
         return {
           spec,

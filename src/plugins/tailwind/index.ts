@@ -1,6 +1,7 @@
-import type { CustomMediaQueries, DesignOutput, DesignSpec, TokenMap, TokenRef } from '../../token.js';
+import type { TokenMap, TokenRef } from '../../token.js';
 import { mergeTokenMaps } from '../../parser.js';
 import { MEDIA_QUERIES, resolveCssValue } from '../css/parser.js';
+import type { DesignOutput, LoadedDesignSpec, MediaQueries } from '../../core.js';
 
 export type TailwindPluginConfig = {
   outDir?: string;
@@ -8,21 +9,21 @@ export type TailwindPluginConfig = {
   prefix?: string;
   useCssVariable?: boolean;
   extendRules?: ExtendRules;
-}
+};
 
 export type ExtendRule = {
   tags: string[];
   shifts?: Array<string | RegExp>;
   replace?: (value: string) => string | string[];
-}
+};
 
 export type ExtendRules = {
   [property: string]: ExtendRule;
-}
+};
 
 type NestedProps = {
   [key: string]: string | string[] | NestedProps;
-}
+};
 
 export type TailwindPreset = {
   screens: NestedProps;
@@ -32,25 +33,25 @@ export type TailwindPreset = {
   spacing: NestedProps;
   fontFamily: NestedProps;
   extend: NestedProps;
-}
+};
 
 export const EXTEND_RULES: ExtendRules = {
   fontSize: {
-    tags: [ 'font-size', 'text-size' ],
-    shifts: [ /^font\.size\./, /^text\.size\./ ],
+    tags: ['font-size', 'text-size'],
+    shifts: [/^font\.size\./, /^text\.size\./],
   },
   fontWeight: {
-    tags: [ 'font-weight', 'text-weight' ],
-    shifts: [ /^font\.weight\./, /^text\.weight\./ ],
+    tags: ['font-weight', 'text-weight'],
+    shifts: [/^font\.weight\./, /^text\.weight\./],
   },
   letterSpacing: {
-    tags: [ 'letter-spacing', 'text-spacing' ],
-    shifts: [ /^font\.space\./, /^text\.space\./ ],
+    tags: ['letter-spacing', 'text-spacing'],
+    shifts: [/^font\.space\./, /^text\.space\./],
   },
   lineHeight: {
-    tags: [ 'font-height', 'text-height' ],
-    shifts: [ /^font\.height\./, /^text\.height\./ ],
-  }
+    tags: ['font-height', 'text-height'],
+    shifts: [/^font\.height\./, /^text\.height\./],
+  },
 };
 
 export function tailwind(config?: TailwindPluginConfig) {
@@ -61,16 +62,16 @@ export function tailwind(config?: TailwindPluginConfig) {
   };
   const options = { ...defaultOptions, ...config };
 
-  return (spec: DesignSpec): DesignOutput[] => {
+  return (spec: LoadedDesignSpec): DesignOutput[] => {
     const compiler = new TailwindCompiler(spec, options);
     compiler.compile();
 
     return [
       {
         name: 'tailwind.config.js',
-        fileName: `${ options.outDir }/${ options.indexName }`,
+        fileName: `${options.outDir}/${options.indexName}`,
         content: compiler.stringify(),
-      }
+      },
     ];
   };
 }
@@ -80,11 +81,11 @@ export class TailwindCompiler {
   public contents: string[] = [];
 
   public preset: Partial<TailwindPreset> = {};
-  public mediaQueries: CustomMediaQueries;
+  public mediaQueries: MediaQueries;
   public tokenMaps: TokenMap;
   public extendedRules: ExtendRules;
 
-  constructor(public spec: DesignSpec, public config: Partial<TailwindPluginConfig>) {
+  constructor(public spec: LoadedDesignSpec, public config: Partial<TailwindPluginConfig>) {
     this.tokenMaps = mergeTokenMaps(spec);
     this.mediaQueries = { ...MEDIA_QUERIES, ...spec.mediaQueries };
     this.extendedRules = { ...EXTEND_RULES, ...config?.extendRules };
@@ -113,7 +114,7 @@ export class TailwindCompiler {
   private importScreens() {
     const screens: NestedProps = {};
 
-    for (const [ q, v ] of Object.entries(this.mediaQueries)) {
+    for (const [q, v] of Object.entries(this.mediaQueries)) {
       if (typeof v === 'string') {
         if (v.includes('width') || v.includes('height')) {
           const size = v.match(/min-width:\s*(\d+px)/);
@@ -137,27 +138,24 @@ export class TailwindCompiler {
   }
 
   private importFontFamilies() {
-    const groups = [ 'font-family', 'font-families' ];
-    const shifts = [ /^font\.family\./, /^font\./ ];
+    const groups = ['font-family', 'font-families'];
+    const shifts = [/^font\.family\./, /^font\./];
 
-    this.preset.fontFamily = this.importTokens(
-      groups,
-      shifts,
-      (value) => value.split(/\s?,\s?/g)
-        .map(item => item.replace(/['"]+/g, ''))
+    this.preset.fontFamily = this.importTokens(groups, shifts, (value) =>
+      value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, ''))
     );
   }
 
   private importColors() {
-    const groups = [ 'color', 'palette', 'colors', 'theme' ];
-    const shifts = [ /^color\./, /^palette\./ ];
+    const groups = ['color', 'palette', 'colors', 'theme'];
+    const shifts = [/^color\./, /^palette\./];
 
     this.preset.colors = this.importTokens(groups, shifts);
   }
 
   private importSpacing() {
-    const groups = [ 'space', 'spacing' ];
-    const shifts = [ /^space\./ ];
+    const groups = ['space', 'spacing'];
+    const shifts = [/^space\./];
 
     this.preset.spacing = this.importTokens(groups, shifts);
   }
@@ -167,7 +165,7 @@ export class TailwindCompiler {
       this.preset.extend = {};
     }
 
-    for (const [ prop, rule ] of Object.entries(this.extendedRules)) {
+    for (const [prop, rule] of Object.entries(this.extendedRules)) {
       const props = this.importTokens(rule.tags, rule.shifts, rule.replace);
 
       if (Object.keys(props).length) {
@@ -184,7 +182,7 @@ export class TailwindCompiler {
     const prefix = this.config?.prefix || 'tq';
     const result: NestedProps = {};
 
-    for (const [ name, token ] of Object.entries(this.tokenMaps)) {
+    for (const [name, token] of Object.entries(this.tokenMaps)) {
       if (isInGroup(token, groups)) {
         let prop = name.replace('@', '');
 
@@ -203,7 +201,7 @@ export class TailwindCompiler {
           !this.config?.useCssVariable
         );
 
-        deepSet(result, prop, replace ? replace(value) as string : (value as string));
+        deepSet(result, prop, replace ? (replace(value) as string) : (value as string));
       }
     }
 
@@ -211,20 +209,20 @@ export class TailwindCompiler {
   }
 
   private putLines(lines: NestedProps = this.preset, indent = '') {
-    for (const [ key, value ] of Object.entries(lines)) {
+    for (const [key, value] of Object.entries(lines)) {
       if (typeof value === 'string') {
-        this.putLine(`${ indent }'${ key }': '${ value }',`);
+        this.putLine(`${indent}'${key}': '${value}',`);
       } else if (Array.isArray(value)) {
         if (value.length) {
-          this.putLine(`${ indent }'${ key }': [`);
-          this.putLine(`${ indent }  ${ value.map(item => `'${ item }'`).join(', ') }`);
-          this.putLine(`${ indent }],`);
+          this.putLine(`${indent}'${key}': [`);
+          this.putLine(`${indent}  ${value.map((item) => `'${item}'`).join(', ')}`);
+          this.putLine(`${indent}],`);
         }
       } else if (typeof value === 'object') {
         if (Object.keys(value).length) {
-          this.putLine(`${ indent }'${ key }': {`);
-          this.putLines(value, `${ indent }  `);
-          this.putLine(`${ indent }},`);
+          this.putLine(`${indent}'${key}': {`);
+          this.putLines(value, `${indent}  `);
+          this.putLine(`${indent}},`);
         }
       }
     }
@@ -256,7 +254,7 @@ function deepSet(target: NestedProps, path: string, value: string) {
     }
 
     if (typeof current[part] === 'string') {
-      current[part] = { 'DEFAULT': current[part] };
+      current[part] = { DEFAULT: current[part] };
     }
 
     current = current[part] as never;

@@ -1,5 +1,4 @@
 import type { Plugin, ViteDevServer, WebSocketServer } from 'vite';
-import type { CompilerOptions, DesignOutput, DesignSpec } from '../../token.js';
 import { CSSCompiler } from './compiler.js';
 import { basename, join, normalize } from 'path';
 import type { CSSOptions } from './encoder.js';
@@ -7,6 +6,7 @@ import { encode } from './encoder.js';
 import { Store } from '../../store.js';
 import { logger } from '../../logger.js';
 import fs from 'fs-extra';
+import type { CompilerOptions, DesignOutput, LoadedDesignSpec } from '../../core.js';
 
 export type ViteCSSConfig = CompilerOptions & {
   token?: string;
@@ -37,7 +37,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
     const base = basename(url);
     const href = `${ remotePath }/${ base }`;
 
-    store.use(async (spec: DesignSpec): Promise<DesignOutput[]> => {
+    store.use(async (spec: LoadedDesignSpec): Promise<DesignOutput[]> => {
       const compilerOptions = {
         indexName: base,
         extension: config?.extension,

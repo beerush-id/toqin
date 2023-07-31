@@ -1,18 +1,18 @@
-import type { Compiler, CompilerOptions, DesignOutput, DesignSpec, SpecData } from './token.js';
 import { ALLOWED_OVERRIDE_KEYS, readSpec } from './loader.js';
 import { createAnimationMap, createDesignMap, createTokenMap, RESTRICTED_SPEC_KEYS } from './parser.js';
 import { dirname, join } from 'path';
 import { FSWatcher, watch as watchFile } from 'chokidar';
 import fs from 'fs-extra';
 import { logger } from './logger.js';
+import { Compiler, CompilerOptions, DesignOutput, DesignSpec, LoadedDesignSpec } from './core.js';
 
 export type SpecIndex = {
   name: string;
   version?: string;
   url: string;
   file: string;
-  spec: DesignSpec;
-  data: SpecData;
+  spec: LoadedDesignSpec;
+  data: DesignSpec;
 
   parentIndex?: SpecIndex;
   extendedIndexes: SpecIndex[];
@@ -247,8 +247,8 @@ export class Store {
     previous.version = current.version;
 
     for (const [ key, value ] of Object.entries(current.spec)) {
-      if (!RESTRICTED_SPEC_KEYS.includes(key as keyof DesignSpec)) {
-        previous.spec[key as keyof DesignSpec] = value as never;
+      if (!RESTRICTED_SPEC_KEYS.includes(key as keyof LoadedDesignSpec)) {
+        previous.spec[key as keyof LoadedDesignSpec] = value as never;
       }
     }
   }
@@ -350,8 +350,8 @@ export class Store {
     }
 
     for (const [ key, value ] of Object.entries(extendedSpec)) {
-      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof this.root.spec[key as keyof DesignSpec] === 'undefined') {
-        this.root.spec[key as keyof DesignSpec] = value as never;
+      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof this.root.spec[key as keyof LoadedDesignSpec] === 'undefined') {
+        this.root.spec[key as keyof LoadedDesignSpec] = value as never;
       }
     }
   }
@@ -375,8 +375,8 @@ export class Store {
     }
 
     for (const [ key, value ] of Object.entries(includedSpec)) {
-      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof this.root.spec[key as keyof DesignSpec] === 'undefined') {
-        this.root.spec[key as keyof DesignSpec] = value as never;
+      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof this.root.spec[key as keyof LoadedDesignSpec] === 'undefined') {
+        this.root.spec[key as keyof LoadedDesignSpec] = value as never;
       }
     }
   }

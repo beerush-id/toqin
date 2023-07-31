@@ -1,12 +1,13 @@
-import type { CustomMediaQueries, NestedDeclarations, ScopedDeclarations, TokenMap, TokenType } from '../../token.js';
-import type { DesignValue, MediaQuery } from '../../design.js';
+import type { TokenMap, TokenType } from '../../token.js';
 import { logger } from '../../logger.js';
+import type { MediaQueries, MediaQueryKey, NestedDeclarations, ScopedDeclarations } from '../../core.js';
+import type { DesignRule } from '../../design.js';
 
 export type ParserOptions = {
   tokens: TokenMap;
-  mediaQueries?: CustomMediaQueries;
+  mediaQueries?: MediaQueries;
   customQueryMode?: 'attribute' | 'class' | 'id';
-}
+};
 
 export const CUSTOM_QUERY_REGEX = /\[[\w-]+]/g;
 export const COLOR_REGEX = /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/i;
@@ -18,7 +19,7 @@ export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)
 export const COLOR_HSL_REGEX = /^hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/i;
 export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d+)?)\)$/i;
 
-export const MEDIA_QUERIES: CustomMediaQueries = {
+export const MEDIA_QUERIES: MediaQueries = {
   '@light': '(prefers-color-scheme: light)',
   '@dark': '(prefers-color-scheme: dark)',
   '@sm': '(min-width: 640px)',
@@ -71,20 +72,20 @@ export function hexToRgbValue(hex: string): [ number, number, number ] {
   return [ parseInt(colors[1], 16), parseInt(colors[2], 16), parseInt(colors[3], 16) ];
 }
 
-export function getMedia(query: MediaQuery, userQueries: CustomMediaQueries = {}): string {
+export function getMedia(query: MediaQueryKey, userQueries: MediaQueries = {}): string {
   const queries = { ...MEDIA_QUERIES };
 
   if (typeof userQueries === 'object') {
     for (const [ key, value ] of Object.entries(userQueries)) {
       if (typeof value === 'string') {
-        queries[`${ key }` as MediaQuery] = value;
+        queries[`${ key }` as MediaQueryKey] = value;
       } else if (typeof value === 'object') {
-        queries[`${ key }` as MediaQuery] = value.query;
+        queries[`${ key }` as MediaQueryKey] = value.query;
       }
     }
   }
 
-  const q: MediaQuery = `@${ query.replace(/^@/, '') }` as never;
+  const q: MediaQueryKey = `@${ query.replace(/^@/, '') }` as never;
 
   if (typeof queries[q] === 'string') {
     return queries[q] as string;
@@ -95,8 +96,8 @@ export function getMedia(query: MediaQuery, userQueries: CustomMediaQueries = {}
   return query;
 }
 
-export function parseMediaQuery(query: MediaQuery | string, userQueries: CustomMediaQueries = {}) {
-  const queries = query.replace(/^@/, '').split('@') as MediaQuery[];
+export function parseMediaQuery(query: MediaQueryKey | string, userQueries: MediaQueries = {}) {
+  const queries = query.replace(/^@/, '').split('@') as MediaQueryKey[];
   return queries.map((q) => getMedia(q, userQueries)).join(' and ');
 }
 
@@ -106,7 +107,7 @@ export function resolveCssValue(
   prefix?: string,
   name?: string,
   kind?: TokenType,
-  inline?: boolean,
+  inline?: boolean
 ): string {
   const globals = value.match(/@[\w.\-|]+/g);
   if (globals) {
@@ -144,11 +145,8 @@ export function resolveCssValue(
 
   const prefixes = value.match(/\{[\w.-]+\}/g);
   if (prefixes) {
-    prefixes.forEach(item => {
-      const variable = item
-        .replace('{', '')
-        .replace('}', '')
-        .replace(/\./g, '-');
+    prefixes.forEach((item) => {
+      const variable = item.replace('{', '').replace('}', '').replace(/\./g, '-');
 
       value = value.replace(item, `${ prefix ? prefix + '-' : '' }${ variable }`);
     });
@@ -256,7 +254,7 @@ export function validate(name: string, kind: TokenType, value: unknown) {
 export function parseQueries(
   options: ParserOptions,
   prop: string,
-  values: DesignValue,
+  values: DesignRule,
   prefix?: string,
   kind?: TokenType,
   scope = ':root'
@@ -277,24 +275,20 @@ export function parseQueries(
           let newQuery = query;
 
           if (options?.customQueryMode === 'class') {
-            custom = custom
-              .replace(/\[/g, '.')
-              .replace(/]/g, '');
+            custom = custom.replace(/\[/g, '.').replace(/]/g, '');
           } else if (options?.customQueryMode === 'id') {
-            custom = custom
-              .replace(/\[/g, '#')
-              .replace(/]/g, '');
+            custom = custom.replace(/\[/g, '#').replace(/]/g, '');
           }
 
           for (const c of customs) {
-            newQuery = newQuery
-              .replace(` and ${ c }`, '')
-              .replace(`${ c } and `, '')
-              .replace(c, '');
+            newQuery = newQuery.replace(` and ${ c }`, '').replace(`${ c } and `, '').replace(c, '');
           }
 
           if (scope !== ':root') {
-            custom = scope.split(/\s?,\s?/).map((s) => `${ custom } ${ s }`).join(', ');
+            custom = scope
+              .split(/\s?,\s?/)
+              .map((s) => `${ custom } ${ s }`)
+              .join(', ');
           }
 
           if (newQuery) {

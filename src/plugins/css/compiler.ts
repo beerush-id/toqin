@@ -1,12 +1,5 @@
-import type {
-  CustomMediaQueries,
-  CustomMediaQuery,
-  DesignSpec,
-  MediaQueryMap,
-  NestedDeclarations,
-  TokenMap
-} from '../../token.js';
-import { getTagType, TagType } from '../../token.js';
+import type { TokenMap } from '../../token.js';
+import { TagType } from '../../token.js';
 import { MEDIA_QUERIES, parseQueries, resolveCssValue, similarQuery } from './parser.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONLine } from 'json-source-map';
@@ -14,24 +7,26 @@ import { anyRegEx, mergeTokenMaps } from '../../parser.js';
 import { helper } from './helper.js';
 import { logger } from '../../logger.js';
 import { script } from './script.js';
+import type { LoadedDesignSpec, MediaQueries, MediaQuery, MediaQueryMap, NestedDeclarations } from '../../core.js';
+import { getTagType } from '../../core.js';
 
 export type CSSMap = {
   input: [ number, number ];
   output: [ number, number ];
   name?: string;
   url?: string;
-}
+};
 
 export type LineMap = {
   pointer?: JSONLine;
   url?: string;
   name?: string;
-}
+};
 
 export type CSSCompilerOptions = {
   prefix?: string;
   scope?: string;
-  mediaQueries?: CustomMediaQueries;
+  mediaQueries?: MediaQueries;
   strictTags?: TagType[];
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;
   includeTokens?: string[];
@@ -47,8 +42,8 @@ export class CSSCompiler {
   public contents: string[] = [];
   public sourceMaps: CSSMap[] = [];
   public tokenMaps: TokenMap;
-  public mediaQueries: CustomMediaQueries;
-  public colorSchemes: { type: string; selector: string; }[] = [];
+  public mediaQueries: MediaQueries;
+  public colorSchemes: { type: string; selector: string }[] = [];
 
   public get mediaQueryMaps(): MediaQueryMap[] {
     const queries: MediaQueryMap[] = [];
@@ -60,9 +55,9 @@ export class CSSCompiler {
         const query = option.replace(/\[|\]/g, '');
         const mediaQuery = similarQuery(query);
 
-        queries.push({ name, group, query, mediaQuery, scheme, });
+        queries.push({ name, group, query, mediaQuery, scheme });
       } else if (typeof option === 'object') {
-        const { query, mediaQuery, group = 'display', scheme } = option as CustomMediaQuery;
+        const { query, mediaQuery, group = 'display', scheme } = option as MediaQuery;
 
         if (query.includes('[')) {
           queries.push({
@@ -70,7 +65,7 @@ export class CSSCompiler {
             group,
             scheme,
             query: query.replace(/\[|\]/g, ''),
-            mediaQuery: mediaQuery || similarQuery(query)
+            mediaQuery: mediaQuery || similarQuery(query),
           });
         }
       }
@@ -79,17 +74,14 @@ export class CSSCompiler {
     return queries;
   }
 
-  constructor(public spec: DesignSpec, public config?: Partial<CSSCompilerOptions>, public parent?: CSSCompiler) {
+  constructor(public spec: LoadedDesignSpec, public config?: Partial<CSSCompilerOptions>, public parent?: CSSCompiler) {
     this.name = spec.name;
     this.tokenMaps = parent?.tokenMaps || mergeTokenMaps(spec);
     this.mediaQueries = parent?.mediaQueries || { ...MEDIA_QUERIES, ...(config?.mediaQueries || spec.mediaQueries) };
   }
 
   public createScript(id: string) {
-    return [
-      this.createHmrScript(id),
-      this.createHelperScript()
-    ].join('\r\n');
+    return [ this.createHmrScript(id), this.createHelperScript() ].join('\r\n');
   }
 
   public createHelperScript() {
@@ -97,17 +89,11 @@ export class CSSCompiler {
     const scheme = this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system';
     const mode = this.config?.customQueryMode || this.spec.customQueryMode || 'class';
 
-    return [
-      `(${ helper.toString() })`,
-      `(${ queries }, '${ mode }', '${ scheme }');`
-    ].join('');
+    return [ `(${ helper.toString() })`, `(${ queries }, '${ mode }', '${ scheme }');` ].join('');
   }
 
   public createHmrScript(id: string) {
-    return [
-      `(${ script.toString() })`,
-      `('${ id }', '${ this.spec.version }');`
-    ].join('\r\n');
+    return [ `(${ script.toString() })`, `('${ id }', '${ this.spec.version }');` ].join('\r\n');
   }
 
   public compile(options?: CSSCompilerOptions, fromLine?: number): this {
@@ -122,7 +108,7 @@ export class CSSCompiler {
       customQueryMode: this.config?.customQueryMode || this.spec.customQueryMode || 'class',
       colorScheme: this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system',
       excludeTokens: this.config?.excludeTokens || this.spec.excludeTokens,
-      includeTokens: this.config?.includeTokens || this.spec.includeTokens
+      includeTokens: this.config?.includeTokens || this.spec.includeTokens,
     };
 
     const compilerOptions = { ...config, ...options } as CompilerOptions;
@@ -177,7 +163,7 @@ export class CSSCompiler {
           this.putColorScheme(option, option.includes('light') ? 'light' : 'dark', options);
         }
       } else if (typeof option === 'object' && option.group === 'color') {
-        const { query, scheme } = option as CustomMediaQuery;
+        const { query, scheme } = option as MediaQuery;
 
         if (query.includes('[')) {
           this.putColorScheme(query, scheme, options);
@@ -191,9 +177,7 @@ export class CSSCompiler {
     let selector = query;
 
     if ([ 'class', 'id' ].includes(customQueryMode)) {
-      selector = selector
-        .replace('[', customQueryMode === 'class' ? '.' : '#')
-        .replace(']', '');
+      selector = selector.replace('[', customQueryMode === 'class' ? '.' : '#').replace(']', '');
     }
 
     this.colorSchemes.push({ selector, type: customQueryMode });
@@ -211,11 +195,11 @@ export class CSSCompiler {
 
     const scope = options?.scope || ':root';
     const prefix = options?.prefix;
-    const line = this.spec.tokenPointer && {
+    const line = this.spec.tokenPointer && ({
       pointer: this.spec.tokenPointer,
       name: scope,
-      url: this.spec.url
-    } as LineMap;
+      url: this.spec.url,
+    } as LineMap);
 
     this.putLine(`${ scope } {`, line);
 
@@ -275,7 +259,7 @@ export class CSSCompiler {
         this.putLine(`${ selector } {`, {
           pointer: ref.pointer,
           name: ref.name,
-          url: ref.url
+          url: ref.url,
         });
 
         for (const [ key, rules ] of Object.entries(ref.frames)) {
@@ -331,7 +315,7 @@ export class CSSCompiler {
         const line = ref.pointer && {
           pointer: ref.pointer,
           name: selectors.join(', '),
-          url: ref.sourceUrl
+          url: ref.sourceUrl,
         };
 
         this.putLine(`${ selectors.join(', ') } {`, line);
@@ -347,7 +331,7 @@ export class CSSCompiler {
             const { root, queries: q } = parseQueries(
               options,
               prop,
-              valueRef,
+              valueRef as never,
               prefix,
               undefined,
               selectors.join(', ')
@@ -412,8 +396,8 @@ export class CSSCompiler {
   }
 
   private shouldIgnore(token: string, options?: Partial<CSSCompilerOptions>): boolean {
-    const exclude = (options?.excludeTokens || []).filter(r => anyRegEx(r).test(token));
-    const include = (options?.includeTokens || []).filter(r => anyRegEx(r).test(token));
+    const exclude = (options?.excludeTokens || []).filter((r) => anyRegEx(r).test(token));
+    const include = (options?.includeTokens || []).filter((r) => anyRegEx(r).test(token));
 
     return exclude.length > 0 && include.length < 1;
   }

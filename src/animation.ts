@@ -1,14 +1,14 @@
-import { JSONLine } from 'json-source-map';
+import type { JSONLine } from 'json-source-map';
 
 export type AnimationFrame = {
   [frame: string]: Partial<CSSStyleDeclaration>;
 }
 
-export type AnimationSpec = {
+export type Animation = {
   name: string;
   url?: string;
   description?: string;
-  children?: AnimationSpec[];
+  children?: Animation[];
   frames: AnimationFrame;
 }
 

@@ -1,8 +1,8 @@
 import { type CSSOptions, encode } from './encoder.js';
-import { DesignSpec } from '../../token.js';
+import type { LoadedDesignSpec } from '../../core.js';
 
 export function css(config?: CSSOptions) {
-  return (spec: DesignSpec) => encode(spec, config);
+  return (spec: LoadedDesignSpec) => encode(spec, config);
 }
 
 export * from './vite.js';

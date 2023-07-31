@@ -2,10 +2,10 @@ import { watch } from 'chokidar';
 import fs from 'fs-extra';
 import { join } from 'path';
 import { loadSpec } from './loader.js';
-import type { Compiler, CompilerOptions, DesignOutput } from './token.js';
-import { compileSpecs } from './token.js';
 import { logger } from './logger.js';
+import { type Compiler, type CompilerOptions, compileSpecs, type DesignOutput } from './core.js';
 
+export * from './core.js';
 export * from './token.js';
 export * from './plugins/index.js';
 export * from './loader.js';

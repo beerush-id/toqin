@@ -1,11 +1,10 @@
-import type { DesignSpec } from '../../token.js';
-import { DesignOutput } from '../../token.js';
 import postcss, { ProcessOptions as PostCSSOptions } from 'postcss';
 import cssnano, { Options as CSSNanoOptions } from 'cssnano';
 import autoprefixer, { Options as AutoprefixerOptions } from 'autoprefixer';
 import { CSSCompiler, type CSSCompilerOptions } from './compiler.js';
 import { SourceMapGenerator } from 'source-map';
 import { normalizePath } from 'vite';
+import type { DesignOutput, LoadedDesignSpec } from '../../core.js';
 
 export type CSSOptions = {
   outDir?: string;
@@ -24,7 +23,7 @@ export type EncodedCss = DesignOutput[] & {
   stringify(): string;
 }
 
-export async function encode(spec: DesignSpec | CSSCompiler, options?: CSSOptions): Promise<EncodedCss> {
+export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSSOptions): Promise<EncodedCss> {
   const { mode = 'css', extension = mode as 'css', outDir = '.' as string } = options || {};
   const outputs: EncodedCss = [] as never;
   const outName = `${ options?.indexName ?? spec?.name?.toLowerCase() ?? 'index' }.${ extension }`;

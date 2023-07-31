@@ -1,8 +1,8 @@
 import { join } from 'path';
-import { CompileEvent, Store } from './store.js';
-import type { Compiler } from './token.js';
+import { type CompileEvent, Store } from './store.js';
 import { logger } from './logger.js';
 import { css } from './plugins/index.js';
+import { Compiler } from './core.js';
 
 export type ToqinCLIConfig = {
   token: string;

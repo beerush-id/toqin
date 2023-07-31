@@ -1,9 +1,10 @@
-import type { DesignMap, DesignRules, DesignSpec, DesignToken, PseudoVariant, TokenMap } from './token.js';
-import type { DesignSystem } from './design.js';
+import type { Token, TokenMap } from './token.js';
+import type { Design, DesignMap, DesignRules, PseudoVariant } from './design.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONLine, JSONPointer, JSONPointers } from 'json-source-map';
 import { AnimationMap } from './animation.js';
 import { logger } from './logger.js';
+import { LoadedDesignSpec } from './core.js';
 
 export const PSEUDO_STATES = [
   'hover',
@@ -25,11 +26,11 @@ export const PSEUDO_ELEMENTS = [
 export const MOZ_PSEUDO_STATES = [
   '-moz-focusring'
 ];
-export const RESTRICTED_SPEC_KEYS: Array<keyof DesignSpec> = [
+export const RESTRICTED_SPEC_KEYS: Array<keyof LoadedDesignSpec> = [
   'extendedSpecs', 'includedSpecs'
 ];
 
-export function mergeTokenMaps(spec: DesignSpec, maps: TokenMap = {}) {
+export function mergeTokenMaps(spec: LoadedDesignSpec, maps: TokenMap = {}) {
   if (spec.extendedSpecs?.length) {
     for (const extendedSpec of spec.extendedSpecs) {
       mergeTokenMaps(extendedSpec, maps);
@@ -50,8 +51,8 @@ export function mergeTokenMaps(spec: DesignSpec, maps: TokenMap = {}) {
 }
 
 export function createTokenMap(
-  spec: DesignSpec,
-  parent?: DesignToken,
+  spec: LoadedDesignSpec,
+  parent?: Token,
   parentName?: string,
   parentPath?: string
 ): TokenMap {
@@ -96,7 +97,7 @@ export function createTokenMap(
     }
 
     if (token.tokens?.length) {
-      const childSpec = { ...spec, tokens: token.tokens } as DesignSpec;
+      const childSpec = { ...spec, tokens: token.tokens } as LoadedDesignSpec;
       const childMap = createTokenMap(childSpec, token, name, `${ path }.tokens`);
       merge(root, childMap);
     }
@@ -109,7 +110,7 @@ export function createTokenMap(
   return root;
 }
 
-export function createAnimationMap(spec: DesignSpec, parentName?: string, parentPath?: string) {
+export function createAnimationMap(spec: LoadedDesignSpec, parentName?: string, parentPath?: string) {
   const keyframes: AnimationMap = {};
 
   (spec.animations || []).forEach((animation, i) => {
@@ -135,7 +136,7 @@ export function createAnimationMap(spec: DesignSpec, parentName?: string, parent
 }
 
 export function createDesignMap(
-  spec: DesignSpec,
+  spec: LoadedDesignSpec,
   parentSelectors?: string[],
   isVariant?: boolean,
   parentPath?: string,
@@ -161,7 +162,7 @@ export function createDesignMap(
       const { root: rules, variants } = parseDesignRules(design.rules as never);
 
       if (variants?.length) {
-        const variantSpec = { ...spec, designs: variants } as DesignSpec;
+        const variantSpec = { ...spec, designs: variants } as LoadedDesignSpec;
         const paths = [ path, 'rules' ].join('.');
         merge(root, createDesignMap(variantSpec, selectors, true, paths, pointer));
       }
@@ -180,13 +181,13 @@ export function createDesignMap(
     }
 
     if (design.variants?.length) {
-      const variantSpec = { ...spec, designs: design.variants } as DesignSpec;
+      const variantSpec = { ...spec, designs: design.variants } as LoadedDesignSpec;
       const variants = createDesignMap(variantSpec, selectors, true, `${ path }.variants`);
       merge(root, variants);
     }
 
     if (design.children?.length) {
-      const childSpec = { ...spec, designs: design.children } as DesignSpec;
+      const childSpec = { ...spec, designs: design.children } as LoadedDesignSpec;
       const children = createDesignMap(childSpec, selectors, false, `${ path }.children`);
       merge(root, children);
     }
@@ -210,10 +211,10 @@ export function joinSelectors(source: string[], target: string[], separator?: st
 export function parseDesignRules(rules: DesignRules) {
   const root: DesignRules = {};
   const classVariants: {
-    [key: string]: DesignSystem
+    [key: string]: Design
   } = {};
   const variants: {
-    [key: string]: DesignSystem
+    [key: string]: Design
   } = {};
 
   for (const [ prop, value ] of Object.entries(rules)) {
