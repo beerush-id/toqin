@@ -181,7 +181,7 @@ export class TailwindCompiler {
     shifts?: Array<string | RegExp>,
     replace?: (value: string) => string | string[]
   ) {
-    const prefix = this.config?.prefix || this.spec.variablePrefix;
+    const prefix = this.config?.prefix || 'tq';
     const result: NestedProps = {};
 
     for (const [ name, token ] of Object.entries(this.tokenMaps)) {

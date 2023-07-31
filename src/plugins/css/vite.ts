@@ -1,228 +1,152 @@
-import type { FSWatcher, HmrContext, ViteDevServer } from 'vite';
-import type { DesignOutput, DesignSpec } from '../../token.js';
+import type { Plugin, ViteDevServer, WebSocketServer } from 'vite';
+import type { CompilerOptions, DesignOutput, DesignSpec } from '../../token.js';
 import { CSSCompiler } from './compiler.js';
-import { loadSpec } from '../../loader.js';
-import { join } from 'path';
+import { basename, join, normalize } from 'path';
+import type { CSSOptions } from './encoder.js';
+import { encode } from './encoder.js';
+import { Store } from '../../store.js';
+import { logger } from '../../logger.js';
 import fs from 'fs-extra';
-import type { CSSConfig } from './index.js';
 
-export type ViteCSSConfig = CSSConfig & {
-  tokenPath?: string;
+export type ViteCSSConfig = CompilerOptions & {
+  token?: string;
+  baseURL?: string;
+  extension?: 'css' | 'scss';
+  compilerOptions?: Partial<CSSOptions>;
 }
 
-type Initializer = (config?: CSSConfig) => (spec: DesignSpec) => Promise<DesignOutput[]>;
+export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOptions>): Promise<Plugin> {
+  const ext = `.${ config?.extension ?? 'css' }`;
+  let remotePath = (config?.baseURL || '/tokens')
+    .replace(/\/$/, '')
+    .replace(/^\./, '');
 
-export async function viteCss(init: Initializer, config?: ViteCSSConfig) {
-  const watchPaths: string[] = [];
-  const watchQueue: string[] = [];
-  const transform = init({ ...config, outDir: '.' });
-
-  let watcher: FSWatcher;
-  let specPath: string;
-  let designSpec: DesignSpec;
-  let designSpecs: DesignSpec[];
-
-  let compiler: CSSCompiler = undefined as never;
-  let content = '';
-
-  const compile = async (file: string) => {
-    specPath = specPath || file;
-
-    try {
-      const { spec, paths, specs = [] } = await loadSpec(specPath);
-
-      designSpec = spec;
-      designSpecs = specs;
-
-      for (const path of paths) {
-        if (!watchQueue.includes(path)) {
-          watchQueue.push(path);
-        }
-      }
-
-      compiler = new CSSCompiler(spec, config);
-      const results = await transform(compiler as never);
-
-      content = results
-        .filter(item => !(item.fileName || '').endsWith('.map'))
-        .map((item) => item.content)
-        .join('\r\n');
-
-      if (config?.outDir) {
-        results.forEach((item) => {
-          if (item.fileName) {
-            const fileName = join(process.cwd(), config?.outDir || './', item.fileName);
-            fs.ensureFileSync(fileName);
-            fs.writeFileSync(fileName, item.content);
-          }
-        });
-
-        const scriptFile = join(process.cwd(), config?.outDir || './', `${ config?.indexName ?? 'index' }.js`);
-        fs.ensureFileSync(scriptFile);
-        fs.writeFileSync(scriptFile, compiler.createHelperScript(true));
-      }
-
-      if (watcher) {
-        watch();
-      }
-    } catch (error) {
-      console.error(`Failed to parse design token file: ${ file }`);
-      console.error(error);
-    }
-  };
-
-  const watch = () => {
-    for (const path of watchQueue) {
-      if (!watchPaths.includes(path) && watcher) {
-        watcher.add(path);
-        watchPaths.push(path);
-      }
-    }
-  };
-
-  if (config?.tokenPath) {
-    specPath = config.tokenPath;
-    await compile(config.tokenPath);
+  if (!remotePath.startsWith('/')) {
+    remotePath = `/${ remotePath }`;
   }
 
-  const find = (id: string) => {
-    return designSpecs?.find((spec) => spec.id === id);
+  const stores = new Map<string, Store>();
+  const csStore = new Map<string, string>();
+  const jsStore = new Map<string, string>();
+
+  let socket: WebSocketServer;
+
+  const registerStore = async (url: string, registrant: string) => {
+    const store = new Store(url, config);
+
+    const base = basename(url);
+    const href = `${ remotePath }/${ base }`;
+
+    store.use(async (spec: DesignSpec): Promise<DesignOutput[]> => {
+      const compilerOptions = {
+        indexName: base,
+        extension: config?.extension,
+        sourceMap: config?.outDir ? 'inline' : false,
+        postcss: !!config?.outDir,
+        ...config?.compilerOptions
+      } as CSSOptions;
+      const compiler = new CSSCompiler(spec, compilerOptions);
+      const outputs = await encode(compiler, compilerOptions);
+
+      const csContent = outputs.stringify();
+      const jsContent = compiler.createScript(href + ext);
+
+      csStore.set(`${ base }${ ext }`, csContent);
+      jsStore.set(`${ base }.js`, jsContent);
+
+      if (config?.outDir) {
+        const path = join(process.cwd(), `${ config?.outDir }`, compilerOptions?.outDir || '.', base);
+        logger.info(path);
+
+        fs.ensureFileSync(path + ext);
+        fs.writeFileSync(path + ext, csContent);
+
+        fs.ensureFileSync(path + '.js');
+        fs.writeFileSync(path + '.js', compiler.createHelperScript());
+      }
+
+      return outputs;
+    });
+
+    store.subscribe(event => {
+      if (event.type === 'compile:complete') {
+        const content = csStore.get(`${ basename(base) }${ ext }`);
+
+        logger.debug(`Sending updated CSS to client.`);
+        socket?.send({
+          type: 'custom',
+          event: 'toqin-change',
+          data: { id: href + ext, content, version: store.root.version }
+        });
+      }
+    });
+
+    await store.run();
+    await store.compile();
+
+    logger.info(`Design token "${ store.root.file }" is registered by "${ registrant }".`);
+    stores.set(store.root.file, store);
+    return store;
   };
 
+  if (config?.token) {
+    await registerStore(config.token, 'Vite Config');
+  }
+
   return {
-    name: 'vite-plugin-toqin-css',
-    configureServer(_server: ViteDevServer) {
-      watcher = _server.watcher;
+    name: 'vite-plugin-toqin-remote-css',
+    configureServer: async (server: ViteDevServer) => {
+      socket = server.ws;
 
-      _server.middlewares.use(async (req, res, next) => {
-        if (req.url?.startsWith('/toqin/specs')) {
-          const [ , child ] = decodeURI(req.url).split('/toqin/specs');
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url || '';
 
-          if (req.method?.toLowerCase() === 'get') {
-            if (child) {
-              const spec = find(child.replace('/', ''));
-              if (spec) {
-                res.end(JSON.stringify(spec));
-                return;
-              } else {
-                res.statusCode = 404;
-                res.end();
-                return;
-              }
-            } else {
-              const { spec } = await loadSpec(specPath, undefined, undefined, false);
-              res.end(JSON.stringify(spec));
+        if (!config?.outDir && url.startsWith(remotePath)) {
+          const file = basename(url);
+
+          if (file.endsWith(ext)) {
+            const css = csStore.get(file);
+
+            if (css) {
+              res.setHeader('Content-Type', 'text/css');
+              res.end(css);
+              return;
+            }
+          }
+
+          if (file.endsWith('.js')) {
+            const script = jsStore.get(file);
+
+            if (script) {
+              res.setHeader('Content-Type', 'text/javascript');
+              res.end(script);
               return;
             }
           }
         }
 
-        if (req.url?.endsWith('.toqin')) {
-          const path = req.url?.replace(config?.baseURL ? config.baseURL + '/' : /^\//, '');
-
-          if (path) {
-            const file = fs.readFileSync(path);
-            res.end(file);
-            return;
-          }
+        if (url.endsWith('.toqin')) {
+          const path = url.replace(new RegExp(`^${remotePath}`), '')
+            .replace(/^\//, '');
+          const content = fs.readFileSync(normalize(path), 'utf-8');
+          res.setHeader('Content-Type', 'application/json');
+          res.end(content);
+          return;
         }
 
         next();
       });
-
-      _server.ws.on('toqin:set', (data) => {
-        console.log(data);
-      });
-
-      watch();
     },
-    resolveId(id: string) {
-      if (id === 'virtual:toqin-helper') {
-        return id;
-      }
-    },
-    load(id: string) {
-      if (id === 'virtual:toqin-helper') {
-        return compiler?.createHelperScript(true);
-      }
-    },
-    transform: async (src: string, file: string) => {
-      if (file.endsWith('.toqin')) {
-        try {
-          await compile(file);
+    transform: async (code: string, file: string) => {
+      if (file.endsWith(ext) && !file.endsWith(`.toqin${ ext }`) && options?.prefix) {
+        const variables = code.match(/var\(--tq-[\w-]+\)/g);
 
-          return { code: compiler.createHelperScript(false, content), map: null };
-        } catch (error) {
-          console.error(`Failed to parse design token file: ${ file }`);
-          console.error(error);
-        }
-
-        return { code: '' };
-      }
-
-      if (file.endsWith('.css') || file.endsWith('.scss')) {
-        let code = src;
-        const tokens = src.match(/var\(--[\w-]+\)/g);
-
-        if (designSpec && content && tokens) {
-          const prefix = config?.prefix ?? designSpec?.variablePrefix;
-
-          tokens.forEach((token) => {
-            if (token.startsWith('var(--this-')) {
-              return;
-            }
-
-            const search = token
-              .replace('var(', '')
-              .replace(')', '')
-              .replace('--tq-', '--')
-              .replace('--', prefix ? `--${ prefix }-` : '--');
-            const replace = `var(${ search })`;
-
-            if (replace !== token && content.includes(search)) {
-              code = code.replace(token, replace);
-            }
-          });
-        }
-
-        return { code, map: null };
-      }
-
-      return { code: src, map: null };
-    },
-    handleHotUpdate: async ({ file, server }: HmrContext) => {
-      if (file.endsWith('.toqin')) {
-        const prefix = designSpec?.variablePrefix;
-
-        try {
-          console.log(`Design token ${ file } has been changed.`);
-          await compile(file);
-
-          if (prefix !== designSpec?.variablePrefix) {
-            console.log(`Design token signature has been changed. Restarting server...`);
-            server.restart().then(() => {
-              server.ws.send({
-                type: 'custom',
-                event: 'toqin-change',
-                path: '*',
-              });
-            });
-
-            return [];
+        if (variables) {
+          for (const variable of variables) {
+            code = code.replace(variable, variable.replace('--tq-', `--${ options?.prefix }-`));
           }
-
-          server.ws.send({
-            type: 'custom',
-            event: 'toqin-change',
-            data: content,
-          });
-        } catch (error) {
-          console.error(`Failed to parse design token file: ${ file }`);
-          console.error(error);
         }
-
-        return [];
       }
-    },
+    }
   };
 }

@@ -1,5 +1,6 @@
 import type { CustomMediaQueries, NestedDeclarations, ScopedDeclarations, TokenMap, TokenType } from '../../token.js';
 import type { DesignValue, MediaQuery } from '../../design.js';
+import { logger } from '../../logger.js';
 
 export type ParserOptions = {
   tokens: TokenMap;
@@ -26,6 +27,14 @@ export const MEDIA_QUERIES: CustomMediaQueries = {
   '@xl': '(min-width: 1440px)',
   '@print': 'print',
 };
+
+export function similarQuery(search: string): string | undefined {
+  for (const [ name, query ] of Object.entries(MEDIA_QUERIES)) {
+    if (search.includes(`prefer-${ name.replace('@', '') }`)) {
+      return query as string;
+    }
+  }
+}
 
 export function colorOpacity(color: string, opacity: string | number): string {
   const alpha = parseFloat(opacity as string);
@@ -81,7 +90,7 @@ export function getMedia(query: MediaQuery, userQueries: CustomMediaQueries = {}
     return queries[q] as string;
   }
 
-  console.warn(`The media query "${ query }" is not supported.`);
+  logger.warn(`The media query "${ query }" is not supported.`);
 
   return query;
 }
@@ -133,9 +142,9 @@ export function resolveCssValue(
     });
   }
 
-  const animations = value.match(/\{[\w.-]+\}/g);
-  if (animations) {
-    animations.forEach(item => {
+  const prefixes = value.match(/\{[\w.-]+\}/g);
+  if (prefixes) {
+    prefixes.forEach(item => {
       const variable = item
         .replace('{', '')
         .replace('}', '')
@@ -145,20 +154,32 @@ export function resolveCssValue(
     });
   }
 
-  const copies = value.match(/\$[\w!.-]+/g);
+  const copies = value.match(/\$[\w!.-=]+/g);
   if (copies) {
     copies.forEach((copy) => {
-      const [ key, alpha ] = copy.replace('$', '').split('!');
+      const [ base, fallback ] = copy.replace('$', '').split(':');
+      const [ key, alpha ] = base.split(/[!=]/);
       const token = maps?.[key];
 
       if (token && token.value) {
+        let tValue = token.value;
+
+        if (/^(@|~|\$)/.test(token?.value as string)) {
+          tValue = resolveCssValue(maps, token.value as string, prefix, name, kind, true);
+        }
+
         if (alpha) {
-          value = value.replace(copy, colorOpacity(token.value as string, alpha));
+          value = value.replace(copy, colorOpacity(tValue as string, alpha));
         } else {
-          value = value.replace(copy, token.value as string);
+          value = value.replace(copy, tValue as string);
         }
       } else {
-        throw new Error(`COPY VALUE ERROR: Can not find the token value of "${ copy }".`);
+        if (fallback) {
+          const fallbackValue = resolveCssValue(maps, fallback, prefix, name, kind, true);
+          value = value.replace(copy, fallbackValue);
+        } else {
+          throw new Error(`COPY VALUE ERROR: Cannot resolve the token value of "${ copy }".`);
+        }
       }
     });
   }

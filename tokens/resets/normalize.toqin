@@ -16,7 +16,6 @@
     {
       "name": "html",
       "selectors": ["html"],
-      "root": true,
       "important": true,
       "description": [
         "Correct the line height in all browsers.",

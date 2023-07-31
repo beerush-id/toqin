@@ -7,11 +7,12 @@ import type {
   TokenMap
 } from '../../token.js';
 import { getTagType, TagType } from '../../token.js';
-import type { CSSConfig } from './index.js';
-import { MEDIA_QUERIES, parseQueries, type ParserOptions, resolveCssValue } from './parser.js';
+import { MEDIA_QUERIES, parseQueries, resolveCssValue, similarQuery } from './parser.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONLine } from 'json-source-map';
 import { anyRegEx, mergeTokenMaps } from '../../parser.js';
+import { helper } from './helper.js';
+import { logger } from '../../logger.js';
 import { script } from './script.js';
 
 export type CSSMap = {
@@ -35,7 +36,10 @@ export type CSSCompilerOptions = {
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;
   includeTokens?: string[];
   excludeTokens?: string[];
-} & ParserOptions;
+  customQueryMode?: 'attribute' | 'class' | 'id';
+};
+
+type CompilerOptions = CSSCompilerOptions & { tokens: TokenMap };
 
 export class CSSCompiler {
   public name: string;
@@ -52,17 +56,22 @@ export class CSSCompiler {
     for (const [ name, option ] of Object.entries(this.mediaQueries)) {
       if (typeof option === 'string' && option.includes('[')) {
         const group = option.includes('light') || option.includes('dark') ? 'color' : 'display';
+        const scheme = option.includes('light') ? 'light' : option.includes('dark') ? 'dark' : undefined;
+        const query = option.replace(/\[|\]/g, '');
+        const mediaQuery = similarQuery(query);
 
-        queries.push({
-          name, group,
-          query: option.replace(/\[|\]/g, ''),
-          scheme: option.includes('light') ? 'light' : option.includes('dark') ? 'dark' : undefined
-        });
+        queries.push({ name, group, query, mediaQuery, scheme, });
       } else if (typeof option === 'object') {
-        const { query, group = 'display', scheme } = option as CustomMediaQuery;
+        const { query, mediaQuery, group = 'display', scheme } = option as CustomMediaQuery;
 
         if (query.includes('[')) {
-          queries.push({ name, group, scheme, query: query.replace(/\[|\]/g, '') });
+          queries.push({
+            name,
+            group,
+            scheme,
+            query: query.replace(/\[|\]/g, ''),
+            mediaQuery: mediaQuery || similarQuery(query)
+          });
         }
       }
     }
@@ -73,26 +82,32 @@ export class CSSCompiler {
   constructor(public spec: DesignSpec, public config?: Partial<CSSCompilerOptions>, public parent?: CSSCompiler) {
     this.name = spec.name;
     this.tokenMaps = parent?.tokenMaps || mergeTokenMaps(spec);
-    this.mediaQueries = parent?.mediaQueries || { ...MEDIA_QUERIES, ...(this.config?.mediaQueries || this.spec.mediaQueries) };
+    this.mediaQueries = parent?.mediaQueries || { ...MEDIA_QUERIES, ...(config?.mediaQueries || spec.mediaQueries) };
   }
 
-  public createHelperScript(compact?: boolean, replace?: string) {
+  public createScript(id: string) {
+    return [
+      this.createHmrScript(id),
+      this.createHelperScript()
+    ].join('\r\n');
+  }
+
+  public createHelperScript() {
     const queries = JSON.stringify(this.mediaQueryMaps);
     const scheme = this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system';
     const mode = this.config?.customQueryMode || this.spec.customQueryMode || 'class';
 
-    let body = script.toString();
-
-    if (compact) {
-      body = body.replace('--CONTENT--', '');
-    } else {
-      body = body.replace('--CONTENT--', replace || this.stringify());
-    }
-
     return [
-      `(${ body })`,
-      `(${ queries }, '${ mode }', '${ scheme }');\r\n`
+      `(${ helper.toString() })`,
+      `(${ queries }, '${ mode }', '${ scheme }');`
     ].join('');
+  }
+
+  public createHmrScript(id: string) {
+    return [
+      `(${ script.toString() })`,
+      `('${ id }', '${ this.spec.version }');`
+    ].join('\r\n');
   }
 
   public compile(options?: CSSCompilerOptions, fromLine?: number): this {
@@ -103,28 +118,28 @@ export class CSSCompiler {
       mediaQueries: this.mediaQueries,
       strictTags: this.config?.strictTags,
 
-      prefix: this.config?.prefix || this.spec.variablePrefix,
+      prefix: this.config?.prefix || 'tq',
       customQueryMode: this.config?.customQueryMode || this.spec.customQueryMode || 'class',
       colorScheme: this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system',
       excludeTokens: this.config?.excludeTokens || this.spec.excludeTokens,
       includeTokens: this.config?.includeTokens || this.spec.includeTokens
     };
 
-    options = { ...config, ...options };
+    const compilerOptions = { ...config, ...options } as CompilerOptions;
 
     if (fromLine) {
       this.currentLine = fromLine;
     }
 
     if (!this.parent) {
-      this.assignColorScheme(options);
+      this.assignColorScheme(compilerOptions);
     }
 
     if (spec.extendedSpecs?.length) {
       for (const extendedSpec of spec.extendedSpecs) {
-        const css = new CSSCompiler(extendedSpec, options, this);
+        const css = new CSSCompiler(extendedSpec, this.config, this);
 
-        css.compile(options, this.currentLine);
+        css.compile(compilerOptions, this.currentLine);
 
         this.currentLine = css.currentLine;
         this.contents.push(...css.contents);
@@ -132,15 +147,15 @@ export class CSSCompiler {
       }
     }
 
-    this.writeTokens(options);
-    this.writeAnimations(options);
-    this.writeDesigns(options);
+    this.writeTokens(compilerOptions);
+    this.writeAnimations(compilerOptions);
+    this.writeDesigns(compilerOptions);
 
     if (spec.includedSpecs?.length) {
       for (const includedSpec of spec.includedSpecs) {
-        const css = new CSSCompiler(includedSpec, options, this);
+        const css = new CSSCompiler(includedSpec, this.config, this);
 
-        css.compile(options, this.currentLine);
+        css.compile(compilerOptions, this.currentLine);
 
         this.currentLine = css.currentLine;
         this.contents.push(...css.contents);
@@ -189,21 +204,26 @@ export class CSSCompiler {
     this.putLine('');
   }
 
-  private writeTokens(options: CSSCompilerOptions) {
+  private writeTokens(options: CompilerOptions) {
     if (!Object.keys(this.spec.tokenMaps || {}).length) {
       return;
     }
 
     const scope = options?.scope || ':root';
     const prefix = options?.prefix;
+    const line = this.spec.tokenPointer && {
+      pointer: this.spec.tokenPointer,
+      name: scope,
+      url: this.spec.url
+    } as LineMap;
 
-    this.putLine(`${ scope } {`);
+    this.putLine(`${ scope } {`, line);
 
     const queries: NestedDeclarations = {};
 
     for (const [ name, ref ] of Object.entries(this.spec.tokenMaps || {})) {
       if (this.shouldIgnore(name, options)) {
-        console.log('Skipping due to an exclusion rule:', name);
+        logger.info('Skipping due to an exclusion rule:', name);
         continue;
       }
 
@@ -230,9 +250,11 @@ export class CSSCompiler {
         const prop = `--${ prefix ? prefix + '-' : '' }${ name.replace(/\./g, '-') }`;
         const value = resolveCssValue(this.tokenMaps, ref.value, prefix, name, ref.type);
 
-        this.putLine(`  ${ prop }: ${ value };`, {
-          pointer: ref.pointer, name: prop, url: ref.sourceUrl
-        });
+        // this.putLine(`  ${ prop }: ${ value };`, {
+        //   pointer: ref.pointer, name: prop, url: ref.sourceUrl
+        // });
+
+        this.putLine(`  ${ prop }: ${ value };`);
       }
     }
 
@@ -240,11 +262,11 @@ export class CSSCompiler {
     this.putLine('');
 
     if (Object.keys(queries).length) {
-      this.putLines(queries);
+      this.putLines(queries, '', line);
     }
   }
 
-  private writeAnimations(options: CSSConfig) {
+  private writeAnimations(options: CompilerOptions) {
     const prefix = options?.prefix;
 
     for (const [ name, ref ] of Object.entries(this.spec.animationMaps || {})) {
@@ -275,10 +297,9 @@ export class CSSCompiler {
     }
   }
 
-  private writeDesigns(options: CSSCompilerOptions) {
+  private writeDesigns(options: CompilerOptions) {
     const scope = options?.scope;
     const prefix = options?.prefix;
-    const queries: NestedDeclarations = {};
 
     for (const [ selector, ref ] of Object.entries(this.spec.designMaps || {})) {
       let selectors = selector.split(/\s?,\s?/);
@@ -297,14 +318,23 @@ export class CSSCompiler {
         continue;
       }
 
-      if (scope && !ref.root) {
+      if (scope && !ref.important) {
         selectors = selectors.map((s) => `${ scope } ${ s }`);
       }
 
+      if (scope && ref.root) {
+        selectors = [ scope ];
+      }
+
       if (ref.rules && Object.keys(ref.rules).length) {
-        this.putLine(`${ selectors.join(', ') } {`, {
-          pointer: ref.pointer, name: selectors.join(', '), url: ref.sourceUrl
-        });
+        const queries: NestedDeclarations = {};
+        const line = ref.pointer && {
+          pointer: ref.pointer,
+          name: selectors.join(', '),
+          url: ref.sourceUrl
+        };
+
+        this.putLine(`${ selectors.join(', ') } {`, line);
 
         for (const [ name, valueRef ] of Object.entries(ref.rules)) {
           let prop = name;
@@ -342,11 +372,11 @@ export class CSSCompiler {
 
         this.putLine(`}`);
         this.putLine('');
-      }
-    }
 
-    if (Object.keys(queries).length) {
-      this.putLines(queries);
+        if (Object.keys(queries).length) {
+          this.putLines(queries, '', line);
+        }
+      }
     }
   }
 

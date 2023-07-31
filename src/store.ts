@@ -1,9 +1,10 @@
 import type { Compiler, CompilerOptions, DesignOutput, DesignSpec, SpecData } from './token.js';
-import { readSpec } from './loader.js';
+import { ALLOWED_OVERRIDE_KEYS, readSpec } from './loader.js';
 import { createAnimationMap, createDesignMap, createTokenMap, RESTRICTED_SPEC_KEYS } from './parser.js';
 import { dirname, join } from 'path';
-import { FSWatcher, watch } from 'chokidar';
+import { FSWatcher, watch as watchFile } from 'chokidar';
 import fs from 'fs-extra';
+import { logger } from './logger.js';
 
 export type SpecIndex = {
   name: string;
@@ -20,12 +21,12 @@ export type SpecIndex = {
 
 export type StoreEvent = {
   type: 'change' | 'index:ready' | 'index:reindex' | 'watch' | 'unwatch' | 'compile:start' | 'compile:complete' | 'fs:write' | 'fs:read';
-  data?: SpecIndex | DesignOutput[] | string | string[];
+  data?: SpecIndex | OutputWrapper | string | string[];
 }
 
 export type CompileEvent = {
   type: 'compile:start' | 'compile:complete';
-  data: DesignOutput[];
+  data: OutputWrapper;
 }
 
 export type FSEvent = {
@@ -41,12 +42,14 @@ export type WatchEvent = {
 export type Unsubscribe = () => void;
 export type OutputWrapper = DesignOutput[] & {
   write: () => void;
+  stringify: () => string;
 }
 
 export class Store {
   public root: SpecIndex = undefined as never;
   public specs: SpecIndex[] = [];
   public indexes: { [key: string]: SpecIndex } = {};
+  public outputs?: OutputWrapper;
 
   private watcher?: FSWatcher;
   private watchedPaths: string[] = [];
@@ -61,13 +64,17 @@ export class Store {
   }
 
   public async compile(options?: CompilerOptions): Promise<OutputWrapper> {
-    const compileOptions = { ...this.options, ...options };
+    const now = Date.now();
+
+    const compileOptions = { ...this.options, ...options } as CompilerOptions;
     const outputs: OutputWrapper = [] as never;
 
     for (const compile of this.compilers) {
       const output = await compile(this.root.spec, compileOptions);
       outputs.push(...output);
     }
+
+    logger.debug(`Design Spec has been recompiled in ${ Date.now() - now }ms.`);
 
     outputs.write = () => {
       for (const output of outputs) {
@@ -81,34 +88,36 @@ export class Store {
         }
       }
     };
+    outputs.stringify = () => outputs.map((output) => output.content).join('\n');
 
+    this.outputs = outputs;
     this.emit({ type: 'compile:complete', data: outputs } as CompileEvent);
-
     return outputs;
   }
 
-  public async run(): Promise<this> {
+  public async run(watch?: boolean): Promise<this> {
     if (!this.root) {
       await this.load();
     }
 
-    this.watcher = watch(this.root.file);
-    this.watchedPaths.push(this.root.file);
-    this.watcher.on('change', async (file) => {
-      const now = Date.now();
+    if (watch || this.options?.watch) {
+      this.watcher = watchFile(this.root.file);
+      this.watchedPaths.push(this.root.file);
+      this.emit({ type: 'watch', data: this.root.file } as WatchEvent);
 
-      console.debug(`Design Spec "${ file }" has been changed.`);
-      await this.reindex(file);
-      this.emit({ type: 'index:reindex', data: this.indexes[file] });
+      this.watcher.on('change', async (file) => {
+        logger.debug(`Design Spec "${ file }" has been changed.`);
+        await this.reindex(file);
+        this.emit({ type: 'index:reindex', data: this.indexes[file] });
 
-      if (this.compilers.length) {
-        await this.compile();
-      }
+        if (this.compilers.length) {
+          await this.compile();
+        }
+      });
 
-      console.debug(`Design Spec "${ file }" has been recompiled in ${ Date.now() - now }ms.`);
-    });
+      this.watchAll();
+    }
 
-    this.watch();
     return this;
   }
 
@@ -125,10 +134,10 @@ export class Store {
     } = await readSpec(url, fromIndex?.file ? dirname(fromIndex?.file) : fromIndex?.file, fromIndex?.file);
 
     if (/[\sA-Z]+/.test(data.name)) {
-      console.warn(`Design Spec "${ data.name }" has invalid name. Please use kebab-case.`);
+      logger.warn(`Design Spec "${ data.name }" has invalid name. Please use kebab-case.`);
 
       data.name = data.name.toLowerCase().replace(/\s+/g, '-');
-      console.warn(`Design Spec "${ spec.name }" automatically renamed to "${ data.name }".`);
+      logger.warn(`Design Spec "${ spec.name }" automatically renamed to "${ data.name }".`);
       spec.name = data.name;
     }
 
@@ -159,6 +168,7 @@ export class Store {
     spec.url = path;
 
     spec.pointers = pointers;
+    spec.tokenPointer = pointers['/tokens']?.value;
     spec.tokenMaps = createTokenMap(spec);
     spec.designMaps = createDesignMap(spec);
     spec.animationMaps = createAnimationMap(spec);
@@ -183,7 +193,7 @@ export class Store {
   }
 
   public async write(url: string) {
-    console.debug(this);
+    logger.debug(this);
   }
 
   public subscribe(callback: (event: StoreEvent) => void): Unsubscribe {
@@ -198,7 +208,7 @@ export class Store {
     };
   }
 
-  private watch() {
+  private watchAll() {
     for (const spec of this.specs) {
       if (!this.watchedPaths.includes(spec.file)) {
         this.watchedPaths.push(spec.file);
@@ -276,7 +286,9 @@ export class Store {
         await this.extendIndex(previous, url, pos);
       }
 
-      this.watch();
+      if (this.options?.watch) {
+        this.watchAll();
+      }
     }
   }
 
@@ -313,7 +325,9 @@ export class Store {
         await this.includeIndex(previous, url, pos);
       }
 
-      this.watch();
+      if (this.options?.watch) {
+        this.watchAll();
+      }
     }
   }
 
@@ -334,6 +348,12 @@ export class Store {
       index.extendedIndexes.unshift(extendedIndex);
       spec.extendedSpecs.unshift(extendedSpec);
     }
+
+    for (const [ key, value ] of Object.entries(extendedSpec)) {
+      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof this.root.spec[key as keyof DesignSpec] === 'undefined') {
+        this.root.spec[key as keyof DesignSpec] = value as never;
+      }
+    }
   }
 
   private async includeIndex(index: SpecIndex, url: string, pos?: number) {
@@ -352,6 +372,12 @@ export class Store {
     } else {
       index.includedIndexes.push(includedIndex);
       spec.includedSpecs.push(includedSpec);
+    }
+
+    for (const [ key, value ] of Object.entries(includedSpec)) {
+      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof DesignSpec) && typeof this.root.spec[key as keyof DesignSpec] === 'undefined') {
+        this.root.spec[key as keyof DesignSpec] = value as never;
+      }
     }
   }
 }

@@ -28,7 +28,6 @@ const cachedSpecs: {
 } = {};
 
 export const ALLOWED_OVERRIDE_KEYS: Array<keyof DesignSpec> = [
-  'variablePrefix',
   'mediaQueries',
   'defaultColorScheme',
   'customQueryMode',

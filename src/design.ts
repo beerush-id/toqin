@@ -35,12 +35,19 @@ export type DesignType = 'element' | 'pseudo' | 'pseudo-element' | 'pseudo-class
 
 export type DesignSystem = {
   name: string;
-  rules: ToqinStyle;
   type?: DesignType;
-  selectors?: string[];
-  root?: boolean;
-  important?: boolean;
   description?: string;
+
+  selectors?: string[];
+  rules: ToqinStyle;
+
+  /* Variant selectors will be merged with the element selector. */
   variants?: DesignSystem[];
+  /* Children selectors will be scoped to the element selector. */
   children?: DesignSystem[];
+
+  /* Replace the selector with "rootScope" if it is the root element. */
+  root?: boolean;
+  /* Prevent the selector from being scoped. */
+  important?: boolean;
 };

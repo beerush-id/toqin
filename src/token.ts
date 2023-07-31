@@ -17,7 +17,8 @@ export type DesignToken = {
 
 export type CustomMediaQuery = {
   query: string;
-  group?: 'color' | 'display';
+  group: 'color' | 'display';
+  mediaQuery?: string;
   scheme?: 'light' | 'dark';
 };
 
@@ -25,6 +26,7 @@ export type MediaQueryMap = {
   name: string;
   group: 'color' | 'display';
   query: string;
+  mediaQuery?: string;
   scheme?: 'light' | 'dark';
 }
 
@@ -76,14 +78,13 @@ export type PseudoVariant = {
 
 export type SpecData = {
   name: string;
-  version?: string;
+  version: string;
   description?: string;
 
   tokens?: DesignToken[];
   designs?: DesignSystem[];
   animations?: AnimationSpec[];
 
-  variablePrefix?: string;
   mediaQueries?: CustomMediaQueries;
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;
   customQueryMode?: 'attribute' | 'class';
@@ -108,6 +109,7 @@ export type DesignSpec = SpecData & {
   includedSpecs?: DesignSpec[];
 
   pointers?: JSONPointers;
+  tokenPointer?: JSONLine;
 };
 
 export type CompilerOptions = {

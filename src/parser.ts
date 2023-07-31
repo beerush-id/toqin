@@ -1,8 +1,9 @@
 import type { DesignMap, DesignRules, DesignSpec, DesignToken, PseudoVariant, TokenMap } from './token.js';
 import type { DesignSystem } from './design.js';
 import { merge } from '@beerush/utils/object';
-import type { JSONPointer, JSONPointers } from 'json-source-map';
+import type { JSONLine, JSONPointer, JSONPointers } from 'json-source-map';
 import { AnimationMap } from './animation.js';
+import { logger } from './logger.js';
 
 export const PSEUDO_STATES = [
   'hover',
@@ -102,7 +103,7 @@ export function createTokenMap(
   });
 
   if (!parent) {
-    console.debug(`Design tokens for "${ spec.name }" has been mapped.`);
+    logger.debug(`Design tokens for "${ spec.name }" has been mapped.`);
   }
 
   return root;
@@ -137,9 +138,9 @@ export function createDesignMap(
   spec: DesignSpec,
   parentSelectors?: string[],
   isVariant?: boolean,
-  parentPath?: string
+  parentPath?: string,
+  parentPointer?: JSONLine
 ) {
-  const scope = spec.rootScope;
   const root: DesignMap = {};
 
   (spec.designs || []).forEach((design, i) => {
@@ -152,18 +153,17 @@ export function createDesignMap(
       }
 
       selectors = joinSelectors(selectors, parentSelectors, isVariant ? '' : ' ');
-    } else if (scope) {
-      selectors = selectors.map(item => `${ scope } ${ item }`);
     }
 
     if (Object.keys(design.rules || {}).length) {
       const name = selectors.join(', ');
+      const pointer = getPointer(spec.pointers, path + '.name')?.key;
       const { root: rules, variants } = parseDesignRules(design.rules as never);
 
       if (variants?.length) {
         const variantSpec = { ...spec, designs: variants } as DesignSpec;
         const paths = [ path, 'rules' ].join('.');
-        merge(root, createDesignMap(variantSpec, selectors, true, paths));
+        merge(root, createDesignMap(variantSpec, selectors, true, paths, pointer));
       }
 
       root[name] = {
@@ -173,7 +173,7 @@ export function createDesignMap(
         name: design.name,
         selectors: design.selectors || [ `.${ design.name }` ],
         sourceUrl: spec.url,
-        pointer: getPointer(spec.pointers, path + '.name')?.key,
+        pointer: parentPointer || getPointer(spec.pointers, path + '.name')?.key,
         path,
         rules,
       };

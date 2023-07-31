@@ -4,6 +4,7 @@ import { join } from 'path';
 import { loadSpec } from './loader.js';
 import type { Compiler, CompilerOptions, DesignOutput } from './token.js';
 import { compileSpecs } from './token.js';
+import { logger } from './logger.js';
 
 export * from './token.js';
 export * from './plugins/index.js';
@@ -13,7 +14,7 @@ export * from './store.js';
 export type ToqinConfig = {
   outDir?: string;
   watch?: boolean;
-  tokenPath?: string;
+  token?: string;
 };
 
 export type CompilerOutput = {
@@ -23,11 +24,11 @@ export type CompilerOutput = {
 
 export class Toqin {
   private compilers: Compiler[] = [];
-  private readonly tokenPath;
-  private wathPaths: string[] = [];
+  private readonly token;
+  private watchPaths: string[] = [];
 
   constructor(public options: ToqinConfig) {
-    this.tokenPath = options?.tokenPath ? join(process.cwd(), options.tokenPath) : join(process.cwd(), 'design.toqin');
+    this.token = options?.token ? join(process.cwd(), options.token) : join(process.cwd(), 'design.toqin');
   }
 
   public use(compiler: Compiler): this {
@@ -42,20 +43,20 @@ export class Toqin {
     try {
       await this.compile(options);
     } catch (error) {
-      console.error('Failed to compile design token.');
-      console.error(error);
+      logger.error('Failed to compile design token.');
+      logger.error(error);
     }
   }
 
   public watch(path: string, options?: ToqinConfig) {
     watch(path).on('change', async () => {
-      console.log(`Design token ${ path } has been changed.`);
+      logger.info(`Design token ${ path } has been changed.`);
 
       try {
         await this.compile(options);
       } catch (error) {
-        console.error('Failed to compile design token.');
-        console.error(error);
+        logger.error('Failed to compile design token.');
+        logger.error(error);
       }
     });
   }
@@ -64,10 +65,10 @@ export class Toqin {
     const now = Date.now();
 
     const config: CompilerOptions = { ...(this.options || {}), ...(options || {}) };
-    const { spec, paths } = await loadSpec(this.tokenPath);
+    const { spec, paths } = await loadSpec(this.token);
     const outputs = await compileSpecs(spec, this.compilers, options ?? this.options);
 
-    console.debug(`Compiled design token in ${ Date.now() - now }ms.`);
+    logger.debug(`Compiled design token in ${ Date.now() - now }ms.`);
 
     const outDir = join(process.cwd(), config.outDir ?? 'tokens');
 
@@ -82,9 +83,9 @@ export class Toqin {
 
     if (options?.watch || this.options?.watch) {
       for (const path of paths) {
-        if (!this.wathPaths.includes(path)) {
+        if (!this.watchPaths.includes(path)) {
           this.watch(path, options);
-          this.wathPaths.push(path);
+          this.watchPaths.push(path);
         }
       }
     }

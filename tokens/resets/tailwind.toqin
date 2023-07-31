@@ -36,7 +36,6 @@
     {
       "name": "html",
       "root": true,
-      "important": true,
       "selectors": ["html"],
       "rules": {
         "line-height": "1.5",
@@ -51,7 +50,6 @@
       "name": "body",
       "root": true,
       "selectors": ["body"],
-      "important": true,
       "rules": {
         "margin": "0",
         "line-height": "inherit"
