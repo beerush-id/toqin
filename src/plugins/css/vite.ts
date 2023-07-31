@@ -56,7 +56,6 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
 
       if (config?.outDir) {
         const path = join(process.cwd(), `${ config?.outDir }`, compilerOptions?.outDir || '.', base);
-        logger.info(path);
 
         fs.ensureFileSync(path + ext);
         fs.writeFileSync(path + ext, csContent);
