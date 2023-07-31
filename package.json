@@ -30,6 +30,9 @@
       "require": "./dist/cjs/plugins/css/index.cjs"
     }
   },
+  "bin": {
+    "toqin": "./bin/toqin.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/beerush-id/toqin.git"

@@ -35,64 +35,147 @@ code for you.
 ### Design Token
 
 ```json
-[
-  {
-    "name": "color",
-    "type": "color",
-    "description": "Base Color Palettes",
-    "tokens": [
-      {
-        "name": "text",
-        "description": "Text Color",
-        "value": {
-          "@light": "#000000",
-          "@dark": "#ffffff"
+{
+  "name": "design-system",
+  "description": "My Design System",
+  "tokens": [
+    {
+      "name": "color",
+      "type": "color",
+      "tokens": [
+        {
+          "name": "blue",
+          "value": "#0000ff"
+        },
+        {
+          "name": "black",
+          "value": "#000000"
+        },
+        {
+          "name": "white",
+          "value": "#ffffff"
+        },
+        {
+          "name": "text",
+          "value": {
+            "@": "@color.black",
+            "@dark": "@color.white"
+          }
+        },
+        {
+          "name": "background",
+          "value": {
+            "@": "@color.white",
+            "@dark": "@color.black"
+          }
         }
-      },
-      {
-        "name": "background",
-        "description": "Background color",
-        "value": {
-          "@light": "#ffffff",
-          "@dark": "#000000"
+      ]
+    }
+  ],
+  "designs": [
+    {
+      "name": "anchor",
+      "selectors": ["a"],
+      "description": "Anchor styles",
+      "rules": {
+        "color": {
+          "@": "@color.blue",
+          "@dark": "@color.white"
+        },
+        "font-size": {
+          "@": "14px",
+          "@small": "12px"
         }
       }
-    ]
-  }
-]
+    }
+  ]
+}
 ```
 
 ### Generate CSS
 
 ```css
 :root {
-  --color-text: #000000;
-  --color-background: #ffffff;
+  --color-blue: #0000ff;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-text: var(--color-black);
+  --color-background: var(--color-white);
+}
+
+a {
+  color: var(--color-blue);
+  font-size: 14px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-text: #ffffff;
-    --color-background: #000000;
+    --color-text: var(--color-white);
+    --color-background: var(--color-black);
+  }
+
+  a {
+    color: var(--color-white);
+  }
+}
+
+@media (max-width: 640px) {
+  a {
+    font-size: 12px;
   }
 }
 ```
 
-### Generated SCSS
+### Generated Tailwind CSS
 
-```scss
-:root {
-  --color-text: #000000;
-  --color-background: #ffffff;
-}
+**`CSS Variable Mode`**
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text: #ffffff;
-    --color-background: #000000;
-  }
-}
+```js (title="tailwind.config.js")
+export default {
+  theme: {
+    colors: {
+      blue: '#0000ff',
+      black: '#000000',
+      white: '#ffffff',
+      text: {
+        DEFAULT: 'var(--color-black)',
+        dark: 'var(--color-white)',
+      },
+      background: {
+        DEFAULT: 'var(--color-white)',
+        dark: 'var(--color-black)',
+      },
+    },
+  },
+};
 
-$color-text: var(--color-text);
-$color-background: var(--color-background);
+```
+
+**`Inline Mode`**
+
+```js (title="tailwind.config.js")
+export default {
+  theme: {
+    colors: {
+      blue: '#0000ff',
+      black: '#000000',
+      white: '#ffffff',
+      text: {
+        DEFAULT: '#000000',
+        dark: '#ffffff',
+      },
+      background: {
+        DEFAULT: '#ffffff',
+        dark: '#000000',
+      },
+    },
+  },
+};
+
+```
+
+**`Tailwind Classes (WIP)`**
+
+```js (title="tailwind.classes.js")
+export const anchor = 'text-blue text-[14px] dark:text-white sm:text-[12px]';
 ```
