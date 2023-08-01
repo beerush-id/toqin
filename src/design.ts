@@ -24,6 +24,8 @@ export type Design = {
   variants?: Design[];
   /* Children selectors will be scoped to the element selector. */
   children?: Design[];
+  /* Only select direct children. */
+  directChildren?: boolean;
 
   /* Replace the selector with "rootScope" if it is the root element. */
   root?: boolean;
@@ -50,4 +52,14 @@ export type DesignMap = {
 export type PseudoVariant = {
   name: string;
   type: DesignType;
+};
+
+export type DesignRuleSet = {
+  selector: string;
+  rules: DesignRules;
+};
+export type DesignImplementor = {
+  group: string;
+  select: string[];
+  ruleSets: DesignRuleSet[];
 };

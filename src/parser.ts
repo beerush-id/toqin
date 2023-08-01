@@ -1,5 +1,5 @@
 import type { Token, TokenMap } from './token.js';
-import type { Design, DesignMap, DesignRules, PseudoVariant } from './design.js';
+import type { Design, DesignImplementor, DesignMap, DesignRules, PseudoVariant } from './design.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONLine, JSONPointer, JSONPointers } from 'json-source-map';
 import { AnimationMap } from './animation.js';
@@ -144,6 +144,10 @@ export function createDesignMap(
 ) {
   const root: DesignMap = {};
 
+  if (spec.mixins?.length) {
+    Object.assign(root, createImplementations(spec.mixins, spec));
+  }
+
   (spec.designs || []).forEach((design, i) => {
     const path = parentPath ? `${ parentPath }.${ i }` : `designs.${ i }`;
     let selectors = design.selectors || [ `.${ design.name }` ];
@@ -153,7 +157,8 @@ export function createDesignMap(
         selectors = selectors.map(item => variantSelector(item));
       }
 
-      selectors = joinSelectors(selectors, parentSelectors, isVariant ? '' : ' ');
+      const joint: string = isVariant ? '' : (design.directChildren ? ' > ' : ' ');
+      selectors = joinSelectors(selectors, parentSelectors, joint);
     }
 
     if (Object.keys(design.rules || {}).length) {
@@ -289,7 +294,7 @@ function parsePseudoVariants(name: string): PseudoVariant[] {
   } else if (PSEUDO_ELEMENTS.includes(name) || MOZ_PSEUDO_STATES.includes(name)) {
     return [
       {
-        name: `:${ name }`,
+        name: `::${ name }`,
         type: 'pseudo-element'
       }
     ];
@@ -309,4 +314,37 @@ export function getPointer(pointers: JSONPointers = {}, path = ''): JSONPointer 
 
 export function anyRegEx(rule: string): RegExp {
   return new RegExp(rule.replace('.*', '\\.([^?]+)'), 'g');
+}
+
+function createImplementations(implementations: DesignImplementor[], spec: LoadedDesignSpec) {
+  const root: DesignMap = {};
+  const designs: Design[] = [];
+
+  implementations.forEach((design, i) => {
+    const { group, select = [], ruleSets = [] } = design;
+    const pointer = getPointer(spec.pointers, `implements.${ i }.ruleSets`)?.key;
+
+    select.forEach(token => {
+      ruleSets.forEach(ruleSet => {
+        const { selector, rules: r } = ruleSet;
+        const name = selector.replace('@this', token);
+        const rules: DesignRules = {};
+
+        for (const [ prop, value ] of Object.entries(r)) {
+          rules[prop] = (value as string).replace('@this', `@${ group }.${ token }`);
+        }
+
+        designs.push({
+          name: name,
+          selectors: [ `.${ name }` ],
+          rules
+        });
+      });
+    });
+
+    const map = createDesignMap({ ...spec, designs, mixins: undefined }, undefined, undefined, undefined, pointer);
+    Object.assign(root, map);
+  });
+
+  return root;
 }

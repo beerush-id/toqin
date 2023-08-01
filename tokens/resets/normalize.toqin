@@ -1,5 +1,6 @@
 {
   "name": "normalize",
+  "displayName": "Normalize CSS",
   "version": "1.0.0",
   "description": "CSS Normalize (based on normalize.css)",
   "tokens": [],

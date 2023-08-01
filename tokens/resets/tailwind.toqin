@@ -1,5 +1,6 @@
 {
   "name": "tailwind.",
+  "displayName": "Tailwind Resets",
   "version": "1.0.0",
   "description": "Normalize CSS based on Tailwind Normalize",
   "tokens": [

@@ -1,4 +1,4 @@
-import type { Design, DesignMap } from './design.js';
+import type { Design, DesignImplementor, DesignMap } from './design.js';
 import type { Animation, AnimationMap } from './animation.js';
 import type { JSONLine, JSONPointers } from 'json-source-map';
 import type { TagType, Token, TokenMap } from './token.js';
@@ -23,12 +23,14 @@ export type MediaQueryKey = `@${ string }`;
 
 export type DesignSpec = {
   name: string;
+  designName?: string;
   version?: string;
   description?: string;
 
   tokens?: Token[];
   designs?: Design[];
   animations?: Animation[];
+  mixins?: DesignImplementor[];
 
   mediaQueries?: MediaQueries;
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;

@@ -41,8 +41,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
       const compilerOptions = {
         indexName: base,
         extension: config?.extension,
-        sourceMap: config?.outDir ? 'inline' : false,
-        postcss: !!config?.outDir,
+        sourceMap: 'inline',
         ...config?.compilerOptions
       } as CSSOptions;
       const compiler = new CSSCompiler(spec, compilerOptions);
@@ -61,7 +60,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
         fs.writeFileSync(path + ext, csContent);
 
         fs.ensureFileSync(path + '.js');
-        fs.writeFileSync(path + '.js', compiler.createHelperScript());
+        fs.writeFileSync(path + '.js', jsContent);
       }
 
       return outputs;
@@ -100,7 +99,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
       server.middlewares.use(async (req, res, next) => {
         const url = req.url || '';
 
-        if (!config?.outDir && url.startsWith(remotePath)) {
+        if (url.startsWith(remotePath)) {
           const file = basename(url);
 
           if (file.endsWith(ext)) {
