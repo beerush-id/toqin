@@ -38,7 +38,7 @@ export function mergeTokenMaps(spec: LoadedDesignSpec, maps: TokenMap = {}) {
   }
 
   if (spec.tokenMaps) {
-    merge(maps, spec.tokenMaps);
+    merge(maps, JSON.parse(JSON.stringify(spec.tokenMaps)));
   }
 
   if (spec.includedSpecs?.length) {
