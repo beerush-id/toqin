@@ -1,0 +1,41 @@
+{
+  "name": "spacing",
+  "version": "1.0.0",
+  "description": "Toqin Spacing Tokens",
+  "tokens": [
+    {
+      "name": "space",
+      "description": "Toqin Base Spacing",
+      "tokens": [
+        {
+          "name": "xxs",
+          "value": "2px"
+        },
+        {
+          "name": "xs",
+          "value": "4px"
+        },
+        {
+          "name": "sm",
+          "value": "8px"
+        },
+        {
+          "name": "md",
+          "value": "12px"
+        },
+        {
+          "name": "lg",
+          "value": "16px"
+        },
+        {
+          "name": "xl",
+          "value": "24px"
+        },
+        {
+          "name": "xxl",
+          "value": "32px"
+        }
+      ]
+    }
+  ]
+}

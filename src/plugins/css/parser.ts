@@ -18,6 +18,7 @@ export const COLOR_RGB_REGEX = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
 export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/i;
 export const COLOR_HSL_REGEX = /^hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/i;
 export const COLOR_HSLA_REGEX = /^hsla\((\d+),\s*(\d+)%?,\s*(\d+)%?,\s*(\d+(\.\d+)?)\)$/i;
+export const COLOR_TRANSFORM_REGEX = /[=<>^]+/;
 
 export const MEDIA_QUERIES: MediaQueries = {
   '@light': '(prefers-color-scheme: light)',
@@ -55,6 +56,39 @@ export function colorOpacity(color: string, opacity: string | number): string {
   }
 
   return color;
+}
+
+export function colorDarken(color: string, amount: string | number): string {
+  const value = parseInt(amount as string, 10);
+
+  if (COLOR_HEX_REGEX.test(color)) {
+    const [ r, g, b ] = hexToRgbValue(color);
+    return `rgb(${ r / value }, ${ g / value }, ${ b / value })`;
+  }
+
+  return color;
+}
+
+function shadeColor(color: string, percent: number) {
+  let [ R, G, B ] = hexToRgbValue(color);
+
+  R = (R * (100 + percent) / 100);
+  G = (G * (100 + percent) / 100);
+  B = (B * (100 + percent) / 100);
+
+  R = (R < 255) ? R : 255;
+  G = (G < 255) ? G : 255;
+  B = (B < 255) ? B : 255;
+
+  R = Math.round(R);
+  G = Math.round(G);
+  B = Math.round(B);
+
+  const RR = ((R.toString(16).length == 1) ? '0' + R.toString(16) : R.toString(16));
+  const GG = ((G.toString(16).length == 1) ? '0' + G.toString(16) : G.toString(16));
+  const BB = ((B.toString(16).length == 1) ? '0' + B.toString(16) : B.toString(16));
+
+  return '#' + RR + GG + BB;
 }
 
 export function hexToRgba(hex: string, alpha?: number): string {
@@ -109,6 +143,24 @@ export function resolveCssValue(
   kind?: TokenType,
   inline?: boolean
 ): string {
+  const shortcuts = value.match(/\+[\w.\-:=]+/g);
+  if (shortcuts) {
+    shortcuts.forEach((item) => {
+      const [ base, alpha ] = item.split('=');
+      const [ key, extra ] = base.split(':');
+      const name = key.replace('+', '');
+      const token = maps?.[name];
+
+      if (token && token.value) {
+        if (alpha) {
+          value = value.replace(item, `${ token.value.replace('@', '$') }=${ alpha }`);
+        } else if (extra) {
+          value = value.replace(item, `${ token.value }.${ extra }`);
+        }
+      }
+    });
+  }
+
   const globals = value.match(/@[\w.\-|]+/g);
   if (globals) {
     globals.forEach((item) => {
@@ -156,7 +208,11 @@ export function resolveCssValue(
   if (copies) {
     copies.forEach((copy) => {
       const [ base, fallback ] = copy.replace('$', '').split(':');
-      const [ key, alpha ] = base.split(/[!=]/);
+      const [ key ] = base.split(COLOR_TRANSFORM_REGEX);
+      const [ , alpha ] = base.split(/[!=]/);
+      const [ , darken ] = base.split('<');
+      const [ , lighten ] = base.split('>');
+      const [ , contrast ] = base.split('^');
       const token = maps?.[key];
 
       if (token && token.value) {
@@ -168,6 +224,10 @@ export function resolveCssValue(
 
         if (alpha) {
           value = value.replace(copy, colorOpacity(tValue as string, alpha));
+        } else if (darken) {
+          value = value.replace(copy, shadeColor(tValue as string, -parseInt(darken)));
+        } else if (lighten) {
+          value = value.replace(copy, shadeColor(tValue as string, parseInt(lighten)));
         } else {
           value = value.replace(copy, tValue as string);
         }

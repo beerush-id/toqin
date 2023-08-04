@@ -5,6 +5,7 @@ import type { JSONLine, JSONPointer, JSONPointers } from 'json-source-map';
 import { AnimationMap } from './animation.js';
 import { logger } from './logger.js';
 import { LoadedDesignSpec } from './core.js';
+import { COLOR_TRANSFORM_REGEX } from './plugins/css/parser.js';
 
 export const PSEUDO_STATES = [
   'hover',
@@ -68,12 +69,23 @@ export function createTokenMap(
     if (token.value) {
       if (typeof token.value === 'object') {
         for (const [ key, value ] of Object.entries(token.value)) {
+          let nextValue = value as string;
+          const inherit = value.startsWith('&this');
+
+          if (inherit && typeof parent?.value === 'string') {
+            if (COLOR_TRANSFORM_REGEX.test(value)) {
+              nextValue = parent.value.replace('@', '$') + value.replace('&this', '');
+            } else {
+              nextValue = parent.value + value.replace('&this', '');
+            }
+          }
+
           const childPath = `${ path }.value.${ key }`;
           const pointer = getPointer(spec.pointers, childPath);
           const childName = (key === '@' || key === '.') ? name : `${ name }.${ key }`;
 
           root[childName] = {
-            value,
+            value: nextValue,
             path: childPath,
             name: token.name,
             type: token.type,
@@ -83,13 +95,25 @@ export function createTokenMap(
           };
         }
       } else if (typeof (token.value as string) === 'string') {
+        let nextValue = token.value as string;
+
         const pointer = getPointer(spec.pointers, path + '.value');
+        const inherit = token.value.startsWith('&this');
+
+        if (inherit && typeof parent?.value === 'string') {
+          if (COLOR_TRANSFORM_REGEX.test(token.value)) {
+            nextValue = parent.value.replace('@', '$') + token.value.replace('&this', '');
+          } else {
+            nextValue = parent.value + token.value.replace('&this', '');
+          }
+        }
+
         root[name] = {
           path,
           name: token.name,
           type: token.type,
           tags: token.tags,
-          value: token.value,
+          value: nextValue,
           sourceUrl: spec.url,
           pointer: pointer?.key
         };
