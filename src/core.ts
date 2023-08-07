@@ -23,7 +23,7 @@ export type MediaQueryKey = `@${ string }`;
 
 export type DesignSpec = {
   name: string;
-  designName?: string;
+  displayName?: string;
   version?: string;
   description?: string;
 
@@ -31,6 +31,7 @@ export type DesignSpec = {
   designs?: Design[];
   animations?: Animation[];
   mixins?: DesignImplementor[];
+  layers?: string[];
 
   mediaQueries?: MediaQueries;
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;

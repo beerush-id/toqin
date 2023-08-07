@@ -31,7 +31,8 @@ export const ALLOWED_OVERRIDE_KEYS: Array<keyof LoadedDesignSpec> = [
   'mediaQueries',
   'defaultColorScheme',
   'customQueryMode',
-  'rootScope'
+  'rootScope',
+  'layers'
 ];
 
 function parse<T>(json: string, compact?: boolean): JSONMap<T> {

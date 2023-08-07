@@ -23,6 +23,11 @@ export type LineMap = {
   name?: string;
 };
 
+export type CSSLayer = Array<{ text: string, line?: LineMap }>;
+export type CSSLayerMap = {
+  [name: string]: CSSLayer;
+}
+
 export type CSSCompilerOptions = {
   prefix?: string;
   scope?: string;
@@ -118,6 +123,10 @@ export class CSSCompiler {
     }
 
     if (!this.parent) {
+      this.writeLayers();
+    }
+
+    if (!this.parent) {
       this.assignColorScheme(compilerOptions);
     }
 
@@ -188,12 +197,49 @@ export class CSSCompiler {
     this.putLine('');
   }
 
+  private mergeLayers(layers: string[], spec: LoadedDesignSpec): string[] {
+    if (spec.layers) {
+      layers.push(...spec.layers);
+    }
+
+    if (spec.extendedSpecs?.length) {
+      const childLayers: string[] = [];
+
+      for (const extendedSpec of spec.extendedSpecs) {
+        this.mergeLayers(childLayers, extendedSpec);
+      }
+
+      layers.unshift(...childLayers);
+    }
+
+    if (spec.includedSpecs?.length) {
+      const childLayers: string[] = [];
+
+      for (const includedSpec of spec.includedSpecs) {
+        this.mergeLayers(childLayers, includedSpec);
+      }
+
+      layers.push(...childLayers);
+    }
+
+    return layers;
+  }
+
+  private writeLayers() {
+    const layers = this.mergeLayers([], this.spec);
+
+    if (layers.length) {
+      this.putLine(`@layer ${ layers.join(', ') };`);
+      this.putLine('');
+    }
+  }
+
   private writeTokens(options: CompilerOptions) {
     if (!Object.keys(this.spec.tokenMaps || {}).length) {
       return;
     }
 
-    const scope = options?.scope || ':root';
+    const scope = (options?.scope || ':root');
     const prefix = options?.prefix;
     const line = this.spec.tokenPointer && ({
       pointer: this.spec.tokenPointer,
@@ -284,8 +330,19 @@ export class CSSCompiler {
   private writeDesigns(options: CompilerOptions) {
     const scope = options?.scope;
     const prefix = options?.prefix;
+    const layers: CSSLayerMap = {
+      '@': [],
+    };
 
     for (const [ selector, ref ] of Object.entries(this.spec.designMaps || {})) {
+      const layerName = ref.layer || '@';
+
+      if (!layers[layerName]) {
+        layers[layerName] = [];
+      }
+
+      const layer = layers[layerName];
+
       let selectors = selector.split(/\s?,\s?/);
 
       if (options?.strictTags?.length) {
@@ -318,7 +375,8 @@ export class CSSCompiler {
           url: ref.sourceUrl,
         };
 
-        this.putLine(`${ selectors.join(', ') } {`, line);
+        // this.putLine(`${ selectors.join(', ') } {`, line);
+        layer.push({ text: `${ selectors.join(', ') } {`, line });
 
         for (const [ name, valueRef ] of Object.entries(ref.rules)) {
           let prop = name;
@@ -344,24 +402,69 @@ export class CSSCompiler {
                 subProp = subProp.replace('--', `--this-`);
               }
 
-              this.putLine(`  ${ subProp }: ${ value };`);
+              // this.putLine(`  ${ subProp }: ${ value };`);
+              layer.push({ text: `  ${ subProp }: ${ value };` });
             }
 
             merge(queries, q);
           } else if (typeof (valueRef as string) === 'string') {
             const value = resolveCssValue(this.tokenMaps, valueRef as string, prefix, prop);
-            this.putLine(`  ${ prop }: ${ value };`);
+            // this.putLine(`  ${ prop }: ${ value };`);
+            layer.push({ text: `  ${ prop }: ${ value };` });
           }
         }
 
-        this.putLine(`}`);
-        this.putLine('');
+        // this.putLine(`}`);
+        // this.putLine('');
+        layer.push({ text: '}' });
+        layer.push({ text: '' });
 
         if (Object.keys(queries).length) {
-          this.putLines(queries, '', line);
+          // this.putLines(queries, '', line);
+          this.putLayers(layer, queries, '', line);
         }
       }
     }
+
+    for (const [ name, layer ] of Object.entries(layers)) {
+      if (name === '@') {
+        for (const item of layer) {
+          this.putLine(item.text, item.line);
+        }
+      } else {
+        this.putLine(`@layer ${ name } {`);
+
+        layer.forEach((item, i) => {
+          if (item.text === '' && i >= layer.length - 1) {
+            return;
+          }
+
+          this.putLine('  ' + item.text, item.line);
+        });
+
+        this.putLine('}');
+        this.putLine('');
+      }
+    }
+  }
+
+  private putLayers(layer: CSSLayer, maps: NestedDeclarations, space = '', line?: LineMap) {
+    const keys = Object.keys(maps);
+    keys.forEach((key, i) => {
+      const value = maps[key];
+
+      if (typeof value === 'object') {
+        layer.push({ text: `${ space }${ key } {`, line });
+        this.putLayers(layer, value, `${ space }  `, line);
+        layer.push({ text: `${ space }}` });
+
+        if (i < keys.length - 1 || !space) {
+          layer.push({ text: '' });
+        }
+      } else if (typeof (value as string) === 'string') {
+        layer.push({ text: `${ space }${ key }: ${ value };`, line });
+      }
+    });
   }
 
   private putLines(maps: NestedDeclarations, space = '', line?: LineMap) {

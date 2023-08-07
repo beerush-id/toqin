@@ -18,6 +18,7 @@ export type Design = {
   description?: string;
 
   selectors?: string[];
+  layer?: string;
   rules: DesignRules;
 
   /* Variant selectors will be merged with the element selector. */
@@ -43,6 +44,7 @@ export type DesignRef = {
   sourceUrl?: string;
   pointer?: JSONLine;
   path?: string;
+  layer?: string;
 };
 
 export type DesignMap = {
@@ -61,5 +63,6 @@ export type DesignRuleSet = {
 export type DesignImplementor = {
   group: string;
   select: string[];
+  layer?: string;
   ruleSets: DesignRuleSet[];
 };

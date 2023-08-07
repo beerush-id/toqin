@@ -69,7 +69,7 @@ export function colorDarken(color: string, amount: string | number): string {
   return color;
 }
 
-function shadeColor(color: string, percent: number) {
+export function shadeColor(color: string, percent: number) {
   let [ R, G, B ] = hexToRgbValue(color);
 
   R = (R * (100 + percent) / 100);
@@ -89,6 +89,11 @@ function shadeColor(color: string, percent: number) {
   const BB = ((B.toString(16).length == 1) ? '0' + B.toString(16) : B.toString(16));
 
   return '#' + RR + GG + BB;
+}
+
+export function contrastColor(color: string, amount = 0): string {
+  const [ r, g, b ] = hexToRgbValue(color);
+  return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? shadeColor(color, -amount) : shadeColor(color, amount);
 }
 
 export function hexToRgba(hex: string, alpha?: number): string {
@@ -204,7 +209,7 @@ export function resolveCssValue(
     });
   }
 
-  const copies = value.match(/\$[\w!.-=]+/g);
+  const copies = value.match(/\$[\w!.\-<>^=]+/g);
   if (copies) {
     copies.forEach((copy) => {
       const [ base, fallback ] = copy.replace('$', '').split(':');
@@ -218,7 +223,7 @@ export function resolveCssValue(
       if (token && token.value) {
         let tValue = token.value;
 
-        if (/^(@|~|\$)/.test(token?.value as string)) {
+        if (/^(@|~|\{|\$)/.test(token?.value as string)) {
           tValue = resolveCssValue(maps, token.value as string, prefix, name, kind, true);
         }
 
@@ -228,6 +233,8 @@ export function resolveCssValue(
           value = value.replace(copy, shadeColor(tValue as string, -parseInt(darken)));
         } else if (lighten) {
           value = value.replace(copy, shadeColor(tValue as string, parseInt(lighten)));
+        } else if (contrast) {
+          value = value.replace(copy, contrastColor(tValue as string, parseInt(contrast)));
         } else {
           value = value.replace(copy, tValue as string);
         }

@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Generated schema for Root",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tokens": {
+      "type": "array",
+      "items": {
+        "$id": "#token",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "value": {},
+          "tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#token"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "designs": {
+      "type": "array",
+      "items": {
+        "$id": "#design",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "selectors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "rules": {},
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#design"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#design"
+            }
+          },
+          "directChildren": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "rules"
+        ]
+      }
+    },
+    "animations": {
+      "type": "array",
+      "items": {
+      }
+    },
+    "mixins": {
+      "type": "array",
+      "items": {
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

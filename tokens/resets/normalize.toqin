@@ -8,6 +8,7 @@
     {
       "name": "box-sizing",
       "selectors": ["*", "*::before", "*::after"],
+      "layer": "reset",
       "important": true,
       "description": "Use the default box model.",
       "rules": {
@@ -17,6 +18,7 @@
     {
       "name": "html",
       "selectors": ["html"],
+      "layer": "reset",
       "important": true,
       "description": [
         "Correct the line height in all browsers.",
@@ -30,6 +32,7 @@
     {
       "name": "body",
       "selectors": ["body"],
+      "layer": "reset",
       "important": true,
       "description": "Remove the margin in all browsers.",
       "rules": {
@@ -39,6 +42,7 @@
     {
       "name": "main",
       "selectors": ["main"],
+      "layer": "reset",
       "description": "Render the `main` element consistently in IE.",
       "rules": {
         "display": "block"
@@ -47,6 +51,7 @@
     {
       "name": "heading-1",
       "selectors": ["h1"],
+      "layer": "reset",
       "description": "Correct the font size and margin on `h1` elements within `section` and `article` contexts in Chrome, Firefox, and Safari.",
       "rules": {
         "font-size": "2em",
@@ -56,6 +61,7 @@
     {
       "name": "hr",
       "selectors": ["hr"],
+      "layer": "reset",
       "description": [
         "Add the correct box sizing in Firefox.",
         "Show the overflow in Edge and IE."
@@ -69,6 +75,7 @@
     {
       "name": "pre",
       "selectors": ["pre"],
+      "layer": "reset",
       "description": [
         "Correct the inheritance and scaling of font size in all browsers.",
         "Correct the odd `em` font sizing in all browsers."
@@ -81,6 +88,7 @@
     {
       "name": "anchor",
       "selectors": ["a"],
+      "layer": "reset",
       "description": "Remove the gray background on active links in IE 10.",
       "rules": {
         "background-color": "transparent"
@@ -89,6 +97,7 @@
     {
       "name": "abbr",
       "selectors": ["abbr[title]"],
+      "layer": "reset",
       "description": [
         "Remove the bottom border in Chrome 57-.",
         "Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari."
@@ -101,6 +110,7 @@
     {
       "name": "bolder",
       "selectors": ["b", "strong"],
+      "layer": "reset",
       "description": "Add the correct font weight in Chrome, Edge, and Safari.",
       "rules": {
         "font-weight": "bolder"
@@ -109,6 +119,7 @@
     {
       "name": "code",
       "selectors": ["code", "kbd", "samp"],
+      "layer": "reset",
       "description": [
         "Correct the inheritance and scaling of font size in all browsers.",
         "Correct the odd `em` font sizing in all browsers."
@@ -121,6 +132,7 @@
     {
       "name": "small",
       "selectors": ["small"],
+      "layer": "reset",
       "description": "Add the correct `small` element font size in all browsers.",
       "rules": {
         "font-size": "80%"
@@ -129,6 +141,7 @@
     {
       "name": "sub-sup",
       "selectors": ["sub", "sup"],
+      "layer": "reset",
       "description": "Prevent `sub` and `sup` elements from affecting the line height in all browsers.",
       "rules": {
         "font-size": "75%",
@@ -140,6 +153,7 @@
     {
       "name": "sub",
       "selectors": ["sub"],
+      "layer": "reset",
       "description": "Correct the bottom position in all browsers.",
       "rules": {
         "bottom": "-0.25em"
@@ -148,6 +162,7 @@
     {
       "name": "sup",
       "selectors": ["sup"],
+      "layer": "reset",
       "description": "Correct the top position in all browsers.",
       "rules": {
         "top": "-0.5em"
@@ -156,6 +171,7 @@
     {
       "name": "img",
       "selectors": ["img"],
+      "layer": "reset",
       "description": "Remove the border on images inside links in IE 10.",
       "rules": {
         "border-style": "none"
@@ -164,6 +180,7 @@
     {
       "name": "form-elements",
       "selectors": ["button", "input", "optgroup", "select", "textarea"],
+      "layer": "reset",
       "description": [
         "Change the font styles in all browsers.",
         "Remove the margin in Firefox and Safari."
@@ -178,6 +195,7 @@
     {
       "name": "button-input",
       "selectors": ["button", "input"],
+      "layer": "reset",
       "description": [
         "Show the overflow in IE.",
         "Show the overflow in Edge."
@@ -189,6 +207,7 @@
     {
       "name": "button-select",
       "selectors": ["button", "select"],
+      "layer": "reset",
       "description": [
         "Remove the inheritance of text transform in Edge, Firefox, and IE.",
         "Remove the inheritance of text transform in Firefox."
@@ -200,6 +219,7 @@
     {
       "name": "button-like",
       "selectors": ["button", "[type=\"button\"]", "[type=\"reset\"]", "[type=\"submit\"]"],
+      "layer": "reset",
       "description": [
         "Correct the inability to style clickable types in iOS and Safari.",
         "Remove the inner border and padding in Firefox.",
@@ -221,6 +241,7 @@
     {
       "name": "fieldset",
       "selectors": ["fieldset"],
+      "layer": "reset",
       "description": "Correct the padding in Firefox.",
       "rules": {
         "padding": "0.35em 0.75em 0.625em"
@@ -229,6 +250,7 @@
     {
       "name": "legend",
       "selectors": ["legend"],
+      "layer": "reset",
       "description": [
         "Correct the text wrapping in Edge and IE.",
         "Correct the color inheritance from `fieldset` elements in IE.",
@@ -246,6 +268,7 @@
     {
       "name": "progress",
       "selectors": ["progress"],
+      "layer": "reset",
       "description": "Add the correct vertical alignment in Chrome, Firefox, and Opera.",
       "rules": {
         "vertical-align": "baseline"
@@ -254,6 +277,7 @@
     {
       "name": "textarea",
       "selectors": ["textarea"],
+      "layer": "reset",
       "description": "Remove the default vertical scrollbar in IE 10+.",
       "rules": {
         "overflow": "auto"
@@ -262,6 +286,7 @@
     {
       "name": "radio-check",
       "selectors": ["[type=\"checkbox\"]", "[type=\"radio\"]"],
+      "layer": "reset",
       "description": [
         "Add the correct box sizing in IE 10.",
         "Remove the padding in IE 10."
@@ -274,6 +299,7 @@
     {
       "name": "number-spin",
       "selectors": ["[type=\"number\"]", "[type=\"number\"]"],
+      "layer": "reset",
       "description": "Correct the cursor style of increment and decrement buttons in Chrome.",
       "rules": {
         "height": {
@@ -284,6 +310,7 @@
     {
       "name": "search",
       "selectors": ["[type=\"search\"]"],
+      "layer": "reset",
       "description": [
         "Correct the outline style in Safari.",
         "Remove the inner padding in Chrome and Safari on macOS."
@@ -299,6 +326,7 @@
     {
       "name": "file-upload",
       "selectors": ["::-webkit-file-upload-button"],
+      "layer": "reset",
       "description": [
         "Correct the inability to style clickable types in iOS and Safari.",
         "Change font properties to `inherit` in Safari."
@@ -311,6 +339,7 @@
     {
       "name": "details",
       "selectors": ["details"],
+      "layer": "reset",
       "description": "Add the correct display in IE 10-, and firefox.",
       "rules": {
         "display": "block"
@@ -319,6 +348,7 @@
     {
       "name": "summary",
       "selectors": ["summary"],
+      "layer": "reset",
       "description": "Add the correct display in all browsers.",
       "rules": {
         "display": "list-item"
@@ -327,6 +357,7 @@
     {
       "name": "template",
       "selectors": ["template"],
+      "layer": "reset",
       "description": "Add the correct display in IE 10+.",
       "rules": {
         "display": "none"
@@ -335,6 +366,7 @@
     {
       "name": "hidden",
       "selectors": ["[hidden]"],
+      "layer": "reset",
       "description": "Add the correct display in IE 10.",
       "rules": {
         "display": "none"

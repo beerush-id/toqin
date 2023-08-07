@@ -164,7 +164,8 @@ export function createDesignMap(
   parentSelectors?: string[],
   isVariant?: boolean,
   parentPath?: string,
-  parentPointer?: JSONLine
+  parentPointer?: JSONLine,
+  parentLayer?: string,
 ) {
   const root: DesignMap = {};
 
@@ -173,6 +174,7 @@ export function createDesignMap(
   }
 
   (spec.designs || []).forEach((design, i) => {
+    const layer = design.layer || parentLayer;
     const path = parentPath ? `${ parentPath }.${ i }` : `designs.${ i }`;
     let selectors = design.selectors || [ `.${ design.name }` ];
 
@@ -193,7 +195,7 @@ export function createDesignMap(
       if (variants?.length) {
         const variantSpec = { ...spec, designs: variants } as LoadedDesignSpec;
         const paths = [ path, 'rules' ].join('.');
-        merge(root, createDesignMap(variantSpec, selectors, true, paths, pointer));
+        merge(root, createDesignMap(variantSpec, selectors, true, paths, pointer, layer));
       }
 
       root[name] = {
@@ -204,6 +206,7 @@ export function createDesignMap(
         selectors: design.selectors || [ `.${ design.name }` ],
         sourceUrl: spec.url,
         pointer: parentPointer || getPointer(spec.pointers, path + '.name')?.key,
+        layer,
         path,
         rules,
       };
@@ -211,13 +214,13 @@ export function createDesignMap(
 
     if (design.variants?.length) {
       const variantSpec = { ...spec, designs: design.variants } as LoadedDesignSpec;
-      const variants = createDesignMap(variantSpec, selectors, true, `${ path }.variants`);
+      const variants = createDesignMap(variantSpec, selectors, true, `${ path }.variants`, undefined, layer);
       merge(root, variants);
     }
 
     if (design.children?.length) {
       const childSpec = { ...spec, designs: design.children } as LoadedDesignSpec;
-      const children = createDesignMap(childSpec, selectors, false, `${ path }.children`);
+      const children = createDesignMap(childSpec, selectors, false, `${ path }.children`, undefined, layer);
       merge(root, children);
     }
   });
@@ -344,8 +347,8 @@ function createImplementations(implementations: DesignImplementor[], spec: Loade
   const root: DesignMap = {};
   const designs: Design[] = [];
 
-  implementations.forEach((design, i) => {
-    const { group, select = [], ruleSets = [] } = design;
+  implementations.forEach((mix, i) => {
+    const { group, select = [], ruleSets = [] } = mix;
     const pointer = getPointer(spec.pointers, `implements.${ i }.ruleSets`)?.key;
 
     select.forEach(token => {
@@ -361,6 +364,7 @@ function createImplementations(implementations: DesignImplementor[], spec: Loade
         designs.push({
           name: name,
           selectors: [ `.${ name }` ],
+          layer: mix.layer,
           rules
         });
       });
