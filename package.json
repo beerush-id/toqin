@@ -6,10 +6,14 @@
   "module": "dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
+    "bin/",
     "dist/",
     "tokens/"
   ],
   "directories": {
+    "bin": "bin",
+    "dist": "dist",
+    "tokens": "tokens",
     "test": "test"
   },
   "exports": {
@@ -49,6 +53,7 @@
   "scripts": {
     "dev": "esdev --watch",
     "build": "esdev --clean",
+    "prepublish": "npm run build",
     "test": "cd test && node design.test.js",
     "test:extend": "cd test && node extend.test.js"
   },
