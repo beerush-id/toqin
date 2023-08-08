@@ -6,6 +6,7 @@ import type { DesignOutput, LoadedDesignSpec, MediaQueries } from '../../core.js
 export type TailwindPluginConfig = {
   outDir?: string;
   indexName?: string;
+  module?: 'esm' | 'cjs' | 'both';
   prefix?: string;
   useCssVariable?: boolean;
   extendRules?: ExtendRules;
@@ -37,20 +38,20 @@ export type TailwindPreset = {
 
 export const EXTEND_RULES: ExtendRules = {
   fontSize: {
-    tags: ['font-size', 'text-size'],
-    shifts: [/^font\.size\./, /^text\.size\./],
+    tags: [ 'font-size', 'text-size' ],
+    shifts: [ /^font\.size\./, /^text\.size\./ ],
   },
   fontWeight: {
-    tags: ['font-weight', 'text-weight'],
-    shifts: [/^font\.weight\./, /^text\.weight\./],
+    tags: [ 'font-weight', 'text-weight' ],
+    shifts: [ /^font\.weight\./, /^text\.weight\./ ],
   },
   letterSpacing: {
-    tags: ['letter-spacing', 'text-spacing'],
-    shifts: [/^font\.space\./, /^text\.space\./],
+    tags: [ 'letter-spacing', 'text-spacing' ],
+    shifts: [ /^font\.space\./, /^text\.space\./ ],
   },
   lineHeight: {
-    tags: ['font-height', 'text-height'],
-    shifts: [/^font\.height\./, /^text\.height\./],
+    tags: [ 'font-height', 'text-height' ],
+    shifts: [ /^font\.height\./, /^text\.height\./ ],
   },
 };
 
@@ -58,6 +59,7 @@ export function tailwind(config?: TailwindPluginConfig) {
   const defaultOptions: TailwindPluginConfig = {
     outDir: '.',
     indexName: 'tailwind.config.js',
+    module: 'esm',
     useCssVariable: true,
   };
   const options = { ...defaultOptions, ...config };
@@ -66,13 +68,35 @@ export function tailwind(config?: TailwindPluginConfig) {
     const compiler = new TailwindCompiler(spec, options);
     compiler.compile();
 
-    return [
-      {
+    const content = compiler.stringify();
+    const outputs: DesignOutput[] = [];
+
+    if (options.module === 'esm') {
+      outputs.push({
         name: 'tailwind.config.js',
-        fileName: `${options.outDir}/${options.indexName}`,
-        content: compiler.stringify(),
-      },
-    ];
+        fileName: `${ options.outDir }/${ options.indexName }`,
+        content: content.replace('module.exports = ', 'export default '),
+      });
+    } else if (options.module === 'cjs') {
+      outputs.push({
+        name: 'tailwind.config.cjs',
+        fileName: `${ options.outDir }/${ (options.indexName || '').replace(/\.js$/, '.cjs') }`,
+        content: content,
+      });
+    } else if (options.module === 'both') {
+      outputs.push({
+        name: 'tailwind.config.js',
+        fileName: `${ options.outDir }/${ options.indexName }`,
+        content: content.replace('module.exports = ', 'export default '),
+      });
+      outputs.push({
+        name: 'tailwind.config.cjs',
+        fileName: `${ options.outDir }/${ (options.indexName || '').replace(/\.js$/, '.cjs') }`,
+        content: content,
+      });
+    }
+
+    return outputs;
   };
 }
 
@@ -114,7 +138,7 @@ export class TailwindCompiler {
   private importScreens() {
     const screens: NestedProps = {};
 
-    for (const [q, v] of Object.entries(this.mediaQueries)) {
+    for (const [ q, v ] of Object.entries(this.mediaQueries)) {
       if (typeof v === 'string') {
         if (v.includes('width') || v.includes('height')) {
           const size = v.match(/min-width:\s*(\d+px)/);
@@ -138,8 +162,8 @@ export class TailwindCompiler {
   }
 
   private importFontFamilies() {
-    const groups = ['font-family', 'font-families'];
-    const shifts = [/^font\.family\./, /^font\./];
+    const groups = [ 'font-family', 'font-families' ];
+    const shifts = [ /^font\.family\./, /^font\./ ];
 
     this.preset.fontFamily = this.importTokens(groups, shifts, (value) =>
       value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, ''))
@@ -147,15 +171,15 @@ export class TailwindCompiler {
   }
 
   private importColors() {
-    const groups = ['color', 'palette', 'colors', 'theme'];
-    const shifts = [/^color\./, /^palette\./];
+    const groups = [ 'color', 'palette', 'colors', 'theme' ];
+    const shifts = [ /^color\./, /^palette\./ ];
 
     this.preset.colors = this.importTokens(groups, shifts);
   }
 
   private importSpacing() {
-    const groups = ['space', 'spacing'];
-    const shifts = [/^space\./];
+    const groups = [ 'space', 'spacing' ];
+    const shifts = [ /^space\./ ];
 
     this.preset.spacing = this.importTokens(groups, shifts);
   }
@@ -165,7 +189,7 @@ export class TailwindCompiler {
       this.preset.extend = {};
     }
 
-    for (const [prop, rule] of Object.entries(this.extendedRules)) {
+    for (const [ prop, rule ] of Object.entries(this.extendedRules)) {
       const props = this.importTokens(rule.tags, rule.shifts, rule.replace);
 
       if (Object.keys(props).length) {
@@ -182,7 +206,7 @@ export class TailwindCompiler {
     const prefix = this.config?.prefix || 'tq';
     const result: NestedProps = {};
 
-    for (const [name, token] of Object.entries(this.tokenMaps)) {
+    for (const [ name, token ] of Object.entries(this.tokenMaps)) {
       if (isInGroup(token, groups)) {
         let prop = name.replace('@', '');
 
@@ -209,20 +233,20 @@ export class TailwindCompiler {
   }
 
   private putLines(lines: NestedProps = this.preset, indent = '') {
-    for (const [key, value] of Object.entries(lines)) {
+    for (const [ key, value ] of Object.entries(lines)) {
       if (typeof value === 'string') {
-        this.putLine(`${indent}'${key}': '${value}',`);
+        this.putLine(`${ indent }'${ key }': '${ value }',`);
       } else if (Array.isArray(value)) {
         if (value.length) {
-          this.putLine(`${indent}'${key}': [`);
-          this.putLine(`${indent}  ${value.map((item) => `'${item}'`).join(', ')}`);
-          this.putLine(`${indent}],`);
+          this.putLine(`${ indent }'${ key }': [`);
+          this.putLine(`${ indent }  ${ value.map((item) => `'${ item }'`).join(', ') }`);
+          this.putLine(`${ indent }],`);
         }
       } else if (typeof value === 'object') {
         if (Object.keys(value).length) {
-          this.putLine(`${indent}'${key}': {`);
-          this.putLines(value, `${indent}  `);
-          this.putLine(`${indent}},`);
+          this.putLine(`${ indent }'${ key }': {`);
+          this.putLines(value, `${ indent }  `);
+          this.putLine(`${ indent }},`);
         }
       }
     }

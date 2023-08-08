@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { type CompileEvent, Store } from './store.js';
 import { logger } from './logger.js';
-import { css } from './plugins/index.js';
+import { css, CSSOptions } from './plugins/index.js';
 import { Compiler } from './core.js';
 
 export type ToqinCLIConfig = {
@@ -18,11 +18,13 @@ export type ToqinServerConfig = {
 }
 
 const watch = process.argv.includes('--watch');
+const minify = process.argv.includes('--minify');
 const configFile = join(process.cwd(), './toqin.config.js');
 
 import(`file://${ configFile }`)
   .then(async ({ default: config = {} as never }: { default: ToqinCLIConfig }) => {
-    const { token, outDir = './styles', plugins = [ css() ] } = config as ToqinCLIConfig;
+    const cssConfig: CSSOptions = { postcss: minify, cssnano: minify };
+    const { token, outDir = './styles', plugins = [ css(cssConfig) ] } = config as ToqinCLIConfig;
 
     if (!outDir) {
       logger.warn(`Output directory is not specified.`);
