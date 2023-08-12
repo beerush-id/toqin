@@ -51,6 +51,8 @@ import(`file://${ configFile }`)
 
       await store.run();
       await store.compile();
+
+      logger.info(`Design token "${ store.root.name }" is listened by "Toqin CLI".`);
     } else {
       logger.error(`Token file is not specified. Toqin CLI will exit.`);
     }
