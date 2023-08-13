@@ -3,8 +3,8 @@ import cssnano, { Options as CSSNanoOptions } from 'cssnano';
 import autoprefixer, { Options as AutoprefixerOptions } from 'autoprefixer';
 import { CSSCompiler, type CSSCompilerOptions } from './compiler.js';
 import { SourceMapGenerator } from 'source-map';
-import { normalizePath } from 'vite';
 import type { DesignOutput, LoadedDesignSpec } from '../../core.js';
+import { normalize } from 'path';
 
 export type CSSOptions = {
   outDir?: string;
@@ -41,7 +41,7 @@ export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSS
     for (const { name, url, input, output: out } of output.sourceMaps) {
       map.addMapping({
         name,
-        source: normalizePath(url || ''),
+        source: normalize(url || ''),
         original: { line: input[0], column: input[1] },
         generated: { line: out[0], column: out[1] },
       });
