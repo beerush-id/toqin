@@ -1,4 +1,4 @@
-import type { Token, TokenMap } from './token.js';
+import type { Token, TokenMap, TokenValue } from './token.js';
 import type { Design, DesignImplementor, DesignMap, DesignRules, PseudoVariant } from './design.js';
 import { merge } from '@beerush/utils/object';
 import type { JSONLine, JSONPointer, JSONPointers } from 'json-source-map';
@@ -72,11 +72,14 @@ export function createTokenMap(
           let nextValue = value as string;
           const inherit = value.startsWith('&this');
 
-          if (inherit && typeof parent?.value === 'string') {
+          if (inherit && parent?.value) {
+            const source: TokenValue = typeof (parent.value as string) === 'string'
+                                       ? parent.value
+                                       : (parent.value['@' as never] || '') as never;
             if (COLOR_TRANSFORM_REGEX.test(value)) {
-              nextValue = parent.value.replace('@', '$') + value.replace('&this', '');
+              nextValue = (source as string).replace('@', '$') + value.replace('&this', '');
             } else {
-              nextValue = parent.value + value.replace('&this', '');
+              nextValue = source + value.replace('&this', '');
             }
           }
 
@@ -100,11 +103,14 @@ export function createTokenMap(
         const pointer = getPointer(spec.pointers, path + '.value');
         const inherit = token.value.startsWith('&this');
 
-        if (inherit && typeof parent?.value === 'string') {
+        if (inherit && parent?.value) {
+          const source: TokenValue = typeof (parent.value as string) === 'string'
+                                     ? parent.value
+                                     : (parent.value['@' as never] || '') as never;
           if (COLOR_TRANSFORM_REGEX.test(token.value)) {
-            nextValue = parent.value.replace('@', '$') + token.value.replace('&this', '');
+            nextValue = (source as string).replace('@', '$') + token.value.replace('&this', '');
           } else {
-            nextValue = parent.value + token.value.replace('&this', '');
+            nextValue = source + token.value.replace('&this', '');
           }
         }
 

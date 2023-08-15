@@ -17,6 +17,7 @@ export type CSSOptions = {
 
   mode?: 'css' | 'scss';
   extension?: 'css' | 'scss';
+  withHelper?: boolean;
 } & CSSCompilerOptions;
 
 export type EncodedCss = DesignOutput[] & {
@@ -65,6 +66,14 @@ export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSS
     fileName: outPath,
     content: output.stringify(),
   });
+
+  if (options?.withHelper) {
+    outputs.push({
+      name: 'index.js',
+      fileName: outPath.replace(/\.css$/, '.js'),
+      content: output.createHelperScript(),
+    });
+  }
 
   if (options?.postcss) {
     const useNano = options?.cssnano || !('cssnano' in options);

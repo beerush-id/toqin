@@ -23,7 +23,7 @@ const configFile = join(process.cwd(), './toqin.config.js');
 
 import(`file://${ configFile }`)
   .then(async ({ default: config = {} as never }: { default: ToqinCLIConfig }) => {
-    const cssConfig: CSSOptions = { postcss: minify, cssnano: minify };
+    const cssConfig: CSSOptions = { postcss: minify, cssnano: minify, withHelper: true };
     const { token, outDir = './styles', plugins = [ css(cssConfig) ] } = config as ToqinCLIConfig;
 
     if (!outDir) {
