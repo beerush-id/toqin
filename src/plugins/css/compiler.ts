@@ -104,7 +104,7 @@ export class CSSCompiler {
 
     return [
       `export const mediaQueries = ${ queries };`,
-      `export const customQueryMode = '${ mode }';`,
+      `export const mediaQueryMode = '${ mode }';`,
       `export const defaultColorScheme = '${ scheme }';`,
       `export const register = ${ helper.toString() };`,
     ].join('\r\n');
