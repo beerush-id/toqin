@@ -73,7 +73,7 @@ export const helper = (queries = [], mode, scheme) => {
   };
 
   if (typeof window !== 'undefined' && !window.Toqin) {
-    window.Toqin = { useQuery, setTheme, mediaQueries: queries, meta: import.meta };
+    window.Toqin = { useQuery, setTheme, mediaQueries: queries };
     bootstrap();
   }
 };
