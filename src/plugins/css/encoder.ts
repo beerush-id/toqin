@@ -68,10 +68,36 @@ export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSS
   });
 
   if (options?.withHelper) {
+    const typings = `
+export type MediaQuery = {
+  [key: string]: string;
+};
+declare global {
+  interface Window {
+    Toqin: {
+      useQuery: (name: string) => void;
+        setTheme: (name: string) => void;
+          mediaQueries: MediaQuery[];
+      };
+      setTheme: (name: string) => void;
+  }
+}
+export declare let mediaQueries: MediaQuery[];
+export declare let mediaQueryMode: string;
+export declare let defaultColorScheme: string;
+export declare const register: (queries: MediaQuery[] | undefined, mode: string, scheme: string) => void;
+    `;
+
+    outputs.push({
+      name: 'helper.d.ts',
+      fileName: outPath.replace(/\.css$/, '.helper.d.ts'),
+      content: typings,
+    });
+
     outputs.push({
       name: 'index.js',
-      fileName: outPath.replace(/\.css$/, '.js'),
-      content: output.createHelperScript(),
+      fileName: outPath.replace(/\.css$/, '.helper.js'),
+      content: output.createHelperLibrary(),
     });
   }
 

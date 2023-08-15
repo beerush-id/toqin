@@ -1,7 +1,26 @@
-export const helper = (queries = [], mode, scheme) => {
-  const useQuery = (name) => {
+export type MediaQuery = {
+  [key: string]: string;
+};
+
+declare global {
+  interface Window {
+    Toqin: {
+      useQuery: (name: string) => void;
+      setTheme: (name: string) => void;
+      mediaQueries: MediaQuery[];
+    };
+    setTheme: (name: string) => void;
+  }
+}
+
+export let mediaQueries: MediaQuery[];
+export let mediaQueryMode: string;
+export let defaultColorScheme: string;
+
+export const helper = (queries: MediaQuery[] = [], mode: string, scheme: string) => {
+  const useQuery = (name: string) => {
     if (!name.startsWith('@')) {
-      name = `@${name}`;
+      name = `@${ name }`;
     }
 
     const { query, group } = queries.find((q) => q.name === name) || {};
@@ -35,7 +54,7 @@ export const helper = (queries = [], mode, scheme) => {
     }
   };
 
-  const setTheme = (name) => {
+  const setTheme = (name: string) => {
     localStorage.setItem('toqin-color-scheme', name);
 
     if (name === 'system') {
@@ -61,12 +80,12 @@ export const helper = (queries = [], mode, scheme) => {
           applySystemTheme();
         }
       });
-    window.addEventListener('storage', (e) => {
+    window.addEventListener('storage', (e: StorageEvent) => {
       if (e.key === 'toqin-color-scheme') {
         if (e.newValue === 'system') {
           applySystemTheme();
         } else {
-          useQuery(e.newValue);
+          useQuery(e.newValue || '');
         }
       }
     });

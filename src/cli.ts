@@ -57,6 +57,7 @@ import(`file://${ configFile }`)
       logger.error(`Token file is not specified. Toqin CLI will exit.`);
     }
   })
-  .catch(() => {
+  .catch((error) => {
+    console.error(error);
     logger.error(`Failed to load config file: ${ configFile }. Toqin CLI will exit.`);
   });

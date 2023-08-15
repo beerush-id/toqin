@@ -97,6 +97,19 @@ export class CSSCompiler {
     return [ `(${ helper.toString() })`, `(${ queries }, '${ mode }', '${ scheme }');` ].join('');
   }
 
+  public createHelperLibrary() {
+    const queries = JSON.stringify(this.mediaQueryMaps);
+    const scheme = this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system';
+    const mode = this.config?.customQueryMode || this.spec.customQueryMode || 'class';
+
+    return [
+      `export const mediaQueries = ${ queries };`,
+      `export const customQueryMode = '${ mode }';`,
+      `export const defaultColorScheme = '${ scheme }';`,
+      `export const register = ${ helper.toString() };`,
+    ].join('\r\n');
+  }
+
   public createHmrScript(id: string) {
     return [ `(${ script.toString() })`, `('${ id }', '${ this.spec.version }');` ].join('\r\n');
   }
