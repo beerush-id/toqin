@@ -2,6 +2,8 @@ import type { TokenMap, TokenRef } from '../../token.js';
 import { mergeTokenMaps } from '../../parser.js';
 import { MEDIA_QUERIES, resolveCssValue } from '../css/parser.js';
 import type { DesignOutput, LoadedDesignSpec, MediaQueries } from '../../core.js';
+import { all as knownProps } from 'known-css-properties';
+import { camelize } from '@beerush/utils';
 
 export type TailwindPluginConfig = {
   outDir?: string;
@@ -9,7 +11,10 @@ export type TailwindPluginConfig = {
   module?: 'esm' | 'cjs' | 'both';
   prefix?: string;
   useCssVariable?: boolean;
+  stripMediaQueryMark?: boolean;
+  useQuickExtend?: boolean;
   extendRules?: ExtendRules;
+  template?: TailwindTemplate;
 };
 
 export type ExtendRule = {
@@ -26,14 +31,18 @@ type NestedProps = {
   [key: string]: string | string[] | NestedProps;
 };
 
+export type TailwindTemplate = {
+  content?: string[];
+  theme?: TailwindPreset;
+};
+
 export type TailwindPreset = {
-  screens: NestedProps;
-  supports: NestedProps;
-  data: NestedProps;
-  colors: NestedProps;
-  spacing: NestedProps;
-  fontFamily: NestedProps;
-  extend: NestedProps;
+  screens?: NestedProps;
+  colors?: NestedProps;
+  spacing?: NestedProps;
+  fontFamily?: NestedProps;
+  extend?: NestedProps;
+  content?: string[];
 };
 
 export const EXTEND_RULES: ExtendRules = {
@@ -50,9 +59,25 @@ export const EXTEND_RULES: ExtendRules = {
     shifts: [ /^font\.space\./, /^text\.space\./ ],
   },
   lineHeight: {
-    tags: [ 'font-height', 'text-height' ],
+    tags: [ 'line-height', 'font-height', 'text-height' ],
     shifts: [ /^font\.height\./, /^text\.height\./ ],
   },
+};
+
+export const RESERVED_PROPERTIES: string[] = [
+  'color', 'fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'lineHeight',
+];
+
+export const TEMPLATE_SVELTEKIT: TailwindTemplate = {
+  content: [ './src/**/*.{html,js,svelte,ts}' ],
+};
+
+export const TEMPLATE_NEXTJS: TailwindTemplate = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
 };
 
 export function tailwind(config?: TailwindPluginConfig) {
@@ -61,8 +86,25 @@ export function tailwind(config?: TailwindPluginConfig) {
     indexName: 'tailwind.config.js',
     module: 'esm',
     useCssVariable: true,
+    useQuickExtend: true,
   };
   const options = { ...defaultOptions, ...config };
+
+  if (options.useQuickExtend) {
+    for (const prop of knownProps) {
+      if (prop.startsWith('-')) {
+        continue;
+      }
+
+      const key = camelize(prop);
+      if (!RESERVED_PROPERTIES.includes(key) && !EXTEND_RULES[key]) {
+        EXTEND_RULES[key] = {
+          tags: [ prop ],
+          shifts: [ new RegExp(`^${ prop.replace(/-/g, '.') }\\.?`) ],
+        };
+      }
+    }
+  }
 
   return (spec: LoadedDesignSpec): DesignOutput[] => {
     const compiler = new TailwindCompiler(spec, options);
@@ -104,6 +146,7 @@ export class TailwindCompiler {
   public currentLine = 1;
   public contents: string[] = [];
 
+  public template: TailwindTemplate = {};
   public preset: Partial<TailwindPreset> = {};
   public mediaQueries: MediaQueries;
   public tokenMaps: TokenMap;
@@ -113,6 +156,10 @@ export class TailwindCompiler {
     this.tokenMaps = mergeTokenMaps(spec);
     this.mediaQueries = { ...MEDIA_QUERIES, ...spec.mediaQueries };
     this.extendedRules = { ...EXTEND_RULES, ...config?.extendRules };
+
+    if (config?.template) {
+      this.template = config.template;
+    }
   }
 
   public compile() {
@@ -123,9 +170,7 @@ export class TailwindCompiler {
     this.extendRules();
 
     this.putLine('module.exports = {');
-    this.putLine('  theme: {');
-    this.putLines(this.preset, '    ');
-    this.putLine('  },');
+    this.putLines({ ...this.template, theme: this.preset }, '  ');
     this.putLine('};');
 
     return this;
@@ -139,12 +184,14 @@ export class TailwindCompiler {
     const screens: NestedProps = {};
 
     for (const [ q, v ] of Object.entries(this.mediaQueries)) {
+      const name = this.config?.stripMediaQueryMark ? q.replace(/^@/, '') : q;
+
       if (typeof v === 'string') {
-        if (v.includes('width') || v.includes('height')) {
+        if (v.includes('width')) {
           const size = v.match(/min-width:\s*(\d+px)/);
 
           if (size) {
-            screens[q] = size[1];
+            screens[name] = size[1];
           }
         }
       } else if (typeof v === 'object') {
@@ -152,36 +199,39 @@ export class TailwindCompiler {
           const size = v.query.match(/min-width:\s*(\d+px)/);
 
           if (size) {
-            screens[q] = size[1];
+            screens[name] = size[1];
           }
         }
       }
     }
 
-    this.preset.screens = screens;
+    this.preset.screens = { ...(this.preset.screens || {}), ...screens };
   }
 
   private importFontFamilies() {
     const groups = [ 'font-family', 'font-families' ];
     const shifts = [ /^font\.family\./, /^font\./ ];
 
-    this.preset.fontFamily = this.importTokens(groups, shifts, (value) =>
-      value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, ''))
-    );
+    this.preset.fontFamily = {
+      ...(this.preset.fontFamily || {}),
+      ...this.importTokens(groups, shifts, (value) =>
+        value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, ''))
+      )
+    };
   }
 
   private importColors() {
     const groups = [ 'color', 'palette', 'colors', 'theme' ];
     const shifts = [ /^color\./, /^palette\./ ];
 
-    this.preset.colors = this.importTokens(groups, shifts);
+    this.preset.colors = { ...(this.preset.colors || {}), ...this.importTokens(groups, shifts) };
   }
 
   private importSpacing() {
     const groups = [ 'space', 'spacing' ];
-    const shifts = [ /^space\./ ];
+    const shifts = [ /^space\./, /^spacing\./ ];
 
-    this.preset.spacing = this.importTokens(groups, shifts);
+    this.preset.spacing = { ...(this.preset.spacing || {}), ...this.importTokens(groups, shifts) };
   }
 
   private extendRules() {
@@ -216,6 +266,10 @@ export class TailwindCompiler {
           });
         }
 
+        if (prop === '') {
+          prop = 'DEFAULT';
+        }
+
         const value = resolveCssValue(
           this.tokenMaps,
           token.value,
@@ -235,7 +289,7 @@ export class TailwindCompiler {
   private putLines(lines: NestedProps = this.preset, indent = '') {
     for (const [ key, value ] of Object.entries(lines)) {
       if (typeof value === 'string') {
-        this.putLine(`${ indent }'${ key }': '${ value }',`);
+        this.putLine(`${ indent }'${ key }': '${ value.replace(/'/g, '"') }',`);
       } else if (Array.isArray(value)) {
         if (value.length) {
           this.putLine(`${ indent }'${ key }': [`);
