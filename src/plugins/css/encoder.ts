@@ -17,7 +17,7 @@ export type CSSOptions = {
 
   mode?: 'css' | 'scss';
   extension?: 'css' | 'scss';
-  withHelper?: boolean;
+  withHelper?: true | false | 'inline';
 } & CSSCompilerOptions;
 
 export type EncodedCss = DesignOutput[] & {
@@ -68,7 +68,14 @@ export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSS
   });
 
   if (options?.withHelper) {
-    const typings = `
+    if (options.withHelper === 'inline') {
+      outputs.push({
+        name: 'helper.js',
+        fileName: outPath.replace(/\.css$/, '.helper.js'),
+        content: output.createHelperScript(),
+      });
+    } else {
+      const typings = `
 export type MediaQuery = {
   [key: string]: string;
 };
@@ -88,17 +95,18 @@ export declare let defaultColorScheme: string;
 export declare const register: (queries: MediaQuery[] | undefined, mode: string, scheme: string) => void;
     `;
 
-    outputs.push({
-      name: 'helper.d.ts',
-      fileName: outPath.replace(/\.css$/, '.helper.d.ts'),
-      content: typings,
-    });
+      outputs.push({
+        name: 'helper.d.ts',
+        fileName: outPath.replace(/\.css$/, '.helper.d.ts'),
+        content: typings,
+      });
 
-    outputs.push({
-      name: 'index.js',
-      fileName: outPath.replace(/\.css$/, '.helper.js'),
-      content: output.createHelperLibrary(),
-    });
+      outputs.push({
+        name: 'index.js',
+        fileName: outPath.replace(/\.css$/, '.helper.js'),
+        content: output.createHelperLibrary(),
+      });
+    }
   }
 
   if (options?.postcss) {
