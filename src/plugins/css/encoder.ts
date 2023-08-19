@@ -5,6 +5,7 @@ import { CSSCompiler, type CSSCompilerOptions } from './compiler.js';
 import { SourceMapGenerator } from 'source-map';
 import type { DesignOutput, LoadedDesignSpec } from '../../core.js';
 import { normalize } from 'path';
+import { globalTyping, libraryTyping } from './typing.js';
 
 export type CSSOptions = {
   outDir?: string;
@@ -71,34 +72,20 @@ export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSS
     if (options.withHelper === 'inline') {
       outputs.push({
         name: 'helper.js',
+        fileName: outPath.replace(/\.css$/, '.helper.d.ts'),
+        content: globalTyping,
+      });
+
+      outputs.push({
+        name: 'helper.js',
         fileName: outPath.replace(/\.css$/, '.helper.js'),
         content: output.createHelperScript(),
       });
     } else {
-      const typings = `
-export type MediaQuery = {
-  [key: string]: string;
-};
-declare global {
-  interface Window {
-    Toqin: {
-      useQuery: (name: string) => void;
-        setTheme: (name: string) => void;
-          mediaQueries: MediaQuery[];
-      };
-      setTheme: (name: string) => void;
-  }
-}
-export declare let mediaQueries: MediaQuery[];
-export declare let mediaQueryMode: string;
-export declare let defaultColorScheme: string;
-export declare const register: (queries: MediaQuery[] | undefined, mode: string, scheme: string) => void;
-    `;
-
       outputs.push({
         name: 'helper.d.ts',
         fileName: outPath.replace(/\.css$/, '.helper.d.ts'),
-        content: typings,
+        content: [ globalTyping, libraryTyping ].join('\r\n'),
       });
 
       outputs.push({

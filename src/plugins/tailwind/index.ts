@@ -65,7 +65,12 @@ export const EXTEND_RULES: ExtendRules = {
 };
 
 export const RESERVED_PROPERTIES: string[] = [
-  'color', 'fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'lineHeight',
+  'color',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'letterSpacing',
+  'lineHeight',
 ];
 
 export const TEMPLATE_SVELTEKIT: TailwindTemplate = {
@@ -215,8 +220,8 @@ export class TailwindCompiler {
     this.preset.fontFamily = {
       ...(this.preset.fontFamily || {}),
       ...this.importTokens(groups, shifts, (value) =>
-        value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, ''))
-      )
+        value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, '')),
+      ),
     };
   }
 
@@ -251,7 +256,7 @@ export class TailwindCompiler {
   private importTokens(
     groups: string[],
     shifts?: Array<string | RegExp>,
-    replace?: (value: string) => string | string[]
+    replace?: (value: string) => string | string[],
   ) {
     const prefix = this.config?.prefix || 'tq';
     const result: NestedProps = {};
@@ -276,7 +281,7 @@ export class TailwindCompiler {
           prefix,
           name,
           token.type,
-          !this.config?.useCssVariable
+          !this.config?.useCssVariable,
         );
 
         deepSet(result, prop, replace ? (replace(value) as string) : (value as string));

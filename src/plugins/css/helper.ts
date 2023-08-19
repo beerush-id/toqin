@@ -6,10 +6,10 @@ declare global {
   interface Window {
     Toqin: {
       useQuery: (name: string) => void;
+      getTheme: () => string;
       setTheme: (name: string) => void;
       mediaQueries: MediaQuery[];
     };
-    setTheme: (name: string) => void;
   }
 }
 
@@ -64,6 +64,10 @@ export const helper = (queries: MediaQuery[] = [], mode: string, scheme: string)
     }
   };
 
+  const getTheme = () => {
+    return localStorage.getItem('toqin-color-scheme') || 'system';
+  };
+
   const bootstrap = () => {
     const theme = localStorage.getItem('toqin-color-scheme') || scheme || 'system';
 
@@ -73,7 +77,6 @@ export const helper = (queries: MediaQuery[] = [], mode: string, scheme: string)
       useQuery(theme);
     }
 
-    window.setTheme = setTheme;
     window.matchMedia('(prefers-color-scheme: dark)')
       .addEventListener('change', () => {
         if (localStorage.getItem('toqin-color-scheme') === 'system') {
@@ -92,7 +95,7 @@ export const helper = (queries: MediaQuery[] = [], mode: string, scheme: string)
   };
 
   if (typeof window !== 'undefined' && !window.Toqin) {
-    window.Toqin = { useQuery, setTheme, mediaQueries: queries };
+    window.Toqin = { useQuery, getTheme, setTheme, mediaQueries: queries };
     bootstrap();
   }
 };
