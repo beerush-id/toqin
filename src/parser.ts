@@ -1,6 +1,6 @@
 import type { Token, TokenMap, TokenValue } from './token.js';
 import type { Design, DesignImplementor, DesignMap, DesignRules, PseudoVariant } from './design.js';
-import { merge } from '@beerush/utils/object';
+import { merge } from '@beerush/utils';
 import type { JSONLine, JSONPointer, JSONPointers } from 'json-source-map';
 import { AnimationMap } from './animation.js';
 import { logger } from './logger.js';
@@ -15,20 +15,20 @@ export const PSEUDO_STATES = [
   'visited',
   'checked',
   'default',
-  'indeterminate'
+  'indeterminate',
 ];
 export const PSEUDO_ELEMENTS = [
   'before',
   'after',
   'selection',
   'placeholder',
-  'marker'
+  'marker',
 ];
 export const MOZ_PSEUDO_STATES = [
-  '-moz-focusring'
+  '-moz-focusring',
 ];
 export const RESTRICTED_SPEC_KEYS: Array<keyof LoadedDesignSpec> = [
-  'extendedSpecs', 'includedSpecs'
+  'extendedSpecs', 'includedSpecs',
 ];
 
 export function mergeTokenMaps(spec: LoadedDesignSpec, maps: TokenMap = {}) {
@@ -55,7 +55,7 @@ export function createTokenMap(
   spec: LoadedDesignSpec,
   parent?: Token,
   parentName?: string,
-  parentPath?: string
+  parentPath?: string,
 ): TokenMap {
   const root: TokenMap = {};
 
@@ -94,7 +94,7 @@ export function createTokenMap(
             type: token.type,
             tags: token.tags,
             sourceUrl: spec.url,
-            pointer: pointer?.key
+            pointer: pointer?.key,
           };
         }
       } else if (typeof (token.value as string) === 'string') {
@@ -121,7 +121,7 @@ export function createTokenMap(
           tags: token.tags,
           value: nextValue,
           sourceUrl: spec.url,
-          pointer: pointer?.key
+          pointer: pointer?.key,
         };
       }
     }
@@ -152,7 +152,7 @@ export function createAnimationMap(spec: LoadedDesignSpec, parentName?: string, 
         name, path,
         url: spec.url,
         pointer: getPointer(spec.pointers, path)?.key,
-        frames: animation.frames
+        frames: animation.frames,
       };
     }
 
@@ -277,7 +277,7 @@ export function parseDesignRules(rules: DesignRules) {
                 name: psClass.name,
                 type: psClass.type,
                 selectors: [ psClass.name ],
-                rules: {}
+                rules: {},
               };
             }
 
@@ -289,7 +289,7 @@ export function parseDesignRules(rules: DesignRules) {
               name: psState.name,
               type: psState.type,
               selectors: [ psState.name ],
-              rules: {}
+              rules: {},
             };
           }
 
@@ -317,26 +317,26 @@ function parsePseudoVariants(name: string): PseudoVariant[] {
     return [
       {
         name: `:${ name }`,
-        type: 'pseudo-state'
+        type: 'pseudo-state',
       },
       {
         name: `.${ name }`,
-        type: 'pseudo-class'
-      }
+        type: 'pseudo-class',
+      },
     ];
   } else if (PSEUDO_ELEMENTS.includes(name) || MOZ_PSEUDO_STATES.includes(name)) {
     return [
       {
         name: `::${ name }`,
-        type: 'pseudo-element'
-      }
+        type: 'pseudo-element',
+      },
     ];
   } else {
     return [
       {
         name: `::${ name }`,
-        type: 'pseudo'
-      }
+        type: 'pseudo',
+      },
     ];
   }
 }
@@ -371,7 +371,7 @@ function createImplementations(implementations: DesignImplementor[], spec: Loade
           name: name,
           selectors: [ `.${ name }` ],
           layer: mix.layer,
-          rules
+          rules,
         });
       });
     });

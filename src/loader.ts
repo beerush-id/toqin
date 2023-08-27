@@ -3,7 +3,7 @@ import { get as https } from 'https';
 import { resolve as resolveModule } from '@beerush/resolve';
 import { dirname, join, resolve } from 'path';
 import { createAnimationMap, createDesignMap, createTokenMap } from './parser.js';
-import { merge } from '@beerush/utils/object';
+import { merge } from '@beerush/utils';
 import type { JSONMap, JSONPointers } from 'json-source-map';
 import { parse as parseJson } from 'json-source-map';
 import type { DesignSpec, LoadedDesignSpec } from './core.js';
@@ -32,7 +32,7 @@ export const ALLOWED_OVERRIDE_KEYS: Array<keyof LoadedDesignSpec> = [
   'defaultColorScheme',
   'customQueryMode',
   'rootScope',
-  'layers'
+  'layers',
 ];
 
 function parse<T>(json: string, compact?: boolean): JSONMap<T> {
@@ -47,7 +47,7 @@ export async function loadSpec(
   url: string,
   fromPath?: string,
   fromFile?: string,
-  compact?: boolean
+  compact?: boolean,
 ): Promise<ResolvedSpec> {
   const specs: LoadedDesignSpec[] = [];
   const paths: string[] = [];
@@ -145,7 +145,7 @@ export async function readSpec(
   path: string,
   fromPath?: string,
   fromFile?: string,
-  compact?: boolean
+  compact?: boolean,
 ): Promise<SingleSpec> {
   try {
     if (path.startsWith('http')) {
@@ -179,7 +179,7 @@ export async function readSpec(
           spec,
           pointers,
           data: JSON.parse(content),
-          path: file
+          path: file,
         };
       } catch (error) {
         const file = resolveModule(path);
@@ -190,7 +190,7 @@ export async function readSpec(
           spec,
           pointers,
           data: JSON.parse(content),
-          path: file
+          path: file,
         };
       }
     }

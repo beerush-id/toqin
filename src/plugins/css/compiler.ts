@@ -1,7 +1,7 @@
 import type { TokenMap } from '../../token.js';
 import { TagType } from '../../token.js';
 import { MEDIA_QUERIES, parseQueries, resolveCssValue, similarQuery } from './parser.js';
-import { merge } from '@beerush/utils/object';
+import { merge } from '@beerush/utils';
 import type { JSONLine } from 'json-source-map';
 import { anyRegEx, mergeTokenMaps } from '../../parser.js';
 import { helper } from './helper.js';
@@ -284,7 +284,7 @@ export class CSSCompiler {
             { [n.replace('.', '')]: ref.value },
             prefix,
             ref.type,
-            scope
+            scope,
           );
 
           merge(queries, q);
@@ -405,7 +405,7 @@ export class CSSCompiler {
               valueRef as never,
               prefix,
               undefined,
-              selectors.join(', ')
+              selectors.join(', '),
             );
 
             for (const [ key, value ] of Object.entries(root)) {
