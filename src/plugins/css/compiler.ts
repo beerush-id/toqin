@@ -1,7 +1,7 @@
 import type { TokenMap } from '../../token.js';
 import { TagType } from '../../token.js';
 import { MEDIA_QUERIES, parseQueries, resolveCssValue, similarQuery } from './parser.js';
-import { merge } from '@beerush/utils';
+import { entries, merge, toKebabCase } from '@beerush/utils';
 import type { JSONLine } from 'json-source-map';
 import { anyRegEx, mergeTokenMaps } from '../../parser.js';
 import { helper } from './helper.js';
@@ -37,6 +37,7 @@ export type CSSCompilerOptions = {
   includeTokens?: string[];
   excludeTokens?: string[];
   customQueryMode?: 'attribute' | 'class' | 'id';
+  imports?: string[];
 };
 
 type CompilerOptions = CSSCompilerOptions & { tokens: TokenMap };
@@ -136,11 +137,10 @@ export class CSSCompiler {
     }
 
     if (!this.parent) {
+      this.writeImports(compilerOptions);
       this.writeLayers();
-    }
-
-    if (!this.parent) {
       this.assignColorScheme(compilerOptions);
+      this.writeFontFaces();
     }
 
     if (spec.extendedSpecs?.length) {
@@ -176,6 +176,64 @@ export class CSSCompiler {
 
   public stringify(): string {
     return this.contents.join('\r\n');
+  }
+
+  public writeImports(options?: CSSCompilerOptions) {
+    const imports = options?.imports;
+
+    if (imports?.length) {
+      for (const url of imports) {
+        this.putLine(`@import "${ url }";`);
+      }
+
+      this.putLine('');
+    }
+  }
+
+  public writeFontFaces() {
+    const fontFaces = this.spec.fontFaces;
+
+    if (fontFaces?.length) {
+      for (const fontFace of fontFaces) {
+        this.putLine(`@font-face {`);
+        this.putLine(`  font-family: "${ fontFace.fontFamily }";`);
+
+        const fonts: string[] = [];
+
+        for (const [ key, value ] of entries(fontFace)) {
+          if (key !== 'fonts' && value) {
+            if (![ 'fontFamily', 'fonts', 'baseUrl', 'local' ].includes(key)) {
+              this.putLine(`  ${ toKebabCase(key) }: ${ value };`);
+            }
+          }
+        }
+
+        if (fontFace.local) {
+          fonts.push(`local("${ fontFace.local }")`);
+        }
+
+        for (const { name, format } of (fontFace.fonts || [])) {
+          if (format) {
+            fonts.push(`url("${ fontFace.baseUrl || '/fonts' }/${ name }") format("${ format }")`);
+          } else {
+            fonts.push(`url("${ fontFace.baseUrl || '/fonts' }/${ name }")`);
+          }
+        }
+
+        this.putLine(`  src: ${ fonts.join(', ') };`);
+        this.putLine(`}`);
+        this.putLine('');
+      }
+    }
+  }
+
+  private writeLayers() {
+    const layers = this.mergeLayers([], this.spec);
+
+    if (layers.length) {
+      this.putLine(`@layer ${ layers.join(', ') };`);
+      this.putLine('');
+    }
   }
 
   private assignColorScheme(options: Partial<CSSCompilerOptions>) {
@@ -236,15 +294,6 @@ export class CSSCompiler {
     }
 
     return layers;
-  }
-
-  private writeLayers() {
-    const layers = this.mergeLayers([], this.spec);
-
-    if (layers.length) {
-      this.putLine(`@layer ${ layers.join(', ') };`);
-      this.putLine('');
-    }
   }
 
   private writeTokens(options: CompilerOptions) {

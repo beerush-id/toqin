@@ -2,6 +2,7 @@ import type { Design, DesignImplementor, DesignMap } from './design.js';
 import type { Animation, AnimationMap } from './animation.js';
 import type { JSONLine, JSONPointers } from 'json-source-map';
 import type { TagType, Token, TokenMap } from './token.js';
+import type { FontFace } from './font.js';
 
 export type MediaQuery = {
   query: string;
@@ -33,6 +34,7 @@ export type DesignSpec = {
   mixins?: DesignImplementor[];
   layers?: string[];
 
+  fontFaces?: FontFace[];
   mediaQueries?: MediaQueries;
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;
   customQueryMode?: 'attribute' | 'class';
