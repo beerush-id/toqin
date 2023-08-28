@@ -55,12 +55,16 @@
     "build": "esdev --clean",
     "prepublish": "npm run build",
     "test": "cd test && node design.test.js",
-    "test:extend": "cd test && node extend.test.js"
+    "test:extend": "cd test && node extend.test.js",
+    "docs:dev": "vitepress dev docs --port 5273",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@beerush/esdev": "*",
     "@types/fs-extra": "^11.0.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "vitepress": "^1.0.0-rc.5"
   },
   "dependencies": {
     "@beerush/resolve": "*",

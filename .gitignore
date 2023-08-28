@@ -16,3 +16,5 @@ test/variables
 test/variables/*
 test/output
 test/output/*
+docs/.vitepress/dist
+docs/.vitepress/cache
