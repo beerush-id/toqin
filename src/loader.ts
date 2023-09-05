@@ -33,6 +33,7 @@ export const ALLOWED_OVERRIDE_KEYS: Array<keyof LoadedDesignSpec> = [
   'customQueryMode',
   'rootScope',
   'layers',
+  'imports',
 ];
 
 function parse<T>(json: string, compact?: boolean): JSONMap<T> {

@@ -31,6 +31,30 @@ export const RESTRICTED_SPEC_KEYS: Array<keyof LoadedDesignSpec> = [
   'extendedSpecs', 'includedSpecs',
 ];
 
+export function mergeImports(spec: LoadedDesignSpec, maps: string[] = []) {
+  if (spec.extendedSpecs?.length) {
+    for (const extendedSpec of spec.extendedSpecs) {
+      mergeImports(extendedSpec, maps);
+    }
+  }
+
+  if (spec.imports?.length) {
+    for (const url of spec.imports) {
+      if (!maps.includes(url)) {
+        maps.push(url);
+      }
+    }
+  }
+
+  if (spec.includedSpecs?.length) {
+    for (const includedSpec of spec.includedSpecs) {
+      mergeImports(includedSpec, maps);
+    }
+  }
+
+  return maps;
+}
+
 export function mergeTokenMaps(spec: LoadedDesignSpec, maps: TokenMap = {}) {
   if (spec.extendedSpecs?.length) {
     for (const extendedSpec of spec.extendedSpecs) {

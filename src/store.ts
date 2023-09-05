@@ -1,10 +1,10 @@
 import { ALLOWED_OVERRIDE_KEYS, readSpec } from './loader.js';
 import { createAnimationMap, createDesignMap, createTokenMap, RESTRICTED_SPEC_KEYS } from './parser.js';
 import { dirname, join } from 'path';
-import { FSWatcher, watch as watchFile } from 'chokidar';
+import { type FSWatcher, watch as watchFile } from 'chokidar';
 import fs from 'fs-extra';
 import { logger } from './logger.js';
-import { Compiler, CompilerOptions, DesignOutput, DesignSpec, LoadedDesignSpec } from './core.js';
+import type { Compiler, CompilerOptions, DesignOutput, DesignSpec, LoadedDesignSpec } from './core.js';
 
 export type SpecIndex = {
   name: string;
@@ -124,13 +124,13 @@ export class Store {
   public async load(
     url: string = this.rootUrl,
     fromIndex?: SpecIndex,
-    recursive = true
+    recursive = true,
   ): Promise<SpecIndex> {
     const {
       spec,
       data,
       pointers,
-      path
+      path,
     } = await readSpec(url, fromIndex?.file ? dirname(fromIndex?.file) : fromIndex?.file, fromIndex?.file);
 
     if (/[\sA-Z]+/.test(data.name)) {
@@ -152,7 +152,7 @@ export class Store {
       data,
       parentIndex: fromIndex,
       extendedIndexes,
-      includedIndexes
+      includedIndexes,
     };
 
     if (!this.indexes[path]) {
@@ -245,6 +245,7 @@ export class Store {
     previous.name = current.name;
     previous.data = current.data;
     previous.version = current.version;
+    previous.spec.imports = current.spec.imports;
 
     for (const [ key, value ] of Object.entries(current.spec)) {
       if (!RESTRICTED_SPEC_KEYS.includes(key as keyof LoadedDesignSpec)) {

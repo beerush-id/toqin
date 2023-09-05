@@ -3,7 +3,7 @@ import { TagType } from '../../token.js';
 import { MEDIA_QUERIES, parseQueries, resolveCssValue, similarQuery } from './parser.js';
 import { entries, merge, toKebabCase } from '@beerush/utils';
 import type { JSONLine } from 'json-source-map';
-import { anyRegEx, mergeTokenMaps } from '../../parser.js';
+import { anyRegEx, mergeImports, mergeTokenMaps } from '../../parser.js';
 import { helper } from './helper.js';
 import { logger } from '../../logger.js';
 import { script } from './script.js';
@@ -179,7 +179,7 @@ export class CSSCompiler {
   }
 
   public writeImports(options?: CSSCompilerOptions) {
-    const imports = options?.imports;
+    const imports = [ ...(options?.imports || []), ...mergeImports(this.spec) ];
 
     if (imports?.length) {
       for (const url of imports) {

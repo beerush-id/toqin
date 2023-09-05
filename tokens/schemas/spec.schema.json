@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Generated schema for Root",
+  "title": "Toqin Design System Schema",
   "type": "object",
   "properties": {
     "name": {
@@ -14,6 +14,84 @@
     },
     "description": {
       "type": "string"
+    },
+    "mediaQueries": {
+      "type": "object"
+    },
+    "fontFaces": {
+      "type": "array",
+      "items": {
+        "$id": "#fontFace",
+        "type": "object",
+        "properties": {
+          "fontDisplay": {
+            "type": "string"
+          },
+          "fontFamily": {
+            "type": "string"
+          },
+          "fontStretch": {
+            "type": "string"
+          },
+          "fontStyle": {
+            "type": "string"
+          },
+          "fontWeight": {
+            "type": "string"
+          },
+          "fontFeatureSettings": {
+            "type": "string"
+          },
+          "fontVariationSettings": {
+            "type": "string"
+          },
+          "sizeAdjust": {
+            "type": "string"
+          },
+          "unicodeRange": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          },
+          "fonts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "format": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "local": {
+            "type": "string"
+          }
+        },
+        "required": [ "fontFamily", "baseUrl", "fonts" ]
+      }
+    },
+    "extends": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "includes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "imports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "tokens": {
       "type": "array",
@@ -33,7 +111,7 @@
           "description": {
             "type": "string"
           },
-          "value": {},
+          "value": { },
           "tokens": {
             "type": "array",
             "items": {
@@ -55,6 +133,12 @@
           "name": {
             "type": "string"
           },
+          "root": {
+            "type": "boolean"
+          },
+          "important": {
+            "type": "boolean"
+          },
           "selectors": {
             "type": "array",
             "items": {
@@ -64,7 +148,7 @@
           "description": {
             "type": "string"
           },
-          "rules": {},
+          "rules": { },
           "children": {
             "type": "array",
             "items": {

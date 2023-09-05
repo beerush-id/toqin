@@ -42,6 +42,7 @@ export type DesignSpec = {
 
   extends?: string[];
   includes?: string[];
+  imports?: string[];
 
   excludeTokens?: string[];
   includeTokens?: string[];
@@ -56,6 +57,7 @@ export type LoadedDesignSpec = DesignSpec & {
 
   extendedSpecs?: LoadedDesignSpec[];
   includedSpecs?: LoadedDesignSpec[];
+  imports?: string[];
 
   pointers?: JSONPointers;
   tokenPointer?: JSONLine;
