@@ -10,9 +10,9 @@ export type ParserOptions = {
 };
 
 export const CUSTOM_QUERY_REGEX = /\[[\w-]+]/g;
+export const CSS_UNIT_REGEX = /^-?\d+(\.\d+)?(px|em|rem|vh|vw|vmin|vmax|%)$/i;
 export const COLOR_REGEX = /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/i;
 export const COLOR_VALUE_MATCHER = /^#|(rgb|rgba|hsl|hsla)\(/;
-export const CSS_UNIT_REGEX = /^-?\d+(\.\d+)?(px|em|rem|vh|vw|vmin|vmax|%)$/i;
 export const COLOR_HEX_REGEX = /^#([0-9a-f]{3}){1,2}$/i;
 export const COLOR_RGB_REGEX = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
 export const COLOR_RGBA_REGEX = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/i;
@@ -146,9 +146,9 @@ export function resolveCssValue(
   prefix?: string,
   name?: string,
   kind?: TokenType,
-  inline?: boolean
+  inline?: boolean,
 ): string {
-  const shortcuts = value.match(/\+[\w.\-:=]+/g);
+  const shortcuts = value.match(/\+[\w.\-_:=]+/g);
   if (shortcuts) {
     shortcuts.forEach((item) => {
       const [ base, alpha ] = item.split('=');
@@ -166,16 +166,32 @@ export function resolveCssValue(
     });
   }
 
-  const globals = value.match(/@[\w.\-|]+/g);
+  const locals = value.match(/~[\w.\-_|@]+/g);
+  if (locals) {
+    locals.forEach((item) => {
+      const [ key, fallback ] = item.split('|');
+      const variable = key.replace('~', '').replace(/\./g, '-');
+      const fallbackValue = fallback && /^(@|~|\{|\$)/.test(fallback)
+                            ? resolveCssValue(maps, fallback, prefix, name, kind, inline)
+                            : fallback;
+
+      value = value.replace(item, `var(--this-${ variable }${ fallbackValue ? ', ' + fallbackValue : '' })`);
+    });
+  }
+
+  const globals = value.match(/@[\w.\-_|]+/g);
   if (globals) {
     globals.forEach((item) => {
       const [ key, fallback ] = item.split('|');
+      const token = maps?.[key.replace('@', '')];
+
+      if (!token) {
+        logger.warn(`Cannot find global token "${ key }". UI might be not rendered correctly.`);
+      }
 
       if (inline) {
-        const token = maps?.[key.replace('@', '')];
-
         if (/^(@|~|\$)/.test(token?.value as string)) {
-          value = resolveCssValue(maps, token?.value as string, prefix, name, kind, true);
+          value = resolveCssValue(maps, token?.value as string, prefix, name, kind, inline);
         } else {
           value = value.replace(item, token?.value as string);
         }
@@ -184,23 +200,13 @@ export function resolveCssValue(
 
         value = value.replace(
           item,
-          `var(--${ prefix ? prefix + '-' : '' }${ variable }${ fallback ? ', ' + fallback : '' })`
+          `var(--${ prefix ? prefix + '-' : '' }${ variable }${ fallback ? ', ' + fallback : '' })`,
         );
       }
     });
   }
 
-  const locals = value.match(/~[\w.\-|]+/g);
-  if (locals) {
-    locals.forEach((item) => {
-      const [ key, fallback ] = item.split('|');
-      const variable = key.replace('~', '').replace(/\./g, '-');
-
-      value = value.replace(item, `var(--this-${ variable }${ fallback ? ', ' + fallback : '' })`);
-    });
-  }
-
-  const prefixes = value.match(/\{[\w.-]+\}/g);
+  const prefixes = value.match(/\{[\w.\-_]+\}/g);
   if (prefixes) {
     prefixes.forEach((item) => {
       const variable = item.replace('{', '').replace('}', '').replace(/\./g, '-');
@@ -209,12 +215,12 @@ export function resolveCssValue(
     });
   }
 
-  const copies = value.match(/\$[\w!.\-<>^=]+/g);
+  const copies = value.match(/\$[\w!.\-_<>^=|]+/g);
   if (copies) {
     copies.forEach((copy) => {
       const [ base, fallback ] = copy.replace('$', '').split(':');
       const [ key ] = base.split(COLOR_TRANSFORM_REGEX);
-      const [ , alpha ] = base.split(/[!=]/);
+      const [ , alpha ] = base.split(/[!=|]/);
       const [ , darken ] = base.split('<');
       const [ , lighten ] = base.split('>');
       const [ , contrast ] = base.split('^');
@@ -249,6 +255,37 @@ export function resolveCssValue(
     });
   }
 
+  const maths = value.match(/\d+[a-z]+\([+\-*/][\d.]+\)/g);
+  if (maths) {
+    maths.forEach((item) => {
+      const [ , size, operator, scale ] = /(\w+)\(([+\-*/])([\d.]+)\)/.exec(item) || [];
+      if (size && operator && scale) {
+        const [ , int, unit ] = /(\d+)(\w+)/.exec(size) || [];
+        const nInt = parseFloat(int);
+        const nScale = parseFloat(scale);
+
+        if (nInt && nScale) {
+          switch (operator) {
+            case '+':
+              value = value.replace(item, `${ Math.round(nInt + nScale) }${ unit || '' }`);
+              break;
+            case '-':
+              value = value.replace(item, `${ Math.round(nInt - nScale) }${ unit || '' }`);
+              break;
+            case '*':
+              value = value.replace(item, `${ Math.round(nInt * nScale) }${ unit || '' }`);
+              break;
+            case '/':
+              value = value.replace(item, `${ Math.round(nInt / nScale) }${ unit || '' }`);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    });
+  }
+
   if (name && kind && !value.startsWith('var(')) {
     validate(name, kind, value);
   }
@@ -257,6 +294,10 @@ export function resolveCssValue(
 }
 
 export function validate(name: string, kind: TokenType, value: unknown) {
+  if (value === '0' || value === 0) {
+    return true;
+  }
+
   if (
     typeof value === 'string' &&
     (value.startsWith('@') ||
@@ -324,7 +365,7 @@ export function parseQueries(
   values: DesignRule,
   prefix?: string,
   kind?: TokenType,
-  scope = ':root'
+  scope = ':root',
 ): ScopedDeclarations {
   const root: NestedDeclarations = {};
   const queries: NestedDeclarations = {};
@@ -368,7 +409,7 @@ export function parseQueries(
               value as string,
               prefix,
               prop,
-              kind
+              kind,
             ) as never;
           } else {
             queries[custom] = queries[custom] || {};

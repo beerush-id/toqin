@@ -46,7 +46,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
         indexName: base,
         extension: config?.extension,
         sourceMap: 'inline',
-        ...config?.compilerOptions
+        ...config?.compilerOptions,
       } as CSSOptions;
       const compiler = new CSSCompiler(spec, compilerOptions);
       const outputs = await encode(compiler, compilerOptions);
@@ -78,7 +78,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
         socket?.send({
           type: 'custom',
           event: 'toqin-change',
-          data: { id: href + ext, content, version: store.root.version }
+          data: { id: href + ext, content, version: store.root.version },
         });
       }
     });
@@ -95,7 +95,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
   };
 
   if (config?.token) {
-    await registerStore(config.token, 'Vite Config');
+    await registerStore(config.token, 'CSS Vite Plugin');
   }
 
   return {
@@ -166,6 +166,6 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
 
         return { code, map: null };
       }
-    }
+    },
   };
 }

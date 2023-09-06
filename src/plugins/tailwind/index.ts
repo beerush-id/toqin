@@ -4,6 +4,9 @@ import { MEDIA_QUERIES, resolveCssValue } from '../css/parser.js';
 import type { DesignOutput, LoadedDesignSpec, MediaQueries } from '../../core.js';
 import { all as knownProps } from 'known-css-properties';
 import { camelize } from '@beerush/utils';
+import { type Plugin } from 'vite';
+import { CompileEvent, Store } from '../../store.js';
+import { logger } from '../../logger.js';
 
 export type TailwindPluginConfig = {
   outDir?: string;
@@ -73,11 +76,11 @@ export const RESERVED_PROPERTIES: string[] = [
   'lineHeight',
 ];
 
-export const TEMPLATE_SVELTEKIT: TailwindTemplate = {
+export const TAILWIND_TEMPLATE_SVELTEKIT: TailwindTemplate = {
   content: [ './src/**/*.{html,js,svelte,ts}' ],
 };
 
-export const TEMPLATE_NEXTJS: TailwindTemplate = {
+export const TAILWIND_TEMPLATE_NEXTJS: TailwindTemplate = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -144,6 +147,33 @@ export function tailwind(config?: TailwindPluginConfig) {
     }
 
     return outputs;
+  };
+}
+
+export type TailwindPluginViteConfig = {
+  token: string;
+  outDir?: string;
+  watch?: boolean;
+  tailwindOptions?: TailwindPluginConfig;
+}
+
+export async function tailwindVite(config: TailwindPluginViteConfig): Promise<Plugin> {
+  const store = new Store(config.token);
+
+  store.use(tailwind(config.tailwindOptions));
+  store.subscribe(event => {
+    if (event.type === 'compile:complete') {
+      (event as CompileEvent).data.write();
+    }
+  });
+
+  await store.run(config.watch ?? true);
+  await store.compile();
+
+  logger.info(`Design token "${ store.root.file }" is registered by "Tailwind Vite Plugin".`);
+
+  return {
+    name: 'vite-plugin-toqin-tailwind',
   };
 }
 
