@@ -175,7 +175,8 @@ export function resolveCssValue(
                             ? resolveCssValue(maps, fallback, prefix, name, kind, inline)
                             : fallback;
 
-      value = value.replace(item, `var(--this-${ variable }${ fallbackValue ? ', ' + fallbackValue : '' })`);
+      // value = value.replace(item, `var(--this-${ variable }${ fallbackValue ? ', ' + fallbackValue : '' })`);
+      value = value.replace(item, `var(--${ variable }${ fallbackValue ? ', ' + fallbackValue : '' })`);
     });
   }
 

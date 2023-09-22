@@ -70,7 +70,7 @@ export type CompilerOptions = {
 export type DesignOutput = {
   name: string;
   content: string;
-  fileName?: string;
+  fileName: string;
 };
 
 export type NestedDeclarations = {

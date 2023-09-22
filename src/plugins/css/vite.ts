@@ -38,7 +38,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
   const registerStore = async (url: string, registrant: string) => {
     const store = new Store(url, config);
 
-    const base = basename(url);
+    const base = config?.compilerOptions?.indexName || basename(url);
     const href = `${ remotePath }/${ base }`;
 
     store.use(async (spec: LoadedDesignSpec): Promise<DesignOutput[]> => {
@@ -51,20 +51,19 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
       const compiler = new CSSCompiler(spec, compilerOptions);
       const outputs = await encode(compiler, compilerOptions);
 
-      const csContent = outputs.stringify();
+      const css: DesignOutput = outputs.find(output => output.fileName.endsWith(ext)) as never;
+      const csContent = css?.content || '';
       const jsContent = compiler.createScript(href + ext);
 
       csStore.set(`${ base }${ ext }`, csContent);
-      jsStore.set(`${ base }.js`, jsContent);
+      jsStore.set(`${ base }.helper.js`, jsContent);
 
       if (config?.outDir) {
-        const path = join(process.cwd(), `${ config?.outDir }`, compilerOptions?.outDir || '.', base);
-
-        fs.ensureFileSync(path + ext);
-        fs.writeFileSync(path + ext, csContent);
-
-        fs.ensureFileSync(path + '.js');
-        fs.writeFileSync(path + '.js', jsContent);
+        const outPath = join(process.cwd(), config?.outDir || '.', compilerOptions.outDir || '.');
+        outputs.forEach(output => {
+          fs.ensureFileSync(join(outPath, output.fileName));
+          fs.writeFileSync(join(outPath, output.fileName), output.content);
+        });
       }
 
       return outputs;
@@ -72,7 +71,7 @@ export async function viteRemote(config?: ViteCSSConfig, options?: Partial<CSSOp
 
     store.subscribe(event => {
       if (event.type === 'compile:complete') {
-        const content = csStore.get(`${ basename(base) }${ ext }`);
+        const content = csStore.get(`${ base }${ ext }`);
 
         logger.debug(`Sending updated CSS to client.`);
         socket?.send({

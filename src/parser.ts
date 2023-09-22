@@ -280,8 +280,8 @@ export function parseDesignRules(rules: DesignRules) {
   } = {};
 
   for (const [ prop, value ] of Object.entries(rules)) {
-    if (typeof value === 'string') {
-      root[prop] = value;
+    if (typeof value === 'string' || Array.isArray(value)) {
+      root[prop] = Array.isArray(value) ? value.join(', ') : value;
     } else if (typeof value === 'object') {
       root[prop] = {};
 

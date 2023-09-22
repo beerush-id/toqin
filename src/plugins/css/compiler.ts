@@ -183,7 +183,7 @@ export class CSSCompiler {
 
     if (imports?.length) {
       for (const url of imports) {
-        this.putLine(`@import "${ url }";`);
+        this.putLine(`  @import "${ url }" layer(framework);`);
       }
 
       this.putLine('');
@@ -228,7 +228,7 @@ export class CSSCompiler {
   }
 
   private writeLayers() {
-    const layers = this.mergeLayers([], this.spec);
+    const layers = this.mergeLayers([ 'framework' ], this.spec);
 
     if (layers.length) {
       this.putLine(`@layer ${ layers.join(', ') };`);
@@ -441,11 +441,11 @@ export class CSSCompiler {
         layer.push({ text: `${ selectors.join(', ') } {`, line });
 
         for (const [ name, valueRef ] of Object.entries(ref.rules)) {
-          let prop = name;
+          const prop = name;
 
-          if (prop.startsWith('--') && !prop.startsWith('--this')) {
-            prop = prop.replace('--', `--this-`);
-          }
+          // if (prop.startsWith('--') && !prop.startsWith('--this')) {
+          //   prop = prop.replace('--', `--this-`);
+          // }
 
           if (typeof valueRef === 'object') {
             const { root, queries: q } = parseQueries(
@@ -458,11 +458,11 @@ export class CSSCompiler {
             );
 
             for (const [ key, value ] of Object.entries(root)) {
-              let subProp = key;
+              const subProp = key;
 
-              if (subProp.startsWith('--') && !subProp.startsWith('--this')) {
-                subProp = subProp.replace('--', `--this-`);
-              }
+              // if (subProp.startsWith('--') && !subProp.startsWith('--this')) {
+              //   subProp = subProp.replace('--', `--this-`);
+              // }
 
               // this.putLine(`  ${ subProp }: ${ value };`);
               layer.push({ text: `  ${ subProp }: ${ value };` });

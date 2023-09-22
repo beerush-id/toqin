@@ -3,10 +3,12 @@ import { mergeTokenMaps } from '../../parser.js';
 import { MEDIA_QUERIES, resolveCssValue } from '../css/parser.js';
 import type { DesignOutput, LoadedDesignSpec, MediaQueries } from '../../core.js';
 import { all as knownProps } from 'known-css-properties';
-import { camelize } from '@beerush/utils';
+import { camelize, entries, toCamelCase, write } from '@beerush/utils';
 import { type Plugin } from 'vite';
 import { CompileEvent, Store } from '../../store.js';
 import { logger } from '../../logger.js';
+import { Design } from '../../design.js';
+import { translate } from './translate.js';
 
 export type TailwindPluginConfig = {
   outDir?: string;
@@ -18,6 +20,7 @@ export type TailwindPluginConfig = {
   useQuickExtend?: boolean;
   extendRules?: ExtendRules;
   template?: TailwindTemplate;
+  classList?: boolean;
 };
 
 export type ExtendRule = {
@@ -125,7 +128,8 @@ export function tailwind(config?: TailwindPluginConfig) {
       outputs.push({
         name: 'tailwind.config.js',
         fileName: `${ options.outDir }/${ options.indexName }`,
-        content: content.replace('module.exports = ', 'export default '),
+        content: content.replace('module.exports = ', 'export default ')
+          .replace('exports.', 'export const '),
       });
     } else if (options.module === 'cjs') {
       outputs.push({
@@ -137,7 +141,8 @@ export function tailwind(config?: TailwindPluginConfig) {
       outputs.push({
         name: 'tailwind.config.js',
         fileName: `${ options.outDir }/${ options.indexName }`,
-        content: content.replace('module.exports = ', 'export default '),
+        content: content.replace('module.exports = ', 'export default ')
+          .replace('exports.', 'export const '),
       });
       outputs.push({
         name: 'tailwind.config.cjs',
@@ -208,11 +213,20 @@ export class TailwindCompiler {
     this.putLines({ ...this.template, theme: this.preset }, '  ');
     this.putLine('};');
 
+    if (this.config?.classList) {
+      this.createClasses();
+    }
+
     return this;
   }
 
   public stringify() {
     return this.contents.join('\r\n');
+  }
+
+  private createClasses() {
+    const classList = parseDesignClasses(this.spec);
+    this.putLine(`exports.classList = ${ JSON.stringify(classList, null, 2) }`);
   }
 
   private importScreens() {
@@ -376,4 +390,54 @@ function deepSet(target: NestedProps, path: string, value: string) {
   current[parts[0]] = value;
 
   return target;
+}
+
+export type TailwindClassList = {
+  class?: string[];
+} & {
+  [key: string]: TailwindClassList;
+}
+
+function parseDesignClasses(spec: LoadedDesignSpec, rules: TailwindClassList = {}) {
+  if (spec.extendedSpecs?.length) {
+    for (const extended of spec.extendedSpecs) {
+      parseDesignClasses(extended, rules);
+    }
+  }
+
+  for (const design of spec.designs || []) {
+    createClassList(design, rules);
+  }
+
+  if (spec.includedSpecs?.length) {
+    for (const included of spec.includedSpecs) {
+      parseDesignClasses(included, rules);
+    }
+  }
+
+  return rules;
+}
+
+function createClassList(design: Design, rules: TailwindClassList = {}) {
+  const path = design.name.split(/\./g).map((item) => toCamelCase(item)).join('.');
+
+  const classes = entries(design.rules || {})
+    .map(([ key, value ]) => translate(key as never, value as never))
+    .filter((value) => value !== undefined);
+
+  write(rules as never, path + '.class', classes as never);
+
+  if (design.variants?.length) {
+    for (const variant of design.variants) {
+      createClassList({ ...variant, name: `${ path }.${ variant.name }` }, rules);
+    }
+  }
+
+  if (design.children?.length) {
+    for (const child of design.children) {
+      createClassList({ ...child, name: `${ path }.${ child.name }` }, rules);
+    }
+  }
+
+  return rules;
 }
