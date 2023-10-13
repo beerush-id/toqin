@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "@beerush/resolve": "*",
-    "@beerush/utils": "^0.2.0",
+    "@beerush/utils": "^0.3.0",
     "autoprefixer": "^10.4.14",
     "chokidar": "^3.5.3",
     "cssnano": "^6.0.1",
