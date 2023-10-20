@@ -26,7 +26,7 @@
   "designs": [
     {
       "name": "box-standard",
-      "selectors": ["*", "::before", "::after"],
+      "selectors": [ "*", "::before", "::after" ],
       "layer": "reset",
       "rules": {
         "box-sizing": "border-box",
@@ -38,7 +38,7 @@
     {
       "name": "html",
       "root": true,
-      "selectors": ["html"],
+      "selectors": [ "html" ],
       "layer": "reset",
       "rules": {
         "line-height": "1.5",
@@ -52,7 +52,7 @@
     {
       "name": "body",
       "root": true,
-      "selectors": ["body"],
+      "selectors": [ "body" ],
       "layer": "reset",
       "rules": {
         "margin": "0",
@@ -61,7 +61,7 @@
     },
     {
       "name": "hr",
-      "selectors": ["hr"],
+      "selectors": [ "hr" ],
       "layer": "reset",
       "rules": {
         "height": "0",
@@ -71,7 +71,7 @@
     },
     {
       "name": "abbr",
-      "selectors": ["abbr:where([title])"],
+      "selectors": [ "abbr:where([title])" ],
       "layer": "reset",
       "rules": {
         "text-decoration": "underline dotted"
@@ -79,7 +79,7 @@
     },
     {
       "name": "headings",
-      "selectors": ["h1", "h2", "h3", "h4", "h5", "h6"],
+      "selectors": [ "h1", "h2", "h3", "h4", "h5", "h6" ],
       "layer": "reset",
       "rules": {
         "font-size": "inherit",
@@ -88,7 +88,7 @@
     },
     {
       "name": "anchor",
-      "selectors": ["a"],
+      "selectors": [ "a" ],
       "layer": "reset",
       "rules": {
         "color": "inherit",
@@ -97,7 +97,7 @@
     },
     {
       "name": "strong",
-      "selectors": ["b", "strong"],
+      "selectors": [ "b", "strong" ],
       "layer": "reset",
       "rules": {
         "font-weight": "bolder"
@@ -105,7 +105,7 @@
     },
     {
       "name": "pre-code",
-      "selectors": ["pre", "code", "kbd", "samp"],
+      "selectors": [ "pre", "code", "kbd", "samp" ],
       "layer": "reset",
       "rules": {
         "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
@@ -114,7 +114,7 @@
     },
     {
       "name": "small",
-      "selectors": ["small"],
+      "selectors": [ "small" ],
       "layer": "reset",
       "rules": {
         "font-size": "80%"
@@ -122,7 +122,7 @@
     },
     {
       "name": "sub-sup",
-      "selectors": ["sub", "sup"],
+      "selectors": [ "sub", "sup" ],
       "layer": "reset",
       "rules": {
         "font-size": "75%",
@@ -133,7 +133,7 @@
     },
     {
       "name": "sub",
-      "selectors": ["sub"],
+      "selectors": [ "sub" ],
       "layer": "reset",
       "rules": {
         "bottom": "-0.25em"
@@ -141,7 +141,7 @@
     },
     {
       "name": "sup",
-      "selectors": ["sup"],
+      "selectors": [ "sup" ],
       "layer": "reset",
       "rules": {
         "top": "-0.5em"
@@ -149,7 +149,7 @@
     },
     {
       "name": "table",
-      "selectors": ["table"],
+      "selectors": [ "table" ],
       "layer": "reset",
       "rules": {
         "text-indent": "0",
@@ -159,7 +159,7 @@
     },
     {
       "name": "form-elements",
-      "selectors": ["button", "input", "optgroup", "select", "textarea"],
+      "selectors": [ "button", "input", "optgroup", "select", "textarea" ],
       "layer": "reset",
       "rules": {
         "font-family": "inherit",
@@ -174,7 +174,7 @@
     },
     {
       "name": "button-select",
-      "selectors": ["button", "select"],
+      "selectors": [ "button", "select" ],
       "layer": "reset",
       "rules": {
         "text-transform": "none"
@@ -182,7 +182,7 @@
     },
     {
       "name": "button",
-      "selectors": ["button", "[type=\"button\"]", "[type=\"reset\"]", "[type=\"submit\"]"],
+      "selectors": [ "button", "[type=\"button\"]", "[type=\"reset\"]", "[type=\"submit\"]" ],
       "layer": "reset",
       "rules": {
         "-webkit-appearance": "button",
@@ -192,7 +192,7 @@
     },
     {
       "name": "focusring",
-      "selectors": [":-moz-focusring"],
+      "selectors": [ ":-moz-focusring" ],
       "layer": "reset",
       "rules": {
         "outline": "auto"
@@ -200,7 +200,7 @@
     },
     {
       "name": "ui-invalid",
-      "selectors": [":-moz-ui-invalid"],
+      "selectors": [ ":-moz-ui-invalid" ],
       "layer": "reset",
       "rules": {
         "box-shadow": "none"
@@ -208,7 +208,7 @@
     },
     {
       "name": "progress",
-      "selectors": ["progress"],
+      "selectors": [ "progress" ],
       "layer": "reset",
       "rules": {
         "vertical-align": "baseline"
@@ -216,7 +216,7 @@
     },
     {
       "name": "inner-spin-button",
-      "selectors": ["::-webkit-inner-spin-button", "::-webkit-outer-spin-button"],
+      "selectors": [ "::-webkit-inner-spin-button", "::-webkit-outer-spin-button" ],
       "layer": "reset",
       "rules": {
         "height": "auto"
@@ -224,7 +224,7 @@
     },
     {
       "name": "search",
-      "selectors": ["[type=\"search\"]"],
+      "selectors": [ "[type=\"search\"]" ],
       "layer": "reset",
       "rules": {
         "-webkit-appearance": "textfield",
@@ -233,7 +233,7 @@
     },
     {
       "name": "search-decoration",
-      "selectors": ["::-webkit-search-decoration"],
+      "selectors": [ "::-webkit-search-decoration" ],
       "layer": "reset",
       "rules": {
         "-webkit-appearance": "none"
@@ -241,7 +241,7 @@
     },
     {
       "name": "file-upload",
-      "selectors": ["::-webkit-file-upload-button"],
+      "selectors": [ "::-webkit-file-upload-button" ],
       "layer": "reset",
       "rules": {
         "-webkit-appearance": "button",
@@ -250,7 +250,7 @@
     },
     {
       "name": "summary",
-      "selectors": ["summary"],
+      "selectors": [ "summary" ],
       "layer": "reset",
       "rules": {
         "display": "list-item"
@@ -258,7 +258,7 @@
     },
     {
       "name": "block-spacing",
-      "selectors": ["blockquote", "dl", "dd", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "figure", "p", "pre"],
+      "selectors": [ "blockquote", "dl", "dd", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "figure", "p", "pre" ],
       "layer": "reset",
       "rules": {
         "margin": "0"
@@ -266,7 +266,7 @@
     },
     {
       "name": "fieldset",
-      "selectors": ["fieldset"],
+      "selectors": [ "fieldset" ],
       "layer": "reset",
       "rules": {
         "margin": "0",
@@ -275,7 +275,7 @@
     },
     {
       "name": "legend",
-      "selectors": ["legend"],
+      "selectors": [ "legend" ],
       "layer": "reset",
       "rules": {
         "padding": "0"
@@ -283,7 +283,7 @@
     },
     {
       "name": "list",
-      "selectors": ["ol", "ul", "menu"],
+      "selectors": [ "ol", "ul", "menu" ],
       "layer": "reset",
       "rules": {
         "list-style": "none",
@@ -293,7 +293,7 @@
     },
     {
       "name": "textarea",
-      "selectors": ["textarea"],
+      "selectors": [ "textarea" ],
       "layer": "reset",
       "rules": {
         "resize": "vertical"
@@ -301,7 +301,7 @@
     },
     {
       "name": "placeholder",
-      "selectors": ["input::placeholder", "textarea::placeholder"],
+      "selectors": [ "input::placeholder", "textarea::placeholder" ],
       "layer": "reset",
       "rules": {
         "opacity": "1",
@@ -310,7 +310,7 @@
     },
     {
       "name": "button-pointer",
-      "selectors": ["button", "[role=\"button\"]"],
+      "selectors": [ "button", "[role=\"button\"]" ],
       "layer": "reset",
       "rules": {
         "cursor": "pointer"
@@ -318,7 +318,7 @@
     },
     {
       "name": "disabled",
-      "selectors": [":disabled"],
+      "selectors": [ ":disabled" ],
       "layer": "reset",
       "rules": {
         "cursor": "default"
@@ -326,7 +326,7 @@
     },
     {
       "name": "media",
-      "selectors": ["img", "svg", "video", "canvas", "audio", "iframe", "embed", "object"],
+      "selectors": [ "img", "svg", "video", "canvas", "audio", "iframe", "embed", "object" ],
       "layer": "reset",
       "rules": {
         "display": "block",
@@ -335,7 +335,7 @@
     },
     {
       "name": "img-video",
-      "selectors": ["img", "video"],
+      "selectors": [ "img", "video" ],
       "layer": "reset",
       "rules": {
         "max-width": "100%",
@@ -344,7 +344,7 @@
     },
     {
       "name": "hidden",
-      "selectors": ["[hidden]"],
+      "selectors": [ "[hidden]" ],
       "layer": "reset",
       "rules": {
         "display": "none"
