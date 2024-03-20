@@ -93,6 +93,12 @@
         "type": "string"
       }
     },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "tokens": {
       "type": "array",
       "items": {
@@ -131,6 +137,9 @@
         "type": "object",
         "properties": {
           "name": {
+            "type": "string"
+          },
+          "layer": {
             "type": "string"
           },
           "root": {
