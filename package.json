@@ -61,14 +61,14 @@
     "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
-    "@beerush/esdev": "*",
+    "@beerush/esdev": "^1.1.0",
     "@types/fs-extra": "^11.0.1",
     "typescript": "^5.1.6",
     "vitepress": "^1.0.0-rc.5"
   },
   "dependencies": {
-    "@beerush/resolve": "*",
-    "@beerush/utils": "^0.3.0",
+    "@beerush/resolve": "^1.0.0",
+    "@beerush/utils": "^0.3.1",
     "autoprefixer": "^10.4.14",
     "chokidar": "^3.5.3",
     "cssnano": "^6.0.1",
