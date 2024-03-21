@@ -256,6 +256,27 @@ export function resolveCssValue(
     });
   }
 
+  const hexColors = value.match(/#[\w!.\-_<>^=|]+/g);
+  if (hexColors) {
+    hexColors.forEach((color) => {
+      const [ key ] = color.split(COLOR_TRANSFORM_REGEX);
+      const [ , alpha ] = color.split(/[!=|]/);
+      const [ , darken ] = color.split('<');
+      const [ , lighten ] = color.split('>');
+      const [ , contrast ] = color.split('^');
+
+      if (alpha) {
+        value = value.replace(color, colorOpacity(key, alpha));
+      } else if (darken) {
+        value = value.replace(color, shadeColor(key, -parseInt(darken)));
+      } else if (lighten) {
+        value = value.replace(color, shadeColor(key, parseInt(lighten)));
+      } else if (contrast) {
+        value = value.replace(color, contrastColor(key, parseInt(contrast)));
+      }
+    });
+  }
+
   const maths = value.match(/\d+[a-z]+\([+\-*/][\d.]+\)/g);
   if (maths) {
     maths.forEach((item) => {

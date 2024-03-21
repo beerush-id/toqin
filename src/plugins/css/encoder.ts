@@ -110,6 +110,7 @@ export async function encode(spec: LoadedDesignSpec | CSSCompiler, options?: CSS
     }
 
     for (const output of outputs) {
+      if (!output.fileName.endsWith('.css')) continue;
       const result = await postcss(plugins).process(output.content, {
         map: false,
         from: output.fileName,
