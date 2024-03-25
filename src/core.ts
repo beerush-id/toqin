@@ -32,6 +32,7 @@ export type DesignSpec = {
   designs?: Design[];
   animations?: Animation[];
   mixins?: DesignImplementor[];
+  layer?: string;
   layers?: string[];
 
   fontFaces?: FontFace[];

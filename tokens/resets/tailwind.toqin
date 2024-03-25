@@ -1,8 +1,9 @@
 {
-  "name": "tailwind.",
+  "name": "tailwind",
   "displayName": "Tailwind Resets",
   "version": "1.0.0",
   "description": "Normalize CSS based on Tailwind Normalize",
+  "layer": "reset",
   "tokens": [
     {
       "name": "border",
@@ -27,7 +28,6 @@
     {
       "name": "box-standard",
       "selectors": [ "*", "::before", "::after" ],
-      "layer": "reset",
       "rules": {
         "box-sizing": "border-box",
         "border-width": "0",
@@ -39,7 +39,6 @@
       "name": "html",
       "root": true,
       "selectors": [ "html" ],
-      "layer": "reset",
       "rules": {
         "line-height": "1.5",
         "-webkit-text-size-adjust": "100%",
@@ -53,7 +52,6 @@
       "name": "body",
       "root": true,
       "selectors": [ "body" ],
-      "layer": "reset",
       "rules": {
         "margin": "0",
         "line-height": "inherit"
@@ -62,7 +60,6 @@
     {
       "name": "hr",
       "selectors": [ "hr" ],
-      "layer": "reset",
       "rules": {
         "height": "0",
         "color": "inherit",
@@ -72,7 +69,6 @@
     {
       "name": "abbr",
       "selectors": [ "abbr:where([title])" ],
-      "layer": "reset",
       "rules": {
         "text-decoration": "underline dotted"
       }
@@ -80,7 +76,6 @@
     {
       "name": "headings",
       "selectors": [ "h1", "h2", "h3", "h4", "h5", "h6" ],
-      "layer": "reset",
       "rules": {
         "font-size": "inherit",
         "font-weight": "inherit"
@@ -89,7 +84,6 @@
     {
       "name": "anchor",
       "selectors": [ "a" ],
-      "layer": "reset",
       "rules": {
         "color": "inherit",
         "text-decoration": "inherit"
@@ -98,7 +92,6 @@
     {
       "name": "strong",
       "selectors": [ "b", "strong" ],
-      "layer": "reset",
       "rules": {
         "font-weight": "bolder"
       }
@@ -106,7 +99,6 @@
     {
       "name": "pre-code",
       "selectors": [ "pre", "code", "kbd", "samp" ],
-      "layer": "reset",
       "rules": {
         "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
         "font-size": "1em"
@@ -115,7 +107,6 @@
     {
       "name": "small",
       "selectors": [ "small" ],
-      "layer": "reset",
       "rules": {
         "font-size": "80%"
       }
@@ -123,7 +114,6 @@
     {
       "name": "sub-sup",
       "selectors": [ "sub", "sup" ],
-      "layer": "reset",
       "rules": {
         "font-size": "75%",
         "line-height": "0",
@@ -134,7 +124,6 @@
     {
       "name": "sub",
       "selectors": [ "sub" ],
-      "layer": "reset",
       "rules": {
         "bottom": "-0.25em"
       }
@@ -142,7 +131,6 @@
     {
       "name": "sup",
       "selectors": [ "sup" ],
-      "layer": "reset",
       "rules": {
         "top": "-0.5em"
       }
@@ -150,7 +138,6 @@
     {
       "name": "table",
       "selectors": [ "table" ],
-      "layer": "reset",
       "rules": {
         "text-indent": "0",
         "border-color": "inherit",
@@ -160,7 +147,6 @@
     {
       "name": "form-elements",
       "selectors": [ "button", "input", "optgroup", "select", "textarea" ],
-      "layer": "reset",
       "rules": {
         "font-family": "inherit",
         "font-feature-settings": "inherit",
@@ -175,7 +161,6 @@
     {
       "name": "button-select",
       "selectors": [ "button", "select" ],
-      "layer": "reset",
       "rules": {
         "text-transform": "none"
       }
@@ -183,7 +168,6 @@
     {
       "name": "button",
       "selectors": [ "button", "[type=\"button\"]", "[type=\"reset\"]", "[type=\"submit\"]" ],
-      "layer": "reset",
       "rules": {
         "-webkit-appearance": "button",
         "background-color": "transparent",
@@ -193,7 +177,6 @@
     {
       "name": "focusring",
       "selectors": [ ":-moz-focusring" ],
-      "layer": "reset",
       "rules": {
         "outline": "auto"
       }
@@ -201,7 +184,6 @@
     {
       "name": "ui-invalid",
       "selectors": [ ":-moz-ui-invalid" ],
-      "layer": "reset",
       "rules": {
         "box-shadow": "none"
       }
@@ -209,7 +191,6 @@
     {
       "name": "progress",
       "selectors": [ "progress" ],
-      "layer": "reset",
       "rules": {
         "vertical-align": "baseline"
       }
@@ -217,7 +198,6 @@
     {
       "name": "inner-spin-button",
       "selectors": [ "::-webkit-inner-spin-button", "::-webkit-outer-spin-button" ],
-      "layer": "reset",
       "rules": {
         "height": "auto"
       }
@@ -225,7 +205,6 @@
     {
       "name": "search",
       "selectors": [ "[type=\"search\"]" ],
-      "layer": "reset",
       "rules": {
         "-webkit-appearance": "textfield",
         "outline-offset": "-2px"
@@ -234,7 +213,6 @@
     {
       "name": "search-decoration",
       "selectors": [ "::-webkit-search-decoration" ],
-      "layer": "reset",
       "rules": {
         "-webkit-appearance": "none"
       }
@@ -242,7 +220,6 @@
     {
       "name": "file-upload",
       "selectors": [ "::-webkit-file-upload-button" ],
-      "layer": "reset",
       "rules": {
         "-webkit-appearance": "button",
         "font": "inherit"
@@ -251,7 +228,6 @@
     {
       "name": "summary",
       "selectors": [ "summary" ],
-      "layer": "reset",
       "rules": {
         "display": "list-item"
       }
@@ -259,7 +235,6 @@
     {
       "name": "block-spacing",
       "selectors": [ "blockquote", "dl", "dd", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "figure", "p", "pre" ],
-      "layer": "reset",
       "rules": {
         "margin": "0"
       }
@@ -267,7 +242,6 @@
     {
       "name": "fieldset",
       "selectors": [ "fieldset" ],
-      "layer": "reset",
       "rules": {
         "margin": "0",
         "padding": "0"
@@ -276,7 +250,6 @@
     {
       "name": "legend",
       "selectors": [ "legend" ],
-      "layer": "reset",
       "rules": {
         "padding": "0"
       }
@@ -284,7 +257,6 @@
     {
       "name": "list",
       "selectors": [ "ol", "ul", "menu" ],
-      "layer": "reset",
       "rules": {
         "list-style": "none",
         "margin": "0",
@@ -294,7 +266,6 @@
     {
       "name": "textarea",
       "selectors": [ "textarea" ],
-      "layer": "reset",
       "rules": {
         "resize": "vertical"
       }
@@ -302,7 +273,6 @@
     {
       "name": "placeholder",
       "selectors": [ "input::placeholder", "textarea::placeholder" ],
-      "layer": "reset",
       "rules": {
         "opacity": "1",
         "color": "@placeholder.color"
@@ -311,7 +281,6 @@
     {
       "name": "button-pointer",
       "selectors": [ "button", "[role=\"button\"]" ],
-      "layer": "reset",
       "rules": {
         "cursor": "pointer"
       }
@@ -319,7 +288,6 @@
     {
       "name": "disabled",
       "selectors": [ ":disabled" ],
-      "layer": "reset",
       "rules": {
         "cursor": "default"
       }
@@ -327,7 +295,6 @@
     {
       "name": "media",
       "selectors": [ "img", "svg", "video", "canvas", "audio", "iframe", "embed", "object" ],
-      "layer": "reset",
       "rules": {
         "display": "block",
         "vertical-align": "middle"
@@ -336,7 +303,6 @@
     {
       "name": "img-video",
       "selectors": [ "img", "video" ],
-      "layer": "reset",
       "rules": {
         "max-width": "100%",
         "height": "auto"
@@ -345,7 +311,6 @@
     {
       "name": "hidden",
       "selectors": [ "[hidden]" ],
-      "layer": "reset",
       "rules": {
         "display": "none"
       }

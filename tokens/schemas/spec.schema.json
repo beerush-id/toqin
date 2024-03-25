@@ -93,6 +93,9 @@
         "type": "string"
       }
     },
+    "layer": {
+      "type": "string"
+    },
     "layers": {
       "type": "array",
       "items": {

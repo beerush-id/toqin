@@ -204,7 +204,7 @@ export function createDesignMap(
   }
 
   (spec.designs || []).forEach((design, i) => {
-    const layer = design.layer || parentLayer;
+    const layer = design.layer ?? parentLayer ?? spec.layer;
     const path = parentPath ? `${ parentPath }.${ i }` : `designs.${ i }`;
     let selectors = design.selectors || [ `.${ design.name }` ];
 
@@ -394,7 +394,7 @@ function createImplementations(implementations: DesignImplementor[], spec: Loade
         designs.push({
           name: name,
           selectors: [ `.${ name }` ],
-          layer: mix.layer,
+          layer: mix.layer || spec.layer,
           rules,
         });
       });

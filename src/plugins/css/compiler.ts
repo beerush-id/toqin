@@ -9,6 +9,7 @@ import { logger } from '../../logger.js';
 import { script } from './script.js';
 import type { LoadedDesignSpec, MediaQueries, MediaQuery, MediaQueryMap, NestedDeclarations } from '../../core.js';
 import { getTagType } from '../../core.js';
+import { DesignRef } from '../../design.js';
 
 export type CSSMap = {
   input: [ number, number ];
@@ -37,6 +38,10 @@ export type CSSCompilerOptions = {
   includeTokens?: string[];
   excludeTokens?: string[];
   customQueryMode?: 'attribute' | 'class' | 'id';
+  excludeSystemScheme?: boolean;
+  ignoreLayers?: boolean;
+  includeLayers?: string[];
+  excludeLayers?: string[];
   imports?: string[];
 };
 
@@ -125,9 +130,13 @@ export class CSSCompiler {
 
       prefix: this.config?.prefix || 'tq',
       customQueryMode: this.config?.customQueryMode || this.spec.customQueryMode || 'class',
+      excludeSystemScheme: this.config?.excludeSystemScheme ?? false,
       colorScheme: this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system',
       excludeTokens: this.config?.excludeTokens || this.spec.excludeTokens,
       includeTokens: this.config?.includeTokens || this.spec.includeTokens,
+      ignoreLayers: this.config?.ignoreLayers || false,
+      includeLayers: this.config?.includeLayers || [],
+      excludeLayers: this.config?.excludeLayers || [],
     };
 
     const compilerOptions = { ...config, ...options } as CompilerOptions;
@@ -138,7 +147,7 @@ export class CSSCompiler {
 
     if (!this.parent) {
       this.writeImports(compilerOptions);
-      this.writeLayers();
+      this.writeLayers(compilerOptions);
       this.assignColorScheme(compilerOptions);
       this.writeFontFaces();
     }
@@ -227,7 +236,8 @@ export class CSSCompiler {
     }
   }
 
-  private writeLayers() {
+  private writeLayers(options?: CompilerOptions) {
+    if (options?.ignoreLayers) return;
     const layers = this.mergeLayers([ 'framework' ], this.spec);
 
     if (layers.length) {
@@ -270,7 +280,7 @@ export class CSSCompiler {
 
   private mergeLayers(layers: string[], spec: LoadedDesignSpec): string[] {
     if (spec.layers) {
-      layers.push(...spec.layers);
+      layers.push(...spec.layers, 'overrides');
     }
 
     if (spec.extendedSpecs?.length) {
@@ -389,6 +399,22 @@ export class CSSCompiler {
     }
   }
 
+  private getLayerName(ref: DesignRef, options: CompilerOptions): string {
+    if (options.ignoreLayers) {
+      return '@';
+    }
+
+    if (
+      ref.layer && (
+        !options.excludeLayers?.includes(ref.layer) ||
+        options.includeLayers?.includes(ref.layer))
+    ) {
+      return ref.layer;
+    }
+
+    return '@';
+  }
+
   private writeDesigns(options: CompilerOptions) {
     const scope = options?.scope;
     const prefix = options?.prefix;
@@ -397,7 +423,7 @@ export class CSSCompiler {
     };
 
     for (const [ selector, ref ] of Object.entries(this.spec.designMaps || {})) {
-      const layerName = ref.layer || '@';
+      const layerName = this.getLayerName(ref, options);
 
       if (!layers[layerName]) {
         layers[layerName] = [];

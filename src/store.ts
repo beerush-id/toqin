@@ -167,6 +167,10 @@ export class Store {
     spec.id = url;
     spec.url = path;
 
+    if (fromIndex?.spec?.layer && !spec.layer) {
+      spec.layer = fromIndex.spec.layer;
+    }
+
     spec.pointers = pointers;
     spec.tokenPointer = pointers['/tokens']?.value;
     spec.tokenMaps = createTokenMap(spec);
@@ -342,6 +346,10 @@ export class Store {
       spec.extendedSpecs = [];
     }
 
+    if (spec.layer && !extendedSpec.layer) {
+      extendedSpec.layer = spec.layer;
+    }
+
     if (typeof pos === 'number' && pos > -1) {
       index.extendedIndexes.splice(pos, 0, extendedIndex);
       spec.extendedSpecs.splice(pos, 0, extendedSpec);
@@ -365,6 +373,10 @@ export class Store {
 
     if (!spec.includedSpecs) {
       spec.includedSpecs = [];
+    }
+
+    if (spec.layer && !includedSpec.layer) {
+      includedSpec.layer = spec.layer;
     }
 
     if (typeof pos === 'number' && pos > -1) {

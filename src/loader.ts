@@ -1,20 +1,10 @@
 import fs from 'fs-extra';
 import { get as https } from 'https';
 import { resolve as resolveModule } from '@beerush/resolve';
-import { dirname, join, resolve } from 'path';
-import { createAnimationMap, createDesignMap, createTokenMap } from './parser.js';
-import { merge } from '@beerush/utils';
+import { join, resolve } from 'path';
 import type { JSONMap, JSONPointers } from 'json-source-map';
 import { parse as parseJson } from 'json-source-map';
 import type { DesignSpec, LoadedDesignSpec } from './core.js';
-
-export type ResolvedSpec = {
-  spec: LoadedDesignSpec;
-  data: DesignSpec;
-  path: string;
-  paths: string[];
-  specs?: LoadedDesignSpec[];
-}
 
 export type SingleSpec = {
   spec: LoadedDesignSpec;
@@ -42,96 +32,6 @@ function parse<T>(json: string, compact?: boolean): JSONMap<T> {
   }
 
   return parseJson<T>(json);
-}
-
-export async function loadSpec(
-  url: string,
-  fromPath?: string,
-  fromFile?: string,
-  compact?: boolean,
-): Promise<ResolvedSpec> {
-  const specs: LoadedDesignSpec[] = [];
-  const paths: string[] = [];
-  const { spec, data, pointers, path } = await readSpec(url, fromPath, fromFile, compact);
-
-  if (!compact) {
-    spec.pointers = pointers;
-    spec.tokenMaps = {};
-    spec.designMaps = {};
-    spec.animationMaps = {};
-  }
-
-  spec.id = btoa(path);
-  spec.url = path;
-
-  specs.push(spec);
-  paths.push(path);
-
-  const tokenMaps = createTokenMap(spec);
-  const designMaps = createDesignMap(spec);
-  const animationMaps = createAnimationMap(spec);
-
-  if (spec.extends?.length) {
-    for (const extend of spec.extends) {
-      const resolved = await loadSpec(extend, dirname(path), path, compact);
-      const { spec: extendedSpec, paths: extendedPaths, specs: extendedSpecs } = resolved;
-
-      paths.unshift(...extendedPaths);
-
-      if (!spec.extendedSpecs) {
-        spec.extendedSpecs = [];
-      }
-
-      spec.extendedSpecs.unshift(extendedSpec);
-
-      for (const [ key, value ] of Object.entries(extendedSpec)) {
-        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof spec[key as never] === 'undefined') {
-          spec[key as never] = value as never;
-        }
-      }
-
-      specs.unshift(...(extendedSpecs || []));
-    }
-  }
-
-  if (!compact) {
-    if (Object.keys(tokenMaps).length) {
-      merge(spec.tokenMaps || {}, tokenMaps);
-    }
-
-    if (Object.keys(animationMaps).length) {
-      merge(spec.animationMaps || {}, animationMaps);
-    }
-
-    if (Object.keys(designMaps).length) {
-      merge(spec.designMaps || {}, designMaps);
-    }
-  }
-
-  if (spec.includes?.length) {
-    for (const child of spec.includes) {
-      const resolved = await loadSpec(child, dirname(path), path, compact);
-      const { spec: includedSpec, paths: includedPaths, specs: includedSpecs } = resolved;
-
-      paths.push(...includedPaths);
-
-      if (!spec.includedSpecs) {
-        spec.includedSpecs = [];
-      }
-
-      spec.includedSpecs.push(includedSpec);
-
-      for (const [ key, value ] of Object.entries(includedSpec)) {
-        if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof spec[key as never] === 'undefined') {
-          spec[key as never] = value as never;
-        }
-      }
-
-      specs.push(...(includedSpecs || []));
-    }
-  }
-
-  return { spec, data, path, paths, specs };
 }
 
 /**
