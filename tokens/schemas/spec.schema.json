@@ -3,6 +3,23 @@
   "definitions": {
     "rules": {
       "$ref": "./css-properties.schema.json"
+    },
+    "arrayOfStrings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commonEntity": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
     }
   },
   "title": "Toqin Design System Schema",
@@ -70,7 +87,8 @@
                 "format": {
                   "type": "string"
                 }
-              }
+              },
+              "required": [ "name", "format" ]
             }
           },
           "local": {
@@ -81,31 +99,19 @@
       }
     },
     "extends": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "$ref": "#/definitions/arrayOfStrings"
     },
     "includes": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "$ref": "#/definitions/arrayOfStrings"
     },
     "imports": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "$ref": "#/definitions/arrayOfStrings"
     },
     "layer": {
       "type": "string"
     },
     "layers": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "$ref": "#/definitions/arrayOfStrings"
     },
     "tokens": {
       "type": "array",
@@ -117,10 +123,7 @@
             "type": "string"
           },
           "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "$ref": "#/definitions/arrayOfStrings"
           },
           "description": {
             "type": "string"
@@ -157,10 +160,7 @@
             "type": "boolean"
           },
           "selectors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "$ref": "#/definitions/arrayOfStrings"
           },
           "description": {
             "type": "string"
@@ -215,7 +215,11 @@
               "$ref": "#/definitions/rules"
             }
           }
-        }
+        },
+        "required": [
+          "name",
+          "frames"
+        ]
       }
     },
     "mixins": {
@@ -235,11 +239,8 @@
           "layer": {
             "type": "string"
           },
-          "selectors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "select": {
+            "$ref": "#/definitions/arrayOfStrings"
           },
           "ruleSets": {
             "type": "array",
@@ -258,10 +259,20 @@
                 "rules": {
                   "$ref": "#/definitions/rules"
                 }
-              }
+              },
+              "required": [
+                "selector",
+                "rules"
+              ]
             }
           }
-        }
+        },
+        "required": [
+          "name",
+          "group",
+          "select",
+          "ruleSets"
+        ]
       }
     }
   },
