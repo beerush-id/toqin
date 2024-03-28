@@ -1,6 +1,6 @@
 {
   "name": "@beerush/toqin",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Design System Manager",
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.js",

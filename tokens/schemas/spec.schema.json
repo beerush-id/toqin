@@ -196,8 +196,7 @@
         },
         "additionalProperties": false,
         "required": [
-          "name",
-          "rules"
+          "name"
         ]
       }
     },
@@ -273,8 +272,7 @@
                 }
               },
               "required": [
-                "selector",
-                "rules"
+                "selector"
               ]
             }
           }
