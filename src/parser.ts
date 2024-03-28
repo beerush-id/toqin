@@ -217,6 +217,20 @@ export function createDesignMap(
       selectors = joinSelectors(selectors, parentSelectors, joint);
     }
 
+    if (typeof design.variables === 'object' && Object.keys(design.variables ?? {}).length) {
+      if (!design.rules || typeof design.rules !== 'object') {
+        design.rules = {};
+      }
+
+      for (const [ name, value ] of Object.entries(design.variables)) {
+        if (!name.startsWith('--')) {
+          design.rules[`--${ name }`] = value;
+        } else {
+          design.rules[name] = value;
+        }
+      }
+    }
+
     if (Object.keys(design.rules || {}).length) {
       const name = selectors.join(', ');
       const pointer = getPointer(spec.pointers, path + '.name')?.key;

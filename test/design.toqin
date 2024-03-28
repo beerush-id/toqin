@@ -635,6 +635,9 @@
         {
           "name": "outline",
           "description": "Outline input",
+          "variables": {
+            "--outline": "@color.border"
+          },
           "rules": {
             "--outline": {
               "@": "@color.border",

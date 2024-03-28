@@ -3772,5 +3772,6 @@
     "zoom": {
       "$ref": "#/definitions/colorTypes"
     }
-  }
+  },
+  "additionalProperties": false
 }

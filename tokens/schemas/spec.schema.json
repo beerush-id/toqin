@@ -122,6 +122,9 @@
           "name": {
             "type": "string"
           },
+          "type": {
+            "type": "string"
+          },
           "tags": {
             "$ref": "#/definitions/arrayOfStrings"
           },
@@ -136,6 +139,7 @@
             }
           }
         },
+        "additionalProperties": false,
         "required": [
           "name"
         ]
@@ -165,6 +169,12 @@
           "description": {
             "type": "string"
           },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "./css-properties.schema.json#/definitions/valueTypes"
+            }
+          },
           "rules": {
             "$ref": "#/definitions/rules"
           },
@@ -184,6 +194,7 @@
             "type": "boolean"
           }
         },
+        "additionalProperties": false,
         "required": [
           "name",
           "rules"
@@ -216,6 +227,7 @@
             }
           }
         },
+        "additionalProperties": false,
         "required": [
           "name",
           "frames"
@@ -267,6 +279,7 @@
             }
           }
         },
+        "additionalProperties": false,
         "required": [
           "name",
           "group",

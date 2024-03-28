@@ -19,6 +19,7 @@ export type Design = {
 
   selectors?: string[];
   layer?: string;
+  variables?: DesignRules;
   rules: DesignRules;
 
   /* Variant selectors will be merged with the element selector. */
