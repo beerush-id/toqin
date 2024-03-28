@@ -1,8 +1,8 @@
 export const script = (id, version) => {
   const bootstrap = () => {
     const text = `/* TOQIN-CSS */`;
-    const link = document.querySelector(`link[href="${id}"]`);
-    let style = document.querySelector(`style[data-href="${id}"]`);
+    const link = document.querySelector(`link[href="${ id }"]`);
+    let style = document.querySelector(`style[data-href="${ id }"]`);
 
     if (!style) {
       style = document.createElement('style');
@@ -13,7 +13,8 @@ export const script = (id, version) => {
     }
 
     /** HMR START */
-    const socket = new WebSocket(`ws://${window.location.host}`, 'vite-hmr');
+    const { host, protocol } = window.location;
+    const socket = new WebSocket(`${ protocol === 'https' ? 'wss' : 'ws' }://${ host }`, 'vite-hmr');
     socket.addEventListener('message', ({ data }) => {
       const { event, data: spec } = JSON.parse(data);
 
