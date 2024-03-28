@@ -3,147 +3,6 @@
   "definitions": {
     "rules": {
       "$ref": "./css-properties.schema.json"
-    },
-    "commonEntity": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ]
-    },
-    "fontFace": {
-      "$id": "#fontFace",
-      "type": "object",
-      "properties": {
-        "fontFamily": {
-          "type": "string"
-        },
-        "fonts": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "format": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "baseUrl": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "fontFamily",
-        "fonts",
-        "baseUrl"
-      ]
-    },
-    "arrayOfString": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "tokensEntity": {
-      "$id": "#token",
-      "type": "object",
-      "properties": {
-        "value": { },
-        "tokens": {
-          "type": "array",
-          "items": {
-            "$ref": "#token"
-          }
-        }
-      }
-    },
-    "designEntity": {
-      "$id": "#design",
-      "type": "object",
-      "properties": {
-        "rules": {
-          "$ref": "#/definitions/rules"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#design"
-          }
-        },
-        "variants": {
-          "type": "array",
-          "items": {
-            "$ref": "#design"
-          }
-        },
-        "directChildren": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "name",
-        "rules"
-      ]
-    },
-    "animatedEntity": {
-      "type": "object",
-      "properties": {
-        "frames": {
-          "type": "object",
-          "properties": {
-            "from": {
-              "$ref": "#/definitions/rules"
-            },
-            "to": {
-              "$ref": "#/definitions/rules"
-            }
-          },
-          "additionalProperties": {
-            "$ref": "#/definitions/rules"
-          }
-        }
-      }
-    },
-    "commonTokensEntity": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/commonEntity"
-        },
-        {
-          "$ref": "#/definitions/tokensEntity"
-        }
-      ]
-    },
-    "commonDesignsEntity": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/commonEntity"
-        },
-        {
-          "$ref": "#/definitions/designEntity"
-        }
-      ]
-    },
-    "commonAnimationsEntity": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/commonEntity"
-        },
-        {
-          "$ref": "#/definitions/animatedEntity"
-        }
-      ]
     }
   },
   "title": "Toqin Design System Schema",
@@ -167,46 +26,242 @@
     "fontFaces": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/fontFace"
+        "$id": "#fontFace",
+        "type": "object",
+        "properties": {
+          "fontDisplay": {
+            "type": "string"
+          },
+          "fontFamily": {
+            "type": "string"
+          },
+          "fontStretch": {
+            "type": "string"
+          },
+          "fontStyle": {
+            "type": "string"
+          },
+          "fontWeight": {
+            "type": "string"
+          },
+          "fontFeatureSettings": {
+            "type": "string"
+          },
+          "fontVariationSettings": {
+            "type": "string"
+          },
+          "sizeAdjust": {
+            "type": "string"
+          },
+          "unicodeRange": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          },
+          "fonts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "format": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "local": {
+            "type": "string"
+          }
+        },
+        "required": [ "fontFamily", "baseUrl", "fonts" ]
       }
     },
     "extends": {
-      "$ref": "#/definitions/arrayOfString"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "includes": {
-      "$ref": "#/definitions/arrayOfString"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "imports": {
-      "$ref": "#/definitions/arrayOfString"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "layer": {
       "type": "string"
     },
     "layers": {
-      "$ref": "#/definitions/arrayOfString"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "tokens": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/commonTokensEntity"
+        "$id": "#token",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "value": { },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#token"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
       }
     },
     "designs": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/commonDesignsEntity"
+        "$id": "#design",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "layer": {
+            "type": "string"
+          },
+          "root": {
+            "type": "boolean"
+          },
+          "important": {
+            "type": "boolean"
+          },
+          "selectors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "rules": {
+            "$ref": "#/definitions/rules"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#design"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#design"
+            }
+          },
+          "directChildren": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "rules"
+        ]
       }
     },
     "animations": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/commonAnimationsEntity"
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "frames": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "$ref": "#/definitions/rules"
+              },
+              "to": {
+                "$ref": "#/definitions/rules"
+              }
+            },
+            "additionalProperties": {
+              "$ref": "#/definitions/rules"
+            }
+          }
+        }
       }
     },
     "mixins": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/commonEntity"
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "layer": {
+            "type": "string"
+          },
+          "selectors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ruleSets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "selector": {
+                  "type": "string"
+                },
+                "rules": {
+                  "$ref": "#/definitions/rules"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
