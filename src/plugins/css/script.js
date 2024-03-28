@@ -14,7 +14,7 @@ export const script = (id, version) => {
 
     /** HMR START */
     const { host, protocol } = window.location;
-    const socket = new WebSocket(`${ protocol === 'https' ? 'wss' : 'ws' }://${ host }`, 'vite-hmr');
+    const socket = new WebSocket(`${ protocol?.includes('https') ? 'wss' : 'ws' }://${ host }`, 'vite-hmr');
     socket.addEventListener('message', ({ data }) => {
       const { event, data: spec } = JSON.parse(data);
 
