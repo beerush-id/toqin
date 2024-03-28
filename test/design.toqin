@@ -1,4 +1,5 @@
 {
+  "$schema": "../tokens/schemas/spec.schema.json",
   "name": "Toqin",
   "version": "1.0.0",
   "description": "Toqin Design System",
@@ -571,10 +572,24 @@
       ]
     }
   ],
+  "animations": [
+    {
+      "name": "fade",
+      "description": "Fade animation",
+      "frames": {
+        "from": {
+          "opacity": "0"
+        },
+        "to": {
+          "opacity": "1"
+        }
+      }
+    }
+  ],
   "designs": [
     {
       "name": "root",
-      "selectors": ["html", "body"],
+      "selectors": [ "html", "body" ],
       "important": true,
       "description": "Root design",
       "rules": {
@@ -586,7 +601,7 @@
     },
     {
       "name": "body",
-      "selectors": ["body"],
+      "selectors": [ "body" ],
       "important": true,
       "description": "Body design",
       "rules": {
@@ -600,7 +615,7 @@
     },
     {
       "name": "stretch",
-      "selectors": [".stretch"],
+      "selectors": [ ".stretch" ],
       "description": "Stretch design",
       "rules": {
         "width": "100%",
@@ -609,7 +624,7 @@
     },
     {
       "name": "input",
-      "selectors": ["input", ".input"],
+      "selectors": [ "input", ".input" ],
       "description": "Input design",
       "rules": {
         "--outline": "transparent",
@@ -631,7 +646,7 @@
     },
     {
       "name": "text-field",
-      "selectors": [".text-field"],
+      "selectors": [ ".text-field" ],
       "description": "Text field design",
       "rules": {
         "--outline": {
@@ -642,7 +657,7 @@
       "children": [
         {
           "name": "input",
-          "selectors": ["input", ".input"],
+          "selectors": [ "input", ".input" ],
           "description": "Input design",
           "rules": {
             "--outline": "transparent",
@@ -654,7 +669,7 @@
     },
     {
       "name": "scrollable",
-      "selectors": [".scrollable"],
+      "selectors": [ ".scrollable" ],
       "description": "Scrollable layout",
       "rules": {
         "overflow": "auto"
@@ -662,7 +677,7 @@
     },
     {
       "name": "theme",
-      "selectors": [".theme-toggle ion-icon"],
+      "selectors": [ ".theme-toggle ion-icon" ],
       "description": "Theme toggle style",
       "rules": {
         "color": {

@@ -1,0 +1,3776 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "valueTypes": {
+      "type": [
+        "string",
+        "number",
+        "object"
+      ]
+    },
+    "colorTypes": {
+      "$ref": "#/definitions/valueTypes",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "@": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            "@light": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            "@dark": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            "@sm": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            "@md": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            "@lg": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            "@xl": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":hover": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":focus": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":active": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":disabled": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":enabled": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":visited": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":checked": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":valid": {
+              "$ref": "#/definitions/valueTypes"
+            },
+            ":invalid": {
+              "$ref": "#/definitions/valueTypes"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/valueTypes"
+          }
+        }
+      ]
+    }
+  },
+  "title": "CSS Properties",
+  "type": "object",
+  "properties": {
+    "-apple-color-filter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-apple-dashboard-region": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-apple-pay-button-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-apple-pay-button-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-apple-trailing-word": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-caption-side": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-hyphens": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-text-combine": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-text-emphasis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-text-emphasis-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-text-emphasis-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-text-orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-text-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-word-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-epub-writing-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-internal-text-autosizing-status": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-fill-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-iteration-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-play-state": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-animation-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-appearance": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-backface-visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-background-clip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-background-inline-policy": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-background-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-background-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-binding": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-bottom-colors": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-end-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-end-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-end-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-left-colors": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-radius-bottomleft": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-radius-bottomright": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-radius-topleft": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-radius-topright": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-right-colors": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-start-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-start-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-start-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-border-top-colors": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-flex": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-ordinal-group": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-orient": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-pack": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-shadow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-box-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-fill": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-rule": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-rule-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-rule-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-rule-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-span": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-column-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-float-edge": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-font-feature-settings": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-font-language-override": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-force-broken-image-icon": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-hyphens": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-image-region": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-margin-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-margin-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-orient": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-osx-font-smoothing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-radius-bottomleft": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-radius-bottomright": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-radius-topleft": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-radius-topright": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-outline-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-padding-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-padding-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-perspective": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-perspective-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-stack-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-tab-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-text-align-last": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-text-blink": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-text-decoration-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-text-decoration-line": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-text-decoration-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-text-size-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transform-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transform-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transition-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transition-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transition-property": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-transition-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-user-focus": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-user-input": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-user-modify": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-user-select": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-window-dragging": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-moz-window-shadow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-fill-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-iteration-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-play-state": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-animation-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-backface-visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-block-progression": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-chaining": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-limit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-limit-max": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-limit-min": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-snap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-snap-points": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zoom-snap-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-content-zooming": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-filter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-item-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-line-pack": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-negative": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-order": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-pack": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-positive": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-preferred-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flex-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flow-from": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-flow-into": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-font-feature-settings": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-column": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-column-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-column-span": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-row": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-row-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-row-span": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-grid-rows": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-high-contrast-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-hyphenate-limit-chars": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-hyphenate-limit-lines": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-hyphenate-limit-zone": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-hyphens": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-ime-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-interpolation-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-overflow-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-perspective": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-perspective-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-chaining": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-limit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-limit-x-max": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-limit-x-min": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-limit-y-max": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-limit-y-min": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-rails": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-snap-points-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-snap-points-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-snap-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-snap-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-snap-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-scroll-translation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-text-combine-horizontal": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-text-size-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-touch-action": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-touch-select": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transform-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transform-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transition-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transition-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transition-property": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-transition-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-user-select": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-wrap-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-wrap-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-ms-wrap-through": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-border-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-link": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-link-source": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-object-fit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-object-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-tab-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-table-baseline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transform-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transition-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transition-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transition-property": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-o-transition-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-accesskey": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-input-format": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-input-required": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-marquee-dir": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-marquee-loop": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-marquee-speed": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-wap-marquee-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-align-content": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-align-items": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-align-self": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-alt": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-fill-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-iteration-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-play-state": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-animation-trigger": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-app-region": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-appearance": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-aspect-ratio": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-backdrop-filter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-backface-visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-attachment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-clip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-composite": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-position-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-position-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-background-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-after-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-after-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-after-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-before-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-before-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-before-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-bottom-left-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-bottom-right-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-end-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-end-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-end-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-fit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-horizontal-spacing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-image-outset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-image-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-image-slice": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-image-source": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-image-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-start-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-start-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-start-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-top-left-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-top-right-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-border-vertical-spacing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-decoration-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-flex": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-flex-group": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-lines": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-ordinal-group": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-orient": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-pack": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-reflect": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-shadow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-box-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-clip-path": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-color-correction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-axis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-break-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-break-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-break-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-fill": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-progression": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-rule": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-rule-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-rule-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-rule-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-span": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-column-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-composition-fill-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-composition-frame-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-cursor-visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-dashboard-region": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-filter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-basis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-grow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-item-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-line-pack": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-order": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-pack": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-shrink": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flex-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flow-from": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-flow-into": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-font-feature-settings": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-font-kerning": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-font-size-delta": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-font-smoothing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-font-variant-ligatures": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-auto-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-auto-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-auto-rows": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-column": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-row": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-rows": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-grid-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-highlight": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-hyphenate-character": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-hyphenate-limit-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-hyphenate-limit-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-hyphenate-limit-lines": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-hyphens": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-initial-letter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-justify-content": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-justify-items": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-justify-self": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-box-contain": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-clamp": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-grid": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-grid-snap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-line-snap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-locale": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-logical-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-logical-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-after-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-before-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-bottom-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-margin-top-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-marquee": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-marquee-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-marquee-increment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-marquee-repetition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-marquee-speed": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-marquee-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-attachment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-box-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-box-image-outset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-box-image-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-box-image-slice": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-box-image-source": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-box-image-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-clip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-composite": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-position-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-position-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-repeat-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-repeat-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-mask-source-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-match-nearest-mail-blockquote-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-max-logical-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-max-logical-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-min-logical-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-min-logical-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-nbsp-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-order": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-overflow-scrolling": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-padding-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-padding-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-padding-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-padding-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-perspective": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-perspective-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-perspective-origin-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-perspective-origin-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-print-color-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-region-break-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-region-break-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-region-break-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-region-fragment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-region-overflow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-rtl-ordering": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-ruby-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-scroll-snap-coordinate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-scroll-snap-destination": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-scroll-snap-points-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-scroll-snap-points-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-scroll-snap-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-shape-image-threshold": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-shape-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-shape-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-shape-outside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-shape-padding": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-svg-shadow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-tap-highlight-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-combine": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-decoration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-decoration-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-decoration-line": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-decoration-skip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-decoration-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-decorations-in-effect": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-emphasis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-emphasis-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-emphasis-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-emphasis-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-fill-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-security": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-size-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-stroke": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-stroke-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-stroke-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-underline-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-text-zoom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-touch-callout": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transform-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transform-origin-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transform-origin-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transform-origin-z": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transform-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transition-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transition-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transition-property": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-transition-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-user-drag": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-user-modify": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-user-select": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-widget-region": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap-padding": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap-shape-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap-shape-outside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-wrap-through": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "-webkit-writing-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "accelerator": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "accent-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "additive-symbols": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "align-content": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "align-items": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "align-self": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "alignment-baseline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "all": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "alt": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "anchor-default": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "anchor-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "anchor-scroll": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-composition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-fill-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-iteration-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-play-state": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-range": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-range-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-range-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-timeline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "animation-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "app-region": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "appearance": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ascent-override": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "aspect-ratio": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "audio-level": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "azimuth": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "backdrop-filter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "backface-visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-attachment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-blend-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-clip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-position-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-position-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-repeat-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-repeat-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "background-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "base-palette": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "baseline-shift": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "baseline-source": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "behavior": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-ellipsis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-step": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-step-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-step-insert": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-step-round": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "block-step-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "bookmark-label": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "bookmark-level": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "bookmark-state": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-end-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-end-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-end-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-start-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-start-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-start-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-block-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-bottom-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-bottom-left-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-bottom-right-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-bottom-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-bottom-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-boundary": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-end-end-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-end-start-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-image-outset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-image-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-image-slice": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-image-source": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-image-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-end-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-end-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-end-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-start-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-start-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-start-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-inline-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-left-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-left-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-left-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-right-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-right-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-right-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-spacing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-start-end-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-start-start-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-top-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-top-left-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-top-right-radius": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-top-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-top-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "border-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "box-decoration-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "box-shadow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "box-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "box-snap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "break-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "break-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "break-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "buffered-rendering": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "caption-side": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "caret": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "caret-animation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "caret-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "caret-shape": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "chains": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "clear": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "clip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "clip-path": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "clip-rule": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color-interpolation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color-interpolation-filters": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color-profile": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color-rendering": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "color-scheme": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-count": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-fill": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-progression": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-rule": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-rule-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-rule-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-rule-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-span": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "column-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "contain": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "contain-intrinsic-block-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "contain-intrinsic-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "contain-intrinsic-inline-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "contain-intrinsic-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "contain-intrinsic-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "container": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "container-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "container-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "content": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "content-visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "continue": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "counter-increment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "counter-reset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "counter-set": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "cue": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "cue-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "cue-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "cursor": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "cx": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "cy": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "d": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "descent-override": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "display": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "display-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "dominant-baseline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "elevation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "empty-cells": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "enable-background": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-caption-side": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-hyphens": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-text-combine": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-text-emphasis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-text-emphasis-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-text-emphasis-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-text-orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-text-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-word-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "epub-writing-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fallback": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "field-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-rule": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "fill-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "filter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex-basis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex-direction": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex-grow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex-shrink": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flex-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "float": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "float-defer": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "float-offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "float-reference": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flood-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flood-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flow-from": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "flow-into": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-display": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-family": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-feature-settings": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-kerning": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-language-override": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-optical-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-palette": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-size-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-stretch": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-synthesis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-synthesis-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-synthesis-small-caps": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-synthesis-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-synthesis-weight": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-alternates": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-caps": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-east-asian": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-emoji": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-ligatures": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-numeric": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variant-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-variation-settings": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-weight": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "font-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "footnote-display": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "footnote-policy": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "forced-color-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "glyph-orientation-horizontal": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "glyph-orientation-vertical": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-area": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-auto-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-auto-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-auto-rows": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-column": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-column-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-column-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-column-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-row": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-row-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-row-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-row-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-template": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-template-areas": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-template-columns": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "grid-template-rows": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hanging-punctuation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hyphenate-character": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hyphenate-limit-chars": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hyphenate-limit-last": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hyphenate-limit-lines": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hyphenate-limit-zone": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "hyphens": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "image-orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "image-rendering": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "image-resolution": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ime-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inherits": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "initial-letter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "initial-letter-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "initial-letter-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "initial-value": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inline-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inline-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "input-format": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "input-security": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-area": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "inset-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "isolation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "justify-content": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "justify-items": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "justify-self": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "kerning": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "layout-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "layout-grid": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "layout-grid-char": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "layout-grid-line": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "layout-grid-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "layout-grid-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "letter-spacing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "lighting-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-clamp": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-gap-override": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-grid": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-height-step": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-increment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-padding": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "line-snap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "list-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "list-style-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "list-style-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "list-style-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "margin-trim": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-knockout-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-knockout-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-mid": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-pattern": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-segment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-side": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marker-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "marks": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border-outset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border-slice": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border-source": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-border-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-clip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-composite": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-position-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-position-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-source-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mask-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "math-depth": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "math-shift": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "math-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "max-block-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "max-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "max-inline-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "max-lines": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "max-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "max-zoom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "min-block-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "min-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "min-inline-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "min-intrinsic-sizing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "min-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "min-zoom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "mix-blend-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "motion": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "motion-offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "motion-path": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "motion-rotation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "nav-down": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "nav-index": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "nav-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "nav-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "nav-up": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "negative": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "object-fit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "object-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "object-view-box": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-anchor": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-distance": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-path": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-rotate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "offset-rotation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "order": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "orphans": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "outline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "outline-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "outline-offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "outline-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "outline-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-anchor": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-clip-margin-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overflow-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overlay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "override-colors": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overscroll-behavior": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overscroll-behavior-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overscroll-behavior-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overscroll-behavior-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "overscroll-behavior-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pad": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "padding-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "page": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "page-break-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "page-break-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "page-break-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "page-orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "paint-order": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pause": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pause-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pause-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pen-action": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "perspective": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "perspective-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "perspective-origin-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "perspective-origin-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pitch": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pitch-range": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "place-content": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "place-items": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "place-self": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "play-during": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "pointer-events": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position-animation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position-fallback": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position-fallback-bounds": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position-try": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position-try-options": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "position-try-order": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "prefix": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "print-color-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "property-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "quotes": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "r": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "range": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "region-fragment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "resize": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "rest": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "rest-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "rest-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "richness": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "rotate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "row-gap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ruby-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ruby-merge": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ruby-overhang": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ruby-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "running": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "rx": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "ry": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scale": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-behavior": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-margin-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-block": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-block-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-block-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-inline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-inline-end": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-inline-start": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-padding-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-coordinate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-destination": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-margin-bottom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-margin-left": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-margin-right": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-margin-top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-points-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-points-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-stop": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-type": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-type-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-snap-type-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-timeline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-timeline-axis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scroll-timeline-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-arrow-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-base-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-dark-shadow-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-darkshadow-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-face-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-gutter": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-highlight-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-shadow-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-track-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar3d-light-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "scrollbar3dlight-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "shape-image-threshold": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "shape-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "shape-margin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "shape-outside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "shape-rendering": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "size-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "snap-height": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "solid-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "solid-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "spatial-navigation-action": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "spatial-navigation-contain": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "spatial-navigation-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "speak": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "speak-as": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "speak-header": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "speak-numeral": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "speak-punctuation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "speech-rate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "src": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stop-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stop-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stress": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "string-set": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-alignment": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-dash-corner": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-dash-justify": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-dashadjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-dasharray": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-dashcorner": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-dashoffset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-image": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-linecap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-linejoin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-miterlimit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-repeat": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "stroke-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "suffix": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "supported-color-schemes": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "symbols": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "syntax": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "system": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "tab-size": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "table-layout": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-align-all": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-align-last": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-anchor": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-autospace": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-box-edge": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-box-trim": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-combine-upright": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-blink": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-line": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-line-through": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-none": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-overline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-skip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-skip-box": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-skip-ink": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-skip-inset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-skip-self": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-skip-spaces": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-thickness": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-trim": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-decoration-underline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-emphasis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-emphasis-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-emphasis-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-emphasis-skip": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-emphasis-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-group-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-indent": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-justify": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-justify-trim": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-kashida": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-kashida-space": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-line-through": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-line-through-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-line-through-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-line-through-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-line-through-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-orientation": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-overflow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-overline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-overline-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-overline-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-overline-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-overline-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-rendering": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-shadow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-size-adjust": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-spacing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-spacing-trim": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline-color": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline-offset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline-position": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-underline-width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-wrap-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "text-wrap-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "timeline-scope": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "top": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "touch-action": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "touch-action-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform-box": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform-origin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform-origin-x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform-origin-y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform-origin-z": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transform-style": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transition": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transition-behavior": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transition-delay": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transition-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transition-property": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "transition-timing-function": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "translate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "uc-alt-skin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "uc-skin": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "unicode-bidi": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "unicode-range": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "user-select": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "user-zoom": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "vector-effect": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "vertical-align": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "view-timeline": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "view-timeline-axis": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "view-timeline-inset": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "view-timeline-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "view-transition-name": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "viewport-fill": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "viewport-fill-opacity": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "viewport-fit": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "visibility": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-balance": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-duration": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-family": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-pitch": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-range": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-rate": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-stress": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "voice-volume": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "volume": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "white-space": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "white-space-collapse": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "white-space-trim": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "widows": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "width": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "will-change": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "word-break": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "word-space-transform": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "word-spacing": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "word-wrap": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "wrap-after": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "wrap-before": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "wrap-flow": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "wrap-inside": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "wrap-through": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "writing-mode": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "x": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "y": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "z-index": {
+      "$ref": "#/definitions/colorTypes"
+    },
+    "zoom": {
+      "$ref": "#/definitions/colorTypes"
+    }
+  }
+}
