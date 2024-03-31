@@ -8,14 +8,14 @@ import { LoadedDesignSpec } from './core.js';
 import { COLOR_TRANSFORM_REGEX } from './plugins/css/parser.js';
 
 export const PSEUDO_STATES = [
-  'hover',
   'focus',
-  'disabled',
+  'hover',
   'active',
-  'visited',
-  'checked',
-  'default',
   'indeterminate',
+  'checked',
+  'visited',
+  'disabled',
+  'default',
 ];
 export const PSEUDO_ELEMENTS = [
   'before',
@@ -300,44 +300,58 @@ export function parseDesignRules(rules: DesignRules) {
       root[prop] = {};
 
       for (const [ name, values ] of Object.entries(value)) {
-        if (name.startsWith('@') || name === '.') {
-          if (!(root[prop] as DesignRules)[name]) {
-            (root[prop] as DesignRules)[name] = {};
-          }
+        const names = name.split(/\s?,\s?/g);
 
-          (root[prop] as DesignRules)[name] = values;
-        } else if (name.startsWith(':')) {
-          const [ psState, psClass ] = parsePseudoVariants(name);
+        for (const name of names) {
+          if (name.startsWith('@') || name === '.') {
+            if (!(root[prop] as DesignRules)[name]) {
+              (root[prop] as DesignRules)[name] = {};
+            }
 
-          if (psClass) {
-            if (!classVariants[psClass.name]) {
-              classVariants[psClass.name] = {
-                name: psClass.name,
-                type: psClass.type,
-                selectors: [ psClass.name ],
+            (root[prop] as DesignRules)[name] = values;
+          } else if (name.startsWith(':')) {
+            const [ psState, psClass ] = parsePseudoVariants(name);
+
+            if (!variants[psState.name]) {
+              variants[psState.name] = {
+                name: psState.name,
+                type: psState.type,
+                selectors: [ psState.name ],
                 rules: {},
               };
             }
 
-            classVariants[psClass.name].rules[prop as never] = values;
-          }
+            variants[psState.name].rules[prop as never] = values;
 
-          if (!variants[psState.name]) {
-            variants[psState.name] = {
-              name: psState.name,
-              type: psState.type,
-              selectors: [ psState.name ],
-              rules: {},
-            };
-          }
+            if (psClass) {
+              if (!classVariants[psClass.name]) {
+                classVariants[psClass.name] = {
+                  name: psClass.name,
+                  type: psClass.type,
+                  selectors: [ psClass.name ],
+                  rules: {},
+                };
+              }
 
-          variants[psState.name].rules[prop as never] = values;
+              classVariants[psClass.name].rules[prop as never] = values;
+            }
+          } else {
+            if (!classVariants[name]) {
+              classVariants[name] = {
+                name,
+                selectors: [ name ],
+                rules: {},
+              };
+            }
+
+            classVariants[name].rules[prop as never] = values;
+          }
         }
       }
     }
   }
 
-  return { root, variants: Object.entries({ ...classVariants, ...variants }).map(item => item[1]) };
+  return { root, variants: Object.entries({ ...variants, ...classVariants }).map(item => item[1]) };
 }
 
 function variantSelector(name: string) {
