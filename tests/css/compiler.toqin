@@ -1,0 +1,49 @@
+{
+  "$schema": "https://www.unpkg.com/@beerush/toqin@0.3.1/tokens/schemas/spec.schema.json",
+  "name": "compiler",
+  "displayName": "Compiler",
+  "tokens": [
+    {
+      "name": "color",
+      "tags": ["color"],
+      "tokens": [
+        {
+          "name": "primary",
+          "value": "red",
+          "tokens": [
+            {
+              "name": "200",
+              "value": "#f3f3f3"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "designs": [
+    {
+      "name": "button",
+      "selectors": ["button", ".button"],
+      "rules": {
+        "display": "block"
+      },
+      "variants": [
+        {
+          "name": "primary",
+          "rules": {
+            "color": "@color.primary"
+          }
+        }
+      ],
+      "children": [
+        {
+          "name": "span",
+          "selectors": ["span"],
+          "rules": {
+            "display": "inline-flex"
+          }
+        }
+      ]
+    }
+  ]
+}

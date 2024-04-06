@@ -12,8 +12,8 @@ import { getTagType } from '../../core.js';
 import { DesignRef } from '../../design.js';
 
 export type CSSMap = {
-  input: [ number, number ];
-  output: [ number, number ];
+  input: [number, number];
+  output: [number, number];
   name?: string;
   url?: string;
 };
@@ -24,16 +24,19 @@ export type LineMap = {
   name?: string;
 };
 
-export type CSSLayer = Array<{ text: string, line?: LineMap }>;
+export type CSSLayer = Array<{ text: string; line?: LineMap }>;
 export type CSSLayerMap = {
   [name: string]: CSSLayer;
-}
+};
 
 export type CSSCompilerOptions = {
   prefix?: string;
+  prefixSelectors?: boolean;
   scope?: string;
   mediaQueries?: MediaQueries;
   strictTags?: TagType[];
+  encapsulateTag?: string;
+  encapsulatedTags?: string[];
   defaultColorScheme?: 'light' | 'dark' | 'system' | string;
   includeTokens?: string[];
   excludeTokens?: string[];
@@ -59,7 +62,7 @@ export class CSSCompiler {
   public get mediaQueryMaps(): MediaQueryMap[] {
     const queries: MediaQueryMap[] = [];
 
-    for (const [ name, option ] of Object.entries(this.mediaQueries)) {
+    for (const [name, option] of Object.entries(this.mediaQueries)) {
       if (typeof option === 'string' && option.includes('[')) {
         const group = option.includes('light') || option.includes('dark') ? 'color' : 'display';
         const scheme = option.includes('light') ? 'light' : option.includes('dark') ? 'dark' : undefined;
@@ -85,14 +88,18 @@ export class CSSCompiler {
     return queries;
   }
 
-  constructor(public spec: LoadedDesignSpec, public config?: Partial<CSSCompilerOptions>, public parent?: CSSCompiler) {
+  constructor(
+    public spec: LoadedDesignSpec,
+    public config?: Partial<CSSCompilerOptions>,
+    public parent?: CSSCompiler
+  ) {
     this.name = spec.name;
     this.tokenMaps = parent?.tokenMaps || mergeTokenMaps(spec);
     this.mediaQueries = parent?.mediaQueries || { ...MEDIA_QUERIES, ...(config?.mediaQueries || spec.mediaQueries) };
   }
 
   public createScript(id: string) {
-    return [ this.createHmrScript(id), this.createHelperScript() ].join('\r\n');
+    return [this.createHmrScript(id), this.createHelperScript()].join('\r\n');
   }
 
   public createHelperScript() {
@@ -100,7 +107,7 @@ export class CSSCompiler {
     const scheme = this.config?.defaultColorScheme || this.spec.defaultColorScheme || 'system';
     const mode = this.config?.customQueryMode || this.spec.customQueryMode || 'class';
 
-    return [ `(${ helper.toString() })`, `(${ queries }, '${ mode }', '${ scheme }');` ].join('');
+    return [`(${helper.toString()})`, `(${queries}, '${mode}', '${scheme}');`].join('');
   }
 
   public createHelperLibrary() {
@@ -109,15 +116,15 @@ export class CSSCompiler {
     const mode = this.config?.customQueryMode || this.spec.customQueryMode || 'class';
 
     return [
-      `export const mediaQueries = ${ queries };`,
-      `export const mediaQueryMode = '${ mode }';`,
-      `export const defaultColorScheme = '${ scheme }';`,
-      `export const register = ${ helper.toString() };`,
+      `export const mediaQueries = ${queries};`,
+      `export const mediaQueryMode = '${mode}';`,
+      `export const defaultColorScheme = '${scheme}';`,
+      `export const register = ${helper.toString()};`,
     ].join('\r\n');
   }
 
   public createHmrScript(id: string) {
-    return [ `(${ script.toString() })`, `('${ id }', '${ this.spec.version }');` ].join('\r\n');
+    return [`(${script.toString()})`, `('${id}', '${this.spec.version}');`].join('\r\n');
   }
 
   public compile(options?: CSSCompilerOptions, fromLine?: number): this {
@@ -188,11 +195,11 @@ export class CSSCompiler {
   }
 
   public writeImports(options?: CSSCompilerOptions) {
-    const imports = [ ...(options?.imports || []), ...mergeImports(this.spec) ];
+    const imports = [...(options?.imports || []), ...mergeImports(this.spec)];
 
     if (imports?.length) {
       for (const url of imports) {
-        this.putLine(`  @import "${ url }" layer(framework);`);
+        this.putLine(`  @import "${url}" layer(framework);`);
       }
 
       this.putLine('');
@@ -205,31 +212,31 @@ export class CSSCompiler {
     if (fontFaces?.length) {
       for (const fontFace of fontFaces) {
         this.putLine(`@font-face {`);
-        this.putLine(`  font-family: "${ fontFace.fontFamily }";`);
+        this.putLine(`  font-family: "${fontFace.fontFamily}";`);
 
         const fonts: string[] = [];
 
-        for (const [ key, value ] of entries(fontFace)) {
+        for (const [key, value] of entries(fontFace)) {
           if (key !== 'fonts' && value) {
-            if (![ 'fontFamily', 'fonts', 'baseUrl', 'local' ].includes(key)) {
-              this.putLine(`  ${ toKebabCase(key) }: ${ value };`);
+            if (!['fontFamily', 'fonts', 'baseUrl', 'local'].includes(key)) {
+              this.putLine(`  ${toKebabCase(key)}: ${value};`);
             }
           }
         }
 
         if (fontFace.local) {
-          fonts.push(`local("${ fontFace.local }")`);
+          fonts.push(`local("${fontFace.local}")`);
         }
 
-        for (const { name, format } of (fontFace.fonts || [])) {
+        for (const { name, format } of fontFace.fonts || []) {
           if (format) {
-            fonts.push(`url("${ fontFace.baseUrl || '/fonts' }/${ name }") format("${ format }")`);
+            fonts.push(`url("${fontFace.baseUrl || '/fonts'}/${name}") format("${format}")`);
           } else {
-            fonts.push(`url("${ fontFace.baseUrl || '/fonts' }/${ name }")`);
+            fonts.push(`url("${fontFace.baseUrl || '/fonts'}/${name}")`);
           }
         }
 
-        this.putLine(`  src: ${ fonts.join(', ') };`);
+        this.putLine(`  src: ${fonts.join(', ')};`);
         this.putLine(`}`);
         this.putLine('');
       }
@@ -238,16 +245,16 @@ export class CSSCompiler {
 
   private writeLayers(options?: CompilerOptions) {
     if (options?.ignoreLayers) return;
-    const layers = this.mergeLayers([ 'framework' ], this.spec);
+    const layers = this.mergeLayers(['framework'], this.spec);
 
     if (layers.length) {
-      this.putLine(`@layer ${ layers.join(', ') };`);
+      this.putLine(`@layer ${layers.join(', ')};`);
       this.putLine('');
     }
   }
 
   private assignColorScheme(options: Partial<CSSCompilerOptions>) {
-    for (const [ , option ] of Object.entries(this.mediaQueries)) {
+    for (const [, option] of Object.entries(this.mediaQueries)) {
       if (typeof option === 'string' && option.includes('[')) {
         if (option.includes('light') || option.includes('dark')) {
           this.putColorScheme(option, option.includes('light') ? 'light' : 'dark', options);
@@ -266,14 +273,14 @@ export class CSSCompiler {
     const { customQueryMode = 'class' } = options;
     let selector = query;
 
-    if ([ 'class', 'id' ].includes(customQueryMode)) {
+    if (['class', 'id'].includes(customQueryMode)) {
       selector = selector.replace('[', customQueryMode === 'class' ? '.' : '#').replace(']', '');
     }
 
     this.colorSchemes.push({ selector, type: customQueryMode });
 
-    this.putLine(`${ selector } {`);
-    this.putLine(`  color-scheme: only ${ color };`);
+    this.putLine(`${selector} {`);
+    this.putLine(`  color-scheme: only ${color};`);
     this.putLine(`}`);
     this.putLine('');
   }
@@ -311,19 +318,21 @@ export class CSSCompiler {
       return;
     }
 
-    const scope = (options?.scope || ':root');
+    const scope = options?.scope || ':root';
     const prefix = options?.prefix;
-    const line = this.spec.tokenPointer && ({
-      pointer: this.spec.tokenPointer,
-      name: scope,
-      url: this.spec.url,
-    } as LineMap);
+    const line =
+      this.spec.tokenPointer &&
+      ({
+        pointer: this.spec.tokenPointer,
+        name: scope,
+        url: this.spec.url,
+      } as LineMap);
 
-    this.putLine(`${ scope } {`, line);
+    this.putLine(`${scope} {`, line);
 
     const queries: NestedDeclarations = {};
 
-    for (const [ name, ref ] of Object.entries(this.spec.tokenMaps || {})) {
+    for (const [name, ref] of Object.entries(this.spec.tokenMaps || {})) {
       if (this.shouldIgnore(name, options)) {
         logger.info('Skipping due to an exclusion rule:', name);
         continue;
@@ -334,7 +343,7 @@ export class CSSCompiler {
       if (mQueries) {
         let prop = name;
         mQueries.forEach((n) => (prop = prop.replace(n, '')));
-        prop = `--${ prefix ? prefix + '-' : '' }${ prop.replace(/\./g, '-') }`;
+        prop = `--${prefix ? prefix + '-' : ''}${prop.replace(/\./g, '-')}`;
 
         mQueries.forEach((n) => {
           const { queries: q } = parseQueries(
@@ -343,20 +352,20 @@ export class CSSCompiler {
             { [n.replace('.', '')]: ref.value },
             prefix,
             ref.type,
-            scope,
+            scope
           );
 
           merge(queries, q);
         });
       } else {
-        const prop = `--${ prefix ? prefix + '-' : '' }${ name.replace(/\./g, '-') }`;
+        const prop = `--${prefix ? prefix + '-' : ''}${name.replace(/\./g, '-')}`;
         const value = resolveCssValue(this.tokenMaps, ref.value, prefix, name, ref.type);
 
         // this.putLine(`  ${ prop }: ${ value };`, {
         //   pointer: ref.pointer, name: prop, url: ref.sourceUrl
         // });
 
-        this.putLine(`  ${ prop }: ${ value };`);
+        this.putLine(`  ${prop}: ${value};`);
       }
     }
 
@@ -371,22 +380,22 @@ export class CSSCompiler {
   private writeAnimations(options: CompilerOptions) {
     const prefix = options?.prefix;
 
-    for (const [ name, ref ] of Object.entries(this.spec.animationMaps || {})) {
+    for (const [name, ref] of Object.entries(this.spec.animationMaps || {})) {
       if (Object.keys(ref.frames || {}).length) {
-        const selector = `@keyframes ${ prefix }-${ name.replace(/\./g, '-') }`;
-        this.putLine(`${ selector } {`, {
+        const selector = `@keyframes ${prefix}-${name.replace(/\./g, '-')}`;
+        this.putLine(`${selector} {`, {
           pointer: ref.pointer,
           name: ref.name,
           url: ref.url,
         });
 
-        for (const [ key, rules ] of Object.entries(ref.frames)) {
-          this.putLine(`  ${ key } {`);
+        for (const [key, rules] of Object.entries(ref.frames)) {
+          this.putLine(`  ${key} {`);
 
-          for (const [ prop, value ] of Object.entries(rules || {})) {
+          for (const [prop, value] of Object.entries(rules || {})) {
             if (typeof value === 'string') {
               const resolvedValue = resolveCssValue(this.tokenMaps, value, prefix, prop);
-              this.putLine(`    ${ prop }: ${ resolvedValue };`);
+              this.putLine(`    ${prop}: ${resolvedValue};`);
             }
           }
 
@@ -404,11 +413,7 @@ export class CSSCompiler {
       return '@';
     }
 
-    if (
-      ref.layer && (
-        !options.excludeLayers?.includes(ref.layer) ||
-        options.includeLayers?.includes(ref.layer))
-    ) {
+    if (ref.layer && (!options.excludeLayers?.includes(ref.layer) || options.includeLayers?.includes(ref.layer))) {
       return ref.layer;
     }
 
@@ -422,7 +427,7 @@ export class CSSCompiler {
       '@': [],
     };
 
-    for (const [ selector, ref ] of Object.entries(this.spec.designMaps || {})) {
+    for (const [selector, ref] of Object.entries(this.spec.designMaps || {})) {
       const layerName = this.getLayerName(ref, options);
 
       if (!layers[layerName]) {
@@ -443,16 +448,43 @@ export class CSSCompiler {
         });
       }
 
+      if (options?.encapsulateTag) {
+        selectors = selectors.map((s) => {
+          return s
+            .split(/\s/g)
+            .map((t) => {
+              const type = getTagType(t);
+
+              if (type === 'element') {
+                if (options?.encapsulatedTags?.length) {
+                  return options.encapsulatedTags.includes(t) ? `${t}${options.encapsulateTag}` : t;
+                } else {
+                  return `${t}${options.encapsulateTag}`;
+                }
+              }
+
+              return t;
+            })
+            .join(' ');
+        });
+      }
+
+      if (options?.prefixSelectors) {
+        selectors = selectors.map((s) => {
+          return s.replace(/[.#[]+/gi, (t) => `${t}${prefix}-`);
+        });
+      }
+
       if (!selectors.length) {
         continue;
       }
 
       if (scope && !ref.important) {
-        selectors = selectors.map((s) => `${ scope } ${ s }`);
+        selectors = selectors.map((s) => `${scope} ${s}`);
       }
 
       if (scope && ref.root) {
-        selectors = [ scope ];
+        selectors = [scope];
       }
 
       if (ref.rules && Object.keys(ref.rules).length) {
@@ -464,9 +496,9 @@ export class CSSCompiler {
         };
 
         // this.putLine(`${ selectors.join(', ') } {`, line);
-        layer.push({ text: `${ selectors.join(', ') } {`, line });
+        layer.push({ text: `${selectors.join(', ')} {`, line });
 
-        for (const [ name, valueRef ] of Object.entries(ref.rules)) {
+        for (const [name, valueRef] of Object.entries(ref.rules)) {
           const prop = name;
 
           // if (prop.startsWith('--') && !prop.startsWith('--this')) {
@@ -480,10 +512,10 @@ export class CSSCompiler {
               valueRef as never,
               prefix,
               undefined,
-              selectors.join(', '),
+              selectors.join(', ')
             );
 
-            for (const [ key, value ] of Object.entries(root)) {
+            for (const [key, value] of Object.entries(root)) {
               const subProp = key;
 
               // if (subProp.startsWith('--') && !subProp.startsWith('--this')) {
@@ -491,14 +523,14 @@ export class CSSCompiler {
               // }
 
               // this.putLine(`  ${ subProp }: ${ value };`);
-              layer.push({ text: `  ${ subProp }: ${ value };` });
+              layer.push({ text: `  ${subProp}: ${value};` });
             }
 
             merge(queries, q);
           } else if (typeof (valueRef as string) === 'string') {
             const value = resolveCssValue(this.tokenMaps, valueRef as string, prefix, prop);
             // this.putLine(`  ${ prop }: ${ value };`);
-            layer.push({ text: `  ${ prop }: ${ value };` });
+            layer.push({ text: `  ${prop}: ${value};` });
           }
         }
 
@@ -514,13 +546,13 @@ export class CSSCompiler {
       }
     }
 
-    for (const [ name, layer ] of Object.entries(layers)) {
+    for (const [name, layer] of Object.entries(layers)) {
       if (name === '@') {
         for (const item of layer) {
           this.putLine(item.text, item.line);
         }
       } else {
-        this.putLine(`@layer ${ name } {`);
+        this.putLine(`@layer ${name} {`);
 
         layer.forEach((item, i) => {
           if (item.text === '' && i >= layer.length - 1) {
@@ -542,15 +574,15 @@ export class CSSCompiler {
       const value = maps[key];
 
       if (typeof value === 'object') {
-        layer.push({ text: `${ space }${ key } {`, line });
-        this.putLayers(layer, value, `${ space }  `, line);
-        layer.push({ text: `${ space }}` });
+        layer.push({ text: `${space}${key} {`, line });
+        this.putLayers(layer, value, `${space}  `, line);
+        layer.push({ text: `${space}}` });
 
         if (i < keys.length - 1 || !space) {
           layer.push({ text: '' });
         }
       } else if (typeof (value as string) === 'string') {
-        layer.push({ text: `${ space }${ key }: ${ value };`, line });
+        layer.push({ text: `${space}${key}: ${value};`, line });
       }
     });
   }
@@ -561,15 +593,15 @@ export class CSSCompiler {
       const value = maps[key];
 
       if (typeof value === 'object') {
-        this.putLine(`${ space }${ key } {`, line);
-        this.putLines(value, `${ space }  `, line);
-        this.putLine(`${ space }}`);
+        this.putLine(`${space}${key} {`, line);
+        this.putLines(value, `${space}  `, line);
+        this.putLine(`${space}}`);
 
         if (i < keys.length - 1 || !space) {
           this.putLine('');
         }
       } else if (typeof (value as string) === 'string') {
-        this.putLine(`${ space }${ key }: ${ value };`, line);
+        this.putLine(`${space}${key}: ${value};`, line);
       }
     });
   }
@@ -577,8 +609,8 @@ export class CSSCompiler {
   private putLine(text: string, line?: LineMap) {
     if (line) {
       const column = text.match(/^\s+/)?.[0].length ?? 0;
-      const input = [ (line.pointer?.line ?? 0) + 1, line.pointer?.column ?? 0 ];
-      const output = [ this.currentLine, column ];
+      const input = [(line.pointer?.line ?? 0) + 1, line.pointer?.column ?? 0];
+      const output = [this.currentLine, column];
       this.sourceMaps.push({ input, output, name: line.name, url: line.url } as never);
     }
 

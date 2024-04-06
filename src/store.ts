@@ -17,33 +17,42 @@ export type SpecIndex = {
   parentIndex?: SpecIndex;
   extendedIndexes: SpecIndex[];
   includedIndexes: SpecIndex[];
-}
+};
 
 export type StoreEvent = {
-  type: 'change' | 'index:ready' | 'index:reindex' | 'watch' | 'unwatch' | 'compile:start' | 'compile:complete' | 'fs:write' | 'fs:read';
+  type:
+    | 'change'
+    | 'index:ready'
+    | 'index:reindex'
+    | 'watch'
+    | 'unwatch'
+    | 'compile:start'
+    | 'compile:complete'
+    | 'fs:write'
+    | 'fs:read';
   data?: SpecIndex | OutputWrapper | string | string[];
-}
+};
 
 export type CompileEvent = {
   type: 'compile:start' | 'compile:complete';
   data: OutputWrapper;
-}
+};
 
 export type FSEvent = {
   type: 'fs:write' | 'fs:read';
   data: string;
-}
+};
 
 export type WatchEvent = {
   type: 'watch' | 'unwatch';
   data: string;
-}
+};
 
 export type Unsubscribe = () => void;
 export type OutputWrapper = DesignOutput[] & {
   write: () => void;
   stringify: () => string;
-}
+};
 
 export class Store {
   public root: SpecIndex = undefined as never;
@@ -56,7 +65,10 @@ export class Store {
   private subscribers: Array<(event: StoreEvent) => void> = [];
   private compilers: Compiler[] = [];
 
-  constructor(public rootUrl: string, public options?: CompilerOptions) {}
+  constructor(
+    public rootUrl: string,
+    public options?: CompilerOptions
+  ) {}
 
   public use(compiler: Compiler): this {
     this.compilers.push(compiler);
@@ -74,7 +86,7 @@ export class Store {
       outputs.push(...output);
     }
 
-    logger.debug(`Design Spec has been recompiled in ${ Date.now() - now }ms.`);
+    logger.debug(`Design Spec has been recompiled in ${Date.now() - now}ms.`);
 
     outputs.write = () => {
       for (const output of outputs) {
@@ -106,7 +118,7 @@ export class Store {
       this.emit({ type: 'watch', data: this.root.file } as WatchEvent);
 
       this.watcher.on('change', async (file) => {
-        logger.debug(`Design Spec "${ file }" has been changed.`);
+        logger.debug(`Design Spec "${file}" has been changed.`);
         await this.reindex(file);
         this.emit({ type: 'index:reindex', data: this.indexes[file] });
 
@@ -121,23 +133,18 @@ export class Store {
     return this;
   }
 
-  public async load(
-    url: string = this.rootUrl,
-    fromIndex?: SpecIndex,
-    recursive = true,
-  ): Promise<SpecIndex> {
-    const {
-      spec,
-      data,
-      pointers,
-      path,
-    } = await readSpec(url, fromIndex?.file ? dirname(fromIndex?.file) : fromIndex?.file, fromIndex?.file);
+  public async load(url: string = this.rootUrl, fromIndex?: SpecIndex, recursive = true): Promise<SpecIndex> {
+    const { spec, data, pointers, path } = await readSpec(
+      url,
+      fromIndex?.file ? dirname(fromIndex?.file) : fromIndex?.file,
+      fromIndex?.file
+    );
 
     if (/[\sA-Z]+/.test(data.name)) {
-      logger.warn(`Design Spec "${ data.name }" has invalid name. Please use kebab-case.`);
+      logger.warn(`Design Spec "${data.name}" has invalid name. Please use kebab-case.`);
 
       data.name = data.name.toLowerCase().replace(/\s+/g, '-');
-      logger.warn(`Design Spec "${ spec.name }" automatically renamed to "${ data.name }".`);
+      logger.warn(`Design Spec "${spec.name}" automatically renamed to "${data.name}".`);
       spec.name = data.name;
     }
 
@@ -251,7 +258,7 @@ export class Store {
     previous.version = current.version;
     previous.spec.imports = current.spec.imports;
 
-    for (const [ key, value ] of Object.entries(current.spec)) {
+    for (const [key, value] of Object.entries(current.spec)) {
       if (!RESTRICTED_SPEC_KEYS.includes(key as keyof LoadedDesignSpec)) {
         previous.spec[key as keyof LoadedDesignSpec] = value as never;
       }
@@ -264,8 +271,8 @@ export class Store {
 
     if (removedExtends.length) {
       for (const url of removedExtends) {
-        const extendedIndex = previous.extendedIndexes.find(item => item.url === url);
-        const extendedSpec = previous.spec.extendedSpecs?.find(item => item.id === url);
+        const extendedIndex = previous.extendedIndexes.find((item) => item.url === url);
+        const extendedSpec = previous.spec.extendedSpecs?.find((item) => item.id === url);
 
         if (extendedIndex) {
           previous.extendedIndexes.splice(previous.extendedIndexes.indexOf(extendedIndex), 1);
@@ -303,8 +310,8 @@ export class Store {
 
     if (removedIncludes.length) {
       for (const url of removedIncludes) {
-        const includedIndex = previous.includedIndexes.find(item => item.url === url);
-        const includeSpec = previous.spec.includedSpecs?.find(item => item.id === url);
+        const includedIndex = previous.includedIndexes.find((item) => item.url === url);
+        const includeSpec = previous.spec.includedSpecs?.find((item) => item.id === url);
 
         if (includedIndex) {
           previous.includedIndexes.splice(previous.includedIndexes.indexOf(includedIndex), 1);
@@ -358,8 +365,11 @@ export class Store {
       spec.extendedSpecs.unshift(extendedSpec);
     }
 
-    for (const [ key, value ] of Object.entries(extendedSpec)) {
-      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof this.root.spec[key as keyof LoadedDesignSpec] === 'undefined') {
+    for (const [key, value] of Object.entries(extendedSpec)) {
+      if (
+        ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) &&
+        typeof this.root.spec[key as keyof LoadedDesignSpec] === 'undefined'
+      ) {
         this.root.spec[key as keyof LoadedDesignSpec] = value as never;
       }
     }
@@ -387,8 +397,11 @@ export class Store {
       spec.includedSpecs.push(includedSpec);
     }
 
-    for (const [ key, value ] of Object.entries(includedSpec)) {
-      if (ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) && typeof this.root.spec[key as keyof LoadedDesignSpec] === 'undefined') {
+    for (const [key, value] of Object.entries(includedSpec)) {
+      if (
+        ALLOWED_OVERRIDE_KEYS.includes(key as keyof LoadedDesignSpec) &&
+        typeof this.root.spec[key as keyof LoadedDesignSpec] === 'undefined'
+      ) {
         this.root.spec[key as keyof LoadedDesignSpec] = value as never;
       }
     }
@@ -396,9 +409,9 @@ export class Store {
 }
 
 export function getAddedItem(previous: string[], current: string[]) {
-  return current.filter(item => !previous.includes(item));
+  return current.filter((item) => !previous.includes(item));
 }
 
 export function getRemovedItem(previous: string[], current: string[]) {
-  return previous.filter(item => !current.includes(item));
+  return previous.filter((item) => !current.includes(item));
 }

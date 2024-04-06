@@ -1,6 +1,6 @@
 {
   "name": "@beerush/toqin",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Design System Manager",
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.js",
@@ -53,7 +53,6 @@
   "scripts": {
     "dev": "esdev --watch",
     "build": "esdev --clean",
-    "prepublish": "npm run build",
     "test": "cd test && node design.test.js",
     "test:extend": "cd test && node extend.test.js",
     "docs:dev": "vitepress dev docs --port 5273",
@@ -63,8 +62,14 @@
   "devDependencies": {
     "@beerush/esdev": "^1.1.0",
     "@types/fs-extra": "^11.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5",
     "typescript": "^5.1.6",
-    "vitepress": "^1.0.0-rc.5"
+    "vitepress": "^1.0.0-rc.5",
+    "vitest": "^1.4.0"
   },
   "dependencies": {
     "@beerush/resolve": "^1.0.0",
@@ -88,5 +93,6 @@
   ],
   "peerDependencies": {
     "vite": "^4.4.6"
-  }
+  },
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }
