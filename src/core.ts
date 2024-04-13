@@ -20,7 +20,12 @@ export type MediaQueryMap = {
   mediaQuery?: string;
   scheme?: 'light' | 'dark';
 };
-export type MediaQueryKey = `@${ string }`;
+export type MediaQueryKey = `@${string}`;
+
+export type ExternalRef = {
+  url: string;
+  excludes?: string[];
+};
 
 export type DesignSpec = {
   name: string;
@@ -41,13 +46,14 @@ export type DesignSpec = {
   customQueryMode?: 'attribute' | 'class';
   rootScope?: string;
 
-  extends?: string[];
-  includes?: string[];
+  extends?: ExternalRef[];
+  includes?: ExternalRef[];
   imports?: string[];
 
   excludeTokens?: string[];
   includeTokens?: string[];
 };
+
 export type LoadedDesignSpec = DesignSpec & {
   id?: string;
   url?: string;

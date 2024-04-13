@@ -2,10 +2,10 @@ import type { JSONLine } from 'json-source-map';
 
 export type DesignType = 'element' | 'pseudo' | 'pseudo-element' | 'pseudo-class' | 'pseudo-state';
 export type DesignState = {
-  [state: `::${ string }`]: string | DesignQuery;
+  [state: `::${string}`]: string | DesignQuery;
 };
 export type DesignQuery = {
-  [query: `@${ string }`]: string;
+  [query: `@${string}`]: string;
 };
 export type DesignRule = string | (DesignState & DesignQuery);
 export type DesignRules = {
@@ -33,6 +33,9 @@ export type Design = {
   root?: boolean;
   /* Prevent the selector from being scoped. */
   important?: boolean;
+  /** Mark the selector as a media query scoped variant. */
+  mediaVariants?: string[];
+  mediaVariables?: boolean;
 };
 
 export type DesignRef = {
@@ -42,6 +45,8 @@ export type DesignRef = {
   rules: DesignRules;
   root?: boolean;
   important?: boolean;
+  mediaVariants?: string[];
+  mediaVariables?: boolean;
   sourceUrl?: string;
   pointer?: JSONLine;
   path?: string;

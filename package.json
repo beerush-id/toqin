@@ -1,6 +1,6 @@
 {
   "name": "@beerush/toqin",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Design System Manager",
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.js",
@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "@beerush/resolve": "^1.0.0",
-    "@beerush/utils": "^0.3.1",
+    "@beerush/utils": "^0.4.0",
     "autoprefixer": "^10.4.14",
     "chokidar": "^3.5.3",
     "cssnano": "^6.0.1",

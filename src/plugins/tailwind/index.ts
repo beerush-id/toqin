@@ -53,20 +53,24 @@ export type TailwindPreset = {
 
 export const EXTEND_RULES: ExtendRules = {
   fontSize: {
-    tags: [ 'font-size', 'text-size' ],
-    shifts: [ /^font\.size\./, /^text\.size\./ ],
+    tags: ['font-size', 'text-size'],
+    shifts: [/^font\.size\.?/, /^text\.size\.?/],
   },
   fontWeight: {
-    tags: [ 'font-weight', 'text-weight' ],
-    shifts: [ /^font\.weight\./, /^text\.weight\./ ],
+    tags: ['font-weight', 'text-weight'],
+    shifts: [/^font\.weight\.?/, /^text\.weight\.?/],
   },
   letterSpacing: {
-    tags: [ 'letter-spacing', 'text-spacing' ],
-    shifts: [ /^font\.space\./, /^text\.space\./ ],
+    tags: ['letter-spacing', 'text-spacing'],
+    shifts: [/^font\.space\.?/, /^text\.space\.?/],
   },
   lineHeight: {
-    tags: [ 'line-height', 'font-height', 'text-height' ],
-    shifts: [ /^font\.height\./, /^text\.height\./ ],
+    tags: ['line-height', 'font-height', 'text-height'],
+    shifts: [/^font\.height\.?/, /^text\.height\.?/],
+  },
+  boxShadow: {
+    tags: ['box-shadow'],
+    shifts: [/^shadow\.?/],
   },
 };
 
@@ -79,8 +83,10 @@ export const RESERVED_PROPERTIES: string[] = [
   'lineHeight',
 ];
 
+export const ROOT_PROPERTIES: string[] = ['letterSpacing'];
+
 export const TAILWIND_TEMPLATE_SVELTEKIT: TailwindTemplate = {
-  content: [ './src/**/*.{html,js,svelte,ts}' ],
+  content: ['./src/**/*.{html,js,svelte,ts}'],
 };
 
 export const TAILWIND_TEMPLATE_NEXTJS: TailwindTemplate = {
@@ -110,8 +116,8 @@ export function tailwind(config?: TailwindPluginConfig) {
       const key = camelize(prop);
       if (!RESERVED_PROPERTIES.includes(key) && !EXTEND_RULES[key]) {
         EXTEND_RULES[key] = {
-          tags: [ prop ],
-          shifts: [ new RegExp(`^${ prop.replace(/-/g, '.') }\\.?`) ],
+          tags: [prop],
+          shifts: [new RegExp(`^${prop.replace(/-/g, '.')}\\.?`)],
         };
       }
     }
@@ -127,26 +133,24 @@ export function tailwind(config?: TailwindPluginConfig) {
     if (options.module === 'esm') {
       outputs.push({
         name: 'tailwind.config.js',
-        fileName: `${ options.outDir }/${ options.indexName }`,
-        content: content.replace('module.exports = ', 'export default ')
-          .replace('exports.', 'export const '),
+        fileName: `${options.outDir}/${options.indexName}`,
+        content: content.replace('module.exports = ', 'export default ').replace('exports.', 'export const '),
       });
     } else if (options.module === 'cjs') {
       outputs.push({
         name: 'tailwind.config.cjs',
-        fileName: `${ options.outDir }/${ (options.indexName || '').replace(/\.js$/, '.cjs') }`,
+        fileName: `${options.outDir}/${(options.indexName || '').replace(/\.js$/, '.cjs')}`,
         content: content,
       });
     } else if (options.module === 'both') {
       outputs.push({
         name: 'tailwind.config.js',
-        fileName: `${ options.outDir }/${ options.indexName }`,
-        content: content.replace('module.exports = ', 'export default ')
-          .replace('exports.', 'export const '),
+        fileName: `${options.outDir}/${options.indexName}`,
+        content: content.replace('module.exports = ', 'export default ').replace('exports.', 'export const '),
       });
       outputs.push({
         name: 'tailwind.config.cjs',
-        fileName: `${ options.outDir }/${ (options.indexName || '').replace(/\.js$/, '.cjs') }`,
+        fileName: `${options.outDir}/${(options.indexName || '').replace(/\.js$/, '.cjs')}`,
         content: content,
       });
     }
@@ -160,13 +164,13 @@ export type TailwindPluginViteConfig = {
   outDir?: string;
   watch?: boolean;
   tailwindOptions?: TailwindPluginConfig;
-}
+};
 
 export async function tailwindVite(config: TailwindPluginViteConfig): Promise<Plugin> {
   const store = new Store(config.token);
 
   store.use(tailwind(config.tailwindOptions));
-  store.subscribe(event => {
+  store.subscribe((event) => {
     if (event.type === 'compile:complete') {
       (event as CompileEvent).data.write();
     }
@@ -175,7 +179,7 @@ export async function tailwindVite(config: TailwindPluginViteConfig): Promise<Pl
   await store.run(config.watch ?? true);
   await store.compile();
 
-  logger.info(`Design token "${ store.root.file }" is registered by "Tailwind Vite Plugin".`);
+  logger.info(`Design token "${store.root.file}" is registered by "Tailwind Vite Plugin".`);
 
   return {
     name: 'vite-plugin-toqin-tailwind',
@@ -192,7 +196,10 @@ export class TailwindCompiler {
   public tokenMaps: TokenMap;
   public extendedRules: ExtendRules;
 
-  constructor(public spec: LoadedDesignSpec, public config: Partial<TailwindPluginConfig>) {
+  constructor(
+    public spec: LoadedDesignSpec,
+    public config: Partial<TailwindPluginConfig>
+  ) {
     this.tokenMaps = mergeTokenMaps(spec);
     this.mediaQueries = { ...MEDIA_QUERIES, ...spec.mediaQueries };
     this.extendedRules = { ...EXTEND_RULES, ...config?.extendRules };
@@ -226,13 +233,13 @@ export class TailwindCompiler {
 
   private createClasses() {
     const classList = parseDesignClasses(this.spec);
-    this.putLine(`exports.classList = ${ JSON.stringify(classList, null, 2) }`);
+    this.putLine(`exports.classList = ${JSON.stringify(classList, null, 2)}`);
   }
 
   private importScreens() {
     const screens: NestedProps = {};
 
-    for (const [ q, v ] of Object.entries(this.mediaQueries)) {
+    for (const [q, v] of Object.entries(this.mediaQueries)) {
       const name = this.config?.stripMediaQueryMark ? q.replace(/^@/, '') : q;
 
       if (typeof v === 'string') {
@@ -258,27 +265,27 @@ export class TailwindCompiler {
   }
 
   private importFontFamilies() {
-    const groups = [ 'font-family', 'font-families' ];
-    const shifts = [ /^font\.family\./, /^font\./ ];
+    const groups = ['font-family', 'font-families'];
+    const shifts = [/^font\.family\./, /^font\./];
 
     this.preset.fontFamily = {
       ...(this.preset.fontFamily || {}),
       ...this.importTokens(groups, shifts, (value) =>
-        value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, '')),
+        value.split(/\s?,\s?/g).map((item) => item.replace(/['"]+/g, ''))
       ),
     };
   }
 
   private importColors() {
-    const groups = [ 'color', 'palette', 'colors', 'theme' ];
-    const shifts = [ /^color\./, /^palette\./ ];
+    const groups = ['color', 'palette', 'colors', 'theme'];
+    const shifts = [/^color\./, /^palette\./];
 
     this.preset.colors = { ...(this.preset.colors || {}), ...this.importTokens(groups, shifts) };
   }
 
   private importSpacing() {
-    const groups = [ 'space', 'spacing' ];
-    const shifts = [ /^space\./, /^spacing\./ ];
+    const groups = ['space', 'spacing'];
+    const shifts = [/^space\./, /^spacing\./];
 
     this.preset.spacing = { ...(this.preset.spacing || {}), ...this.importTokens(groups, shifts) };
   }
@@ -288,11 +295,15 @@ export class TailwindCompiler {
       this.preset.extend = {};
     }
 
-    for (const [ prop, rule ] of Object.entries(this.extendedRules)) {
+    for (const [prop, rule] of Object.entries(this.extendedRules)) {
       const props = this.importTokens(rule.tags, rule.shifts, rule.replace);
 
       if (Object.keys(props).length) {
-        this.preset.extend[prop] = props;
+        if (ROOT_PROPERTIES.includes(prop)) {
+          this.preset[prop as never] = props as never;
+        } else {
+          this.preset.extend[prop] = props;
+        }
       }
     }
   }
@@ -300,12 +311,12 @@ export class TailwindCompiler {
   private importTokens(
     groups: string[],
     shifts?: Array<string | RegExp>,
-    replace?: (value: string) => string | string[],
+    replace?: (value: string) => string | string[]
   ) {
     const prefix = this.config?.prefix || 'tq';
     const result: NestedProps = {};
 
-    for (const [ name, token ] of Object.entries(this.tokenMaps)) {
+    for (const [name, token] of Object.entries(this.tokenMaps)) {
       if (isInGroup(token, groups)) {
         let prop = name.replace('@', '');
 
@@ -325,7 +336,7 @@ export class TailwindCompiler {
           prefix,
           name,
           token.type,
-          !this.config?.useCssVariable,
+          !this.config?.useCssVariable
         );
 
         deepSet(result, prop, replace ? (replace(value) as string) : (value as string));
@@ -336,20 +347,20 @@ export class TailwindCompiler {
   }
 
   private putLines(lines: NestedProps = this.preset, indent = '') {
-    for (const [ key, value ] of Object.entries(lines)) {
+    for (const [key, value] of Object.entries(lines)) {
       if (typeof value === 'string') {
-        this.putLine(`${ indent }'${ key }': '${ value.replace(/'/g, '"') }',`);
+        this.putLine(`${indent}'${key}': '${value.replace(/'/g, '"')}',`);
       } else if (Array.isArray(value)) {
         if (value.length) {
-          this.putLine(`${ indent }'${ key }': [`);
-          this.putLine(`${ indent }  ${ value.map((item) => `'${ item }'`).join(', ') }`);
-          this.putLine(`${ indent }],`);
+          this.putLine(`${indent}'${key}': [`);
+          this.putLine(`${indent}  ${value.map((item) => `'${item}'`).join(', ')}`);
+          this.putLine(`${indent}],`);
         }
       } else if (typeof value === 'object') {
         if (Object.keys(value).length) {
-          this.putLine(`${ indent }'${ key }': {`);
-          this.putLines(value, `${ indent }  `);
-          this.putLine(`${ indent }},`);
+          this.putLine(`${indent}'${key}': {`);
+          this.putLines(value, `${indent}  `);
+          this.putLine(`${indent}},`);
         }
       }
     }
@@ -362,11 +373,7 @@ export class TailwindCompiler {
 }
 
 function isInGroup(token: TokenRef, groups: string[]) {
-  for (const tag of token.tags || []) {
-    if (groups.includes(tag)) {
-      return true;
-    }
-  }
+  return groups.some((group) => token.tags?.includes(group));
 }
 
 function deepSet(target: NestedProps, path: string, value: string) {
@@ -396,7 +403,7 @@ export type TailwindClassList = {
   class?: string[];
 } & {
   [key: string]: TailwindClassList;
-}
+};
 
 function parseDesignClasses(spec: LoadedDesignSpec, rules: TailwindClassList = {}) {
   if (spec.extendedSpecs?.length) {
@@ -419,23 +426,26 @@ function parseDesignClasses(spec: LoadedDesignSpec, rules: TailwindClassList = {
 }
 
 function createClassList(design: Design, rules: TailwindClassList = {}) {
-  const path = design.name.split(/\./g).map((item) => toCamelCase(item)).join('.');
+  const path = design.name
+    .split(/\./g)
+    .map((item) => toCamelCase(item))
+    .join('.');
 
   const classes = entries(design.rules || {})
-    .map(([ key, value ]) => translate(key as never, value as never))
+    .map(([key, value]) => translate(key as never, value as never))
     .filter((value) => value !== undefined);
 
   write(rules as never, path + '.class', classes as never);
 
   if (design.variants?.length) {
     for (const variant of design.variants) {
-      createClassList({ ...variant, name: `${ path }.${ variant.name }` }, rules);
+      createClassList({ ...variant, name: `${path}.${variant.name}` }, rules);
     }
   }
 
   if (design.children?.length) {
     for (const child of design.children) {
-      createClassList({ ...child, name: `${ path }.${ child.name }` }, rules);
+      createClassList({ ...child, name: `${path}.${child.name}` }, rules);
     }
   }
 

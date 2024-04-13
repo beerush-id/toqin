@@ -45,6 +45,7 @@ export type CSSCompilerOptions = {
   ignoreLayers?: boolean;
   includeLayers?: string[];
   excludeLayers?: string[];
+  includeMediaVariants?: boolean | string[];
   imports?: string[];
 };
 
@@ -143,6 +144,7 @@ export class CSSCompiler {
       includeTokens: this.config?.includeTokens || this.spec.includeTokens,
       ignoreLayers: this.config?.ignoreLayers || false,
       includeLayers: this.config?.includeLayers || [],
+      includeMediaVariants: this.config?.includeMediaVariants || false,
       excludeLayers: this.config?.excludeLayers || [],
     };
 
@@ -487,6 +489,8 @@ export class CSSCompiler {
         selectors = [scope];
       }
 
+      const valueOuts: { text: string }[] = [];
+
       if (ref.rules && Object.keys(ref.rules).length) {
         const queries: NestedDeclarations = {};
         const line = ref.pointer && {
@@ -523,6 +527,7 @@ export class CSSCompiler {
               // }
 
               // this.putLine(`  ${ subProp }: ${ value };`);
+              valueOuts.push({ text: `  ${subProp}: ${value};` });
               layer.push({ text: `  ${subProp}: ${value};` });
             }
 
@@ -530,6 +535,7 @@ export class CSSCompiler {
           } else if (typeof (valueRef as string) === 'string') {
             const value = resolveCssValue(this.tokenMaps, valueRef as string, prefix, prop);
             // this.putLine(`  ${ prop }: ${ value };`);
+            valueOuts.push({ text: `  ${prop}: ${value};` });
             layer.push({ text: `  ${prop}: ${value};` });
           }
         }
@@ -538,6 +544,63 @@ export class CSSCompiler {
         // this.putLine('');
         layer.push({ text: '}' });
         layer.push({ text: '' });
+
+        if (options.includeMediaVariants && Object.keys(ref.rules ?? {}) && ref.mediaVariants?.length) {
+          const queryVariants: {
+            [key: string]: string[];
+          } = {};
+
+          ref.mediaVariants
+            .filter((v) => {
+              if (Array.isArray(options.includeMediaVariants)) {
+                return options.includeMediaVariants.includes(v);
+              }
+
+              return true;
+            })
+            .forEach((v) => {
+              let variant = queryVariants[v];
+
+              if (!variant) {
+                variant = [];
+                queryVariants[v] = variant;
+              }
+
+              for (const k of ref.selectors) {
+                if (k.startsWith('.')) {
+                  selectors.forEach((s) => {
+                    if (s.includes(k)) {
+                      const p = s.replace(k, k.replace('.', `.${v.replace('@', '')}-`));
+                      queryVariants[v].push(p);
+                    }
+                  });
+                }
+              }
+
+              const query = this.mediaQueries[v];
+              const variantLayers = [];
+
+              if (query) {
+                variantLayers.push({ text: `@media ${query} {` });
+                variantLayers.push({ text: `  ${variant.join(', ')} {` });
+                variantLayers.push(
+                  ...valueOuts
+                    .filter((v) => {
+                      if (!ref.mediaVariables && v.text.trim().startsWith('--')) {
+                        return false;
+                      }
+
+                      return true;
+                    })
+                    .map((v) => ({ text: `  ${v.text}` }))
+                );
+                variantLayers.push({ text: '  }' });
+                variantLayers.push({ text: '}\r\n' });
+              }
+
+              layer.push(...variantLayers);
+            });
+        }
 
         if (Object.keys(queries).length) {
           // this.putLines(queries, '', line);

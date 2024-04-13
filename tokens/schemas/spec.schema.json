@@ -20,6 +20,28 @@
           "type": "string"
         }
       }
+    },
+    "externalEntity": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "excludes": {
+                "$ref": "#/definitions/arrayOfStrings"
+              }
+            },
+            "required": [ "url" ]
+          }
+        ]
+      }
     }
   },
   "title": "Toqin Design System Schema",
@@ -99,10 +121,10 @@
       }
     },
     "extends": {
-      "$ref": "#/definitions/arrayOfStrings"
+      "$ref": "#/definitions/externalEntity"
     },
     "includes": {
-      "$ref": "#/definitions/arrayOfStrings"
+      "$ref": "#/definitions/externalEntity"
     },
     "imports": {
       "$ref": "#/definitions/arrayOfStrings"
@@ -189,6 +211,12 @@
             "items": {
               "$ref": "#design"
             }
+          },
+          "mediaVariants": {
+            "$ref": "#/definitions/arrayOfStrings"
+          },
+          "mediaVariables": {
+            "type": "boolean"
           },
           "directChildren": {
             "type": "boolean"

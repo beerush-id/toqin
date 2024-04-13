@@ -4,7 +4,8 @@ import { dirname, join } from 'path';
 import { type FSWatcher, watch as watchFile } from 'chokidar';
 import fs from 'fs-extra';
 import { logger } from './logger.js';
-import type { Compiler, CompilerOptions, DesignOutput, DesignSpec, LoadedDesignSpec } from './core.js';
+import type { Compiler, CompilerOptions, DesignOutput, DesignSpec, ExternalRef, LoadedDesignSpec } from './core.js';
+import { remove } from '@beerush/utils';
 
 export type SpecIndex = {
   name: string;
@@ -17,6 +18,7 @@ export type SpecIndex = {
   parentIndex?: SpecIndex;
   extendedIndexes: SpecIndex[];
   includedIndexes: SpecIndex[];
+  excludedProperties?: string[];
 };
 
 export type StoreEvent = {
@@ -133,7 +135,12 @@ export class Store {
     return this;
   }
 
-  public async load(url: string = this.rootUrl, fromIndex?: SpecIndex, recursive = true): Promise<SpecIndex> {
+  public async load(
+    url: string = this.rootUrl,
+    fromIndex?: SpecIndex,
+    recursive = true,
+    removePaths?: string[]
+  ): Promise<SpecIndex> {
     const { spec, data, pointers, path } = await readSpec(
       url,
       fromIndex?.file ? dirname(fromIndex?.file) : fromIndex?.file,
@@ -148,6 +155,10 @@ export class Store {
       spec.name = data.name;
     }
 
+    if (fromIndex?.excludedProperties?.length) {
+      removePaths = mergeKeys(removePaths || [], fromIndex.excludedProperties);
+    }
+
     const extendedIndexes: SpecIndex[] = [];
     const includedIndexes: SpecIndex[] = [];
     const index: SpecIndex = {
@@ -160,6 +171,7 @@ export class Store {
       parentIndex: fromIndex,
       extendedIndexes,
       includedIndexes,
+      excludedProperties: removePaths,
     };
 
     if (!this.indexes[path]) {
@@ -180,20 +192,27 @@ export class Store {
 
     spec.pointers = pointers;
     spec.tokenPointer = pointers['/tokens']?.value;
+
+    if (index.excludedProperties?.length) {
+      for (const path of index.excludedProperties) {
+        remove<Record<string, unknown>>(spec, path);
+      }
+    }
+
     spec.tokenMaps = createTokenMap(spec);
     spec.designMaps = createDesignMap(spec);
     spec.animationMaps = createAnimationMap(spec);
 
     if (recursive) {
       if (spec.extends?.length) {
-        for (const extend of spec.extends) {
-          await this.extendIndex(index, extend);
+        for (const ref of spec.extends) {
+          await this.extendIndex(index, ref);
         }
       }
 
       if (spec.includes?.length) {
-        for (const include of spec.includes) {
-          await this.includeIndex(index, include);
+        for (const ref of spec.includes) {
+          await this.includeIndex(index, ref);
         }
       }
     }
@@ -203,7 +222,7 @@ export class Store {
     return index;
   }
 
-  public async write(url: string) {
+  public async write() {
     logger.debug(this);
   }
 
@@ -249,14 +268,16 @@ export class Store {
     const previous = this.indexes[file];
     const current = await this.load(previous.url, previous.parentIndex, false);
 
+    previous.name = current.name;
+    previous.version = current.version;
+    previous.spec.imports = current.spec.imports;
+    previous.excludedProperties = current.excludedProperties;
+
     await this.mergeExtends(previous, current);
     await this.mergeIncludes(previous, current);
 
     // Apply new data to previous index.
-    previous.name = current.name;
     previous.data = current.data;
-    previous.version = current.version;
-    previous.spec.imports = current.spec.imports;
 
     for (const [key, value] of Object.entries(current.spec)) {
       if (!RESTRICTED_SPEC_KEYS.includes(key as keyof LoadedDesignSpec)) {
@@ -268,34 +289,46 @@ export class Store {
   private async mergeExtends(previous: SpecIndex, current: SpecIndex) {
     const removedExtends = getRemovedItem(previous.data.extends || [], current.data.extends || []);
     const addedExtends = getAddedItem(previous.data.extends || [], current.data.extends || []);
+    const changedExtends = getChangedItem(previous.data.extends || [], current.data.extends || []);
 
     if (removedExtends.length) {
-      for (const url of removedExtends) {
-        const extendedIndex = previous.extendedIndexes.find((item) => item.url === url);
-        const extendedSpec = previous.spec.extendedSpecs?.find((item) => item.id === url);
+      for (const ref of removedExtends) {
+        const removedIndex = previous.extendedIndexes.find((item) => item.url === ref.url);
+        const removedSpec = previous.spec.extendedSpecs?.find((item) => item.id === ref.url);
 
-        if (extendedIndex) {
-          previous.extendedIndexes.splice(previous.extendedIndexes.indexOf(extendedIndex), 1);
+        if (removedIndex) {
+          previous.extendedIndexes.splice(previous.extendedIndexes.indexOf(removedIndex), 1);
 
-          this.unwatch(extendedIndex.file);
-          delete this.indexes[extendedIndex.file];
+          this.unwatch(removedIndex.file);
+          delete this.indexes[removedIndex.file];
 
-          const extendedIndexPosition = this.specs.indexOf(extendedIndex);
+          const extendedIndexPosition = this.specs.indexOf(removedIndex);
           if (extendedIndexPosition && extendedIndexPosition > -1) {
             this.specs.splice(extendedIndexPosition, 1);
           }
         }
 
-        if (extendedSpec) {
-          previous.spec.extendedSpecs?.splice(previous.spec.extendedSpecs?.indexOf(extendedSpec), 1);
+        if (removedSpec) {
+          previous.spec.extendedSpecs?.splice(previous.spec.extendedSpecs?.indexOf(removedSpec), 1);
         }
       }
     }
 
+    if (changedExtends.length) {
+      // for (const ref of changedExtends) {
+      //   const changedIndex = previous.extendedIndexes.find((item) => item.url === ref.url);
+      //
+      //   if (changedIndex) {
+      //     const pos = current.data.extends?.findIndex((item) => item.url === ref.url);
+      //     await this.extendIndex(previous, ref, pos);
+      //   }
+      // }
+    }
+
     if (addedExtends.length) {
-      for (const url of addedExtends) {
-        const pos = current.data.extends?.indexOf(url);
-        await this.extendIndex(previous, url, pos);
+      for (const ref of addedExtends) {
+        const pos = current.data.extends?.findIndex((item) => item.url === ref.url);
+        await this.extendIndex(previous, ref, pos);
       }
 
       if (this.options?.watch) {
@@ -307,34 +340,46 @@ export class Store {
   private async mergeIncludes(previous: SpecIndex, current: SpecIndex) {
     const removedIncludes = getRemovedItem(previous.data.includes || [], current.data.includes || []);
     const addedIncludes = getAddedItem(previous.data.includes || [], current.data.includes || []);
+    const changedIncludes = getChangedItem(previous.data.includes || [], current.data.includes || []);
 
     if (removedIncludes.length) {
-      for (const url of removedIncludes) {
-        const includedIndex = previous.includedIndexes.find((item) => item.url === url);
-        const includeSpec = previous.spec.includedSpecs?.find((item) => item.id === url);
+      for (const ref of removedIncludes) {
+        const removedIndex = previous.includedIndexes.find((item) => item.url === ref.url);
+        const removedSpec = previous.spec.includedSpecs?.find((item) => item.id === ref.url);
 
-        if (includedIndex) {
-          previous.includedIndexes.splice(previous.includedIndexes.indexOf(includedIndex), 1);
+        if (removedIndex) {
+          previous.includedIndexes.splice(previous.includedIndexes.indexOf(removedIndex), 1);
 
-          this.unwatch(includedIndex.file);
-          delete this.indexes[includedIndex.file];
+          this.unwatch(removedIndex.file);
+          delete this.indexes[removedIndex.file];
 
-          const includedIndexPosition = this.specs.indexOf(includedIndex);
+          const includedIndexPosition = this.specs.indexOf(removedIndex);
           if (includedIndexPosition && includedIndexPosition > -1) {
             this.specs.splice(includedIndexPosition, 1);
           }
         }
 
-        if (includeSpec) {
-          previous.spec.includedSpecs?.splice(previous.spec.includedSpecs?.indexOf(includeSpec), 1);
+        if (removedSpec) {
+          previous.spec.includedSpecs?.splice(previous.spec.includedSpecs?.indexOf(removedSpec), 1);
         }
       }
     }
 
+    if (changedIncludes.length) {
+      // for (const ref of changedIncludes) {
+      //   const changedIndex = previous.includedIndexes.find((item) => item.url === ref.url);
+      //
+      //   if (changedIndex) {
+      //     const pos = current.data.includes?.findIndex((item) => item.url === ref.url);
+      //     await this.includeIndex(previous, ref, pos);
+      //   }
+      // }
+    }
+
     if (addedIncludes.length) {
-      for (const url of addedIncludes) {
-        const pos = current.data.includes?.indexOf(url);
-        await this.includeIndex(previous, url, pos);
+      for (const ref of addedIncludes) {
+        const pos = current.data.includes?.findIndex((item) => item.url === ref.url);
+        await this.includeIndex(previous, ref, pos);
       }
 
       if (this.options?.watch) {
@@ -343,10 +388,10 @@ export class Store {
     }
   }
 
-  private async extendIndex(index: SpecIndex, url: string, pos?: number) {
+  private async extendIndex(index: SpecIndex, { url, excludes }: ExternalRef, pos?: number) {
     const { spec } = index;
 
-    const extendedIndex = await this.load(url, index, true);
+    const extendedIndex = await this.load(url, index, true, excludes);
     const { spec: extendedSpec } = extendedIndex;
 
     if (!spec.extendedSpecs) {
@@ -375,10 +420,10 @@ export class Store {
     }
   }
 
-  private async includeIndex(index: SpecIndex, url: string, pos?: number) {
+  private async includeIndex(index: SpecIndex, { url, excludes }: ExternalRef, pos?: number) {
     const { spec } = index;
 
-    const includedIndex = await this.load(url, index, true);
+    const includedIndex = await this.load(url, index, true, excludes);
     const { spec: includedSpec } = includedIndex;
 
     if (!spec.includedSpecs) {
@@ -408,10 +453,18 @@ export class Store {
   }
 }
 
-export function getAddedItem(previous: string[], current: string[]) {
-  return current.filter((item) => !previous.includes(item));
+function getAddedItem(previous: ExternalRef[], current: ExternalRef[]) {
+  return current.filter((c) => !previous.find((n) => n.url === c.url));
 }
 
-export function getRemovedItem(previous: string[], current: string[]) {
-  return previous.filter((item) => !current.includes(item));
+function getRemovedItem(previous: ExternalRef[], current: ExternalRef[]) {
+  return previous.filter((c) => !current.find((n) => n.url === c.url));
+}
+
+function getChangedItem(previous: ExternalRef[], current: ExternalRef[]) {
+  return current.filter((c) => !previous.find((n) => JSON.stringify(n) === JSON.stringify(c)));
+}
+
+function mergeKeys(a: string[], b: string[]) {
+  return [...new Set([...a, ...b])];
 }

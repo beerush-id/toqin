@@ -4,14 +4,14 @@ import { resolve as resolveModule } from '@beerush/resolve';
 import { join, resolve } from 'path';
 import type { JSONMap, JSONPointers } from 'json-source-map';
 import { parse as parseJson } from 'json-source-map';
-import type { DesignSpec, LoadedDesignSpec } from './core.js';
+import type { DesignSpec, ExternalRef, LoadedDesignSpec } from './core.js';
 
 export type SingleSpec = {
   spec: LoadedDesignSpec;
   data: DesignSpec;
   path: string;
-  pointers: JSONPointers
-}
+  pointers: JSONPointers;
+};
 
 const cachedSpecs: {
   [key: string]: SingleSpec;
@@ -28,10 +28,26 @@ export const ALLOWED_OVERRIDE_KEYS: Array<keyof LoadedDesignSpec> = [
 
 function parse<T>(json: string, compact?: boolean): JSONMap<T> {
   if (compact) {
-    return { data: JSON.parse(json), pointers: {} };
+    const data = JSON.parse(json);
+    return { data: mapRef(data), pointers: {} };
   }
 
-  return parseJson<T>(json);
+  const result = parseJson<T>(json);
+  return { data: mapRef(result.data as never), pointers: result.pointers };
+}
+
+function mapRef(spec: DesignSpec) {
+  if (Array.isArray(spec.extends)) {
+    spec.extends = spec.extends.map((item: string | ExternalRef) => (typeof item === 'string' ? { url: item } : item));
+  }
+
+  if (Array.isArray(spec.includes)) {
+    spec.includes = spec.includes.map((item: string | ExternalRef) =>
+      typeof item === 'string' ? { url: item } : item
+    );
+  }
+
+  return spec as never;
 }
 
 /**
@@ -46,7 +62,7 @@ export async function readSpec(
   path: string,
   fromPath?: string,
   fromFile?: string,
-  compact?: boolean,
+  compact?: boolean
 ): Promise<SingleSpec> {
   try {
     if (path.startsWith('http')) {
@@ -56,13 +72,13 @@ export async function readSpec(
 
       const { spec, data, pointers } = await new Promise<SingleSpec>((resolve, reject) => {
         https(path, (res) => {
-          const data: string[] = [];
+          const chunks: string[] = [];
 
-          res.on('data', (chunk) => data.push(chunk));
+          res.on('data', (chunk) => chunks.push(chunk));
           res.on('end', () => {
-            const content = data.join('');
+            const content = chunks.join('');
             const result = parse<LoadedDesignSpec>(content, compact);
-            resolve({ path, spec: result.data, data: JSON.parse(content), pointers: result.pointers });
+            resolve({ path, spec: result.data, data: mapRef(JSON.parse(content)), pointers: result.pointers });
           });
           res.on('error', reject);
         });
@@ -79,7 +95,7 @@ export async function readSpec(
         return {
           spec,
           pointers,
-          data: JSON.parse(content),
+          data: mapRef(JSON.parse(content)),
           path: file,
         };
       } catch (error) {
@@ -90,16 +106,16 @@ export async function readSpec(
         return {
           spec,
           pointers,
-          data: JSON.parse(content),
+          data: mapRef(JSON.parse(content)),
           path: file,
         };
       }
     }
   } catch (error) {
     if (fromFile) {
-      throw new Error(`Unable to read design spec: ${ path } from ${ fromFile }`);
+      throw new Error(`Unable to read design spec: ${path} from ${fromFile}`);
     }
 
-    throw new Error(`Unable to read design spec: ${ path }`);
+    throw new Error(`Unable to read design spec: ${path}`);
   }
 }
