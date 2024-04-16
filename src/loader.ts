@@ -36,15 +36,35 @@ function parse<T>(json: string, compact?: boolean): JSONMap<T> {
   return { data: mapRef(result.data as never), pointers: result.pointers };
 }
 
+const KNOWN_PROPERTIES = ['tokens', 'designs', 'animations', 'mixins', 'fontFaces', 'mediaQueries'];
+
 function mapRef(spec: DesignSpec) {
   if (Array.isArray(spec.extends)) {
-    spec.extends = spec.extends.map((item: string | ExternalRef) => (typeof item === 'string' ? { url: item } : item));
+    spec.extends = spec.extends.map((item: string | ExternalRef) => {
+      if (typeof item === 'string') {
+        return { url: item };
+      }
+
+      if (Array.isArray(item.only)) {
+        item.excludes = KNOWN_PROPERTIES.filter((key) => !item.only?.includes(key));
+      }
+
+      return item;
+    });
   }
 
   if (Array.isArray(spec.includes)) {
-    spec.includes = spec.includes.map((item: string | ExternalRef) =>
-      typeof item === 'string' ? { url: item } : item
-    );
+    spec.includes = spec.includes.map((item: string | ExternalRef) => {
+      if (typeof item === 'string') {
+        return { url: item };
+      }
+
+      if (Array.isArray(item.only)) {
+        item.excludes = KNOWN_PROPERTIES.filter((key) => !item.only?.includes(key));
+      }
+
+      return item;
+    });
   }
 
   return spec as never;
@@ -112,6 +132,8 @@ export async function readSpec(
       }
     }
   } catch (error) {
+    console.error(error);
+
     if (fromFile) {
       throw new Error(`Unable to read design spec: ${path} from ${fromFile}`);
     }

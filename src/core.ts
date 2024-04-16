@@ -25,6 +25,7 @@ export type MediaQueryKey = `@${string}`;
 export type ExternalRef = {
   url: string;
   excludes?: string[];
+  only?: string[];
 };
 
 export type DesignSpec = {
